@@ -1,0 +1,59 @@
+{
+  "nav": [
+    "PDF-verktyg",
+    "Integritetspolicy",
+    "Support",
+    "Gratis. Privat. Utan vattenstämpel.",
+    "Välj språk",
+    "Sök språk…"
+  ],
+  "pTitle": "Integritetspolicy",
+  "pIntro": "Dina dokument behandlas lokalt. Läs om hur vi hanterar filer och uppgifter.",
+  "updated": "Gäller från 9 november 2026",
+  "p": [
+    "Vem driver JustPDFit?",
+    "JustPDFit drivs av KL-MEHANNA LLC, registrerat i Förenade Arabemiraten. Policyn gäller iPhone-/iPad-appen, iOS-delningstillägget och justpdfit.com.",
+    "Lokal behandling",
+    "Filkonvertering som stöds, skanning, sammanfogning, sidextrahering och textanteckningar sker på din enhet. Du väljer själv filerna och när kameran används. Appen kräver inget konto och har ingen reklam, analys eller spårning.",
+    "Lagring och radering",
+    "PDF-filer sparas i appens privata dokumentmapp tills du raderar dem eller avinstallerar appen. Delningstillägget kan använda tillfälliga filer. Om du raderar en PDF påverkas inte kopior som exporterats till Filer, iCloud, Mail eller andra appar.",
+    "Delning med andra",
+    "iOS lämnar bara en PDF till en annan tjänst när du uttryckligen väljer att dela eller exportera. Dessa tjänster har egna integritetspolicyer.",
+    "Webbplatsen",
+    "På justpdfit.com sker konverteringen i webbläsaren och det valfria biblioteket använder IndexedDB. Rensning av webbläsardata kan radera sparade PDF-filer. Webbhotell och CDN kan få tekniska anslutningsuppgifter som IP-adress, men inte dokumentinnehåll för konvertering.",
+    "Supportmeddelanden",
+    "Om du använder KL-MEHANNAs kontaktformulär lämnar du frivilligt namn, e-post, ämne och meddelande. Den separata tjänsten har en egen integritetspolicy. Skicka inte konfidentiella dokument.",
+    "Barn och ändringar",
+    "Grundfunktionerna frågar inte efter ålder och samlar inte in personuppgifter. Vi uppdaterar policyn innan molnkonvertering, konton eller spårning införs."
+  ],
+  "pContact": [
+    "Frågor om integritet",
+    "Vi sparar inte kopior av dina dokument på våra servrar. Använd kontaktformuläret med ämnet ”JustPDFit privacy”.",
+    "Kontakta operatören"
+  ],
+  "sTitle": "Hjälp och support",
+  "sIntro": "Svar om PDF-konvertering, skanning, lokal lagring och delning.",
+  "sContact": [
+    "Behöver du hjälp?",
+    "Använd KL-MEHANNA LLC:s formulär med ämnet ”JustPDFit support”. Ange enhet, iOS-version, filformat och problem. Bifoga inga privata dokument.",
+    "Öppna supportformuläret"
+  ],
+  "faqTitle": "Vanliga frågor",
+  "faq": [
+    "Vilka format stöds?",
+    "PDF, JPG, PNG, HEIC, GIF, BMP, TIFF, TXT, Markdown, CSV och JSON. Även skanning, sammanfogning, sidextrahering och enkla textanteckningar.",
+    "Går det att konvertera Word, Excel och PowerPoint?",
+    "Inte ännu. DOCX, XLSX, PPTX och avancerad komprimering utvecklas. Vi utger inte filnamnsändringar för att vara konvertering.",
+    "Laddas mina filer upp?",
+    "Nej. iOS-appen behandlar dem på enheten och webbplatsen i webbläsaren. Filer går bara till andra tjänster när du själv väljer delning.",
+    "Hur skannar eller delar jag?",
+    "Välj ”Skanna till PDF” och ge kamerabehörighet. I Bilder eller Filer kan du välja Dela → JustPDFit när alternativet finns.",
+    "Var finns mina PDF-filer?",
+    "I appen under ”Mina PDF-filer” eller på webbplatsen i webbläsarens lokala lagring. Exporterade kopior lagras separat.",
+    "Hur rapporterar jag ett problem?",
+    "Ange enhet, iOS-version, filformat och hur felet kan upprepas i formuläret. Bifoga inte känsliga dokument."
+  ],
+  "sNote": "Skadade eller lösenordsskyddade PDF-filer kanske inte stöds. Läs även vår ",
+  "sAboutTitle": "Om JustPDFit",
+  "sAbout": "JustPDFit är ett gratis PDF-verktyg utan konto eller vattenstämpel från KL-MEHANNA LLC. Webbplats: justpdfit.com."
+}

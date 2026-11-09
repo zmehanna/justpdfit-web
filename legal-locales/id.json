@@ -1,0 +1,59 @@
+{
+  "nav": [
+    "Alat PDF",
+    "Kebijakan Privasi",
+    "Bantuan",
+    "Gratis. Pribadi. Tanpa tanda air.",
+    "Pilih bahasa",
+    "Cari bahasa…"
+  ],
+  "pTitle": "Kebijakan Privasi",
+  "pIntro": "Dokumen Anda diproses secara lokal. Ketahui cara kami menangani berkas dan data.",
+  "updated": "Berlaku sejak 9 November 2026",
+  "p": [
+    "Pengelola JustPDFit",
+    "JustPDFit dikelola oleh KL-MEHANNA LLC yang terdaftar di Uni Emirat Arab. Kebijakan ini berlaku untuk aplikasi iPhone/iPad, ekstensi berbagi iOS, dan justpdfit.com.",
+    "Pemrosesan di perangkat",
+    "Konversi yang didukung, pemindaian, penggabungan, ekstraksi halaman, dan anotasi teks dilakukan di perangkat Anda. Anda memilih berkas dan kapan menggunakan kamera. Aplikasi tidak memerlukan akun serta tidak memakai iklan, analitik, atau pelacakan.",
+    "Penyimpanan dan penghapusan",
+    "PDF disimpan di folder pribadi aplikasi hingga Anda menghapusnya atau mencopot aplikasi. Ekstensi berbagi dapat menyimpan berkas sementara. Menghapus PDF tidak menghapus salinan yang diekspor ke Files, iCloud, Mail, atau aplikasi lain.",
+    "Berbagi dengan pihak lain",
+    "iOS hanya meneruskan PDF ke layanan lain jika Anda memilih untuk berbagi atau mengekspornya. Setiap layanan memiliki kebijakan privasinya sendiri.",
+    "Penggunaan situs web",
+    "Di justpdfit.com, konversi berlangsung di browser, dan pustaka opsional menggunakan IndexedDB. Menghapus data browser dapat menghilangkan PDF tersimpan. Penyedia hosting dan CDN dapat menerima informasi teknis seperti alamat IP, tetapi bukan isi dokumen untuk dikonversi.",
+    "Pesan dukungan",
+    "Melalui formulir KL-MEHANNA Anda secara sukarela memberikan nama, email, subjek, dan pesan. Layanan terpisah ini memiliki kebijakan privasi sendiri. Jangan kirim dokumen rahasia.",
+    "Anak-anak dan perubahan",
+    "Fitur utama tidak meminta usia atau mengumpulkan data pribadi. Kami akan memperbarui kebijakan sebelum memperkenalkan konversi cloud, akun, atau pelacakan."
+  ],
+  "pContact": [
+    "Pertanyaan privasi",
+    "Kami tidak menyimpan salinan dokumen Anda di server. Gunakan formulir kontak dengan subjek 'JustPDFit privacy'.",
+    "Hubungi pengelola"
+  ],
+  "sTitle": "Bantuan dan Dukungan",
+  "sIntro": "Jawaban tentang konversi PDF, pemindaian, penyimpanan lokal, dan berbagi.",
+  "sContact": [
+    "Perlu bantuan?",
+    "Gunakan formulir KL-MEHANNA LLC dengan subjek 'JustPDFit support'. Sertakan perangkat, versi iOS, format berkas, dan masalah. Jangan lampirkan dokumen pribadi.",
+    "Buka formulir dukungan"
+  ],
+  "faqTitle": "Pertanyaan umum",
+  "faq": [
+    "Format apa yang didukung?",
+    "PDF, JPG, PNG, HEIC, GIF, BMP, TIFF, TXT, Markdown, CSV, dan JSON. Anda juga dapat memindai, menggabungkan, mengekstrak halaman, dan menambahkan anotasi teks sederhana.",
+    "Bisakah mengonversi Word, Excel, atau PowerPoint?",
+    "Belum. DOCX, XLSX, PPTX, dan kompresi lanjutan masih dikembangkan. Kami tidak memalsukan konversi.",
+    "Apakah berkas diunggah?",
+    "Tidak. Aplikasi iOS memproses di perangkat, dan situs web di browser. Berkas hanya diteruskan jika Anda memilih untuk membagikannya.",
+    "Bagaimana cara memindai atau berbagi?",
+    "Pilih 'Pindai ke PDF' dan izinkan kamera. Dari Foto atau Files, pilih Bagikan → JustPDFit jika tersedia.",
+    "Di mana PDF saya?",
+    "Di aplikasi pada bagian 'PDF Saya', atau di penyimpanan lokal browser pada situs. Salinan yang diekspor tersimpan terpisah.",
+    "Bagaimana melaporkan masalah?",
+    "Sertakan perangkat, versi iOS, format berkas, dan langkah untuk mengulangi masalah dalam formulir. Jangan lampirkan dokumen sensitif."
+  ],
+  "sNote": "PDF rusak atau dilindungi kata sandi mungkin tidak didukung. Baca juga ",
+  "sAboutTitle": "Tentang JustPDFit",
+  "sAbout": "JustPDFit adalah alat PDF gratis tanpa akun atau tanda air, dikelola oleh KL-MEHANNA LLC. Situs: justpdfit.com."
+}

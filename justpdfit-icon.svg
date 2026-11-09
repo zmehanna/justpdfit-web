@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="Just PDF it">
+<defs>
+<linearGradient id="navy" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1d59"/><stop offset=".46" stop-color="#113886"/><stop offset=".75" stop-color="#0a2c77"/><stop offset="1" stop-color="#0d205a"/></linearGradient>
+<linearGradient id="top" x1="0" y1="0" x2="1" y2=".8"><stop offset="0" stop-color="#447cea"/><stop offset="1" stop-color="#1852ba"/></linearGradient>
+<linearGradient id="wave" x1="0" y1="0" x2="1" y2=".8"><stop offset="0" stop-color="#2058b9"/><stop offset="1" stop-color="#0e3d96"/></linearGradient>
+<linearGradient id="pink" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff476d"/><stop offset=".65" stop-color="#ff3564"/><stop offset="1" stop-color="#f82b67"/></linearGradient>
+<linearGradient id="pinkshadow" x1="0" y1="0" x2=".9" y2="1"><stop offset="0" stop-color="#d70957"/><stop offset="1" stop-color="#af0060"/></linearGradient>
+</defs>
+<rect width="1024" height="1024" fill="url(#navy)"/>
+<path d="M775 0H1024V310c-115-30-213-65-271-113-31-26-29-47-19-79z" fill="url(#top)" opacity=".76"/>
+<path d="M0 707c112 31 272 73 397 128 43 19 62 57 44 101l-34 88H0z" fill="url(#wave)" opacity=".85"/>
+<rect x="176" y="340" width="710" height="347" rx="54" fill="url(#pinkshadow)" transform="rotate(-5 531 514) translate(37 28)"/>
+<rect x="137" y="330" width="700" height="352" rx="50" fill="url(#pink)" transform="rotate(-6 487 506)"/>
+<g fill="white" font-family="Arial,Helvetica,DejaVu Sans,sans-serif" font-weight="900" text-anchor="middle">
+<text x="395" y="284" font-size="182" letter-spacing="-7">Just</text>
+<text x="487" y="615" font-size="282" letter-spacing="-12" textLength="640" lengthAdjust="spacingAndGlyphs" transform="rotate(-6 487 535)">PDF</text>
+<text x="682" y="885" font-size="195" letter-spacing="-8">it</text>
+</g>
+</svg>

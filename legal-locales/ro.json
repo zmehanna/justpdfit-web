@@ -1,0 +1,59 @@
+{
+  "nav": [
+    "Instrumente PDF",
+    "Politica de confidențialitate",
+    "Asistență",
+    "Gratuit. Privat. Fără filigran.",
+    "Alege limba",
+    "Caută limba…"
+  ],
+  "pTitle": "Politica de confidențialitate",
+  "pIntro": "Documentele sunt procesate local. Află cum gestionăm fișierele și datele.",
+  "updated": "În vigoare din 9 noiembrie 2026",
+  "p": [
+    "Cine operează JustPDFit",
+    "JustPDFit este operat de KL-MEHANNA LLC, înregistrată în Emiratele Arabe Unite. Politica se aplică aplicației iPhone/iPad, extensiei iOS de partajare și site-ului justpdfit.com.",
+    "Procesare pe dispozitiv",
+    "Conversiile acceptate, scanările, îmbinarea, extragerea paginilor și adnotările text se efectuează pe dispozitiv. Alegi singur fișierele și utilizarea camerei. Aplicația nu necesită cont, nu conține reclame, instrumente analitice sau urmărire.",
+    "Stocare și ștergere",
+    "PDF-urile sunt păstrate în dosarul privat al aplicației până le ștergi sau dezinstalezi aplicația. Extensia de partajare poate folosi fișiere temporare. Ștergerea unui PDF nu elimină copiile exportate în Fișiere, iCloud, Mail sau alte aplicații.",
+    "Partajare cu terți",
+    "iOS transmite un PDF unui alt serviciu doar când alegi expres să-l partajezi sau să-l exporți. Aceste servicii au propriile politici de confidențialitate.",
+    "Utilizarea site-ului",
+    "Pe justpdfit.com, conversia are loc în browser, iar biblioteca opțională folosește IndexedDB. Ștergerea datelor browserului poate elimina PDF-urile salvate. Furnizorii de găzduire și CDN pot primi informații tehnice precum adresa IP, dar nu conținutul documentelor pentru conversie.",
+    "Mesaje către asistență",
+    "Prin formularul KL-MEHANNA oferi voluntar nume, email, subiect și mesaj. Acest serviciu separat are propria politică de confidențialitate. Nu trimite documente confidențiale.",
+    "Copii și modificări",
+    "Funcțiile principale nu solicită vârsta și nu colectează date personale. Vom actualiza politica înainte de introducerea conversiei în cloud, conturilor sau urmăririi."
+  ],
+  "pContact": [
+    "Întrebări despre confidențialitate",
+    "Nu păstrăm copii ale documentelor tale pe serverele noastre. Folosește formularul cu subiectul „JustPDFit privacy”.",
+    "Contactează operatorul"
+  ],
+  "sTitle": "Ajutor și asistență",
+  "sIntro": "Răspunsuri despre conversia PDF, scanare, stocare locală și partajare.",
+  "sContact": [
+    "Ai nevoie de ajutor?",
+    "Folosește formularul KL-MEHANNA LLC cu subiectul „JustPDFit support”. Precizează dispozitivul, versiunea iOS, formatul și problema. Nu atașa documente private.",
+    "Deschide formularul de asistență"
+  ],
+  "faqTitle": "Întrebări frecvente",
+  "faq": [
+    "Ce formate sunt acceptate?",
+    "PDF, JPG, PNG, HEIC, GIF, BMP, TIFF, TXT, Markdown, CSV și JSON. Sunt disponibile și scanarea, îmbinarea, extragerea paginilor și adnotările simple.",
+    "Pot converti Word, Excel și PowerPoint?",
+    "Încă nu. DOCX, XLSX, PPTX și compresia avansată sunt în dezvoltare. Nu simulăm conversia prin redenumire.",
+    "Fișierele mele sunt încărcate online?",
+    "Nu. Aplicația procesează local, iar site-ul în browser. Fișierele sunt trimise altor servicii doar când alegi să le partajezi.",
+    "Cum scanez sau partajez?",
+    "Alege „Scanează în PDF” și permite accesul la cameră. În Poze sau Fișiere folosește Partajare → JustPDFit, dacă opțiunea este disponibilă.",
+    "Unde găsesc PDF-urile?",
+    "În aplicație la „PDF-urile mele”, iar pe site în spațiul local al browserului. Copiile exportate sunt separate.",
+    "Cum raportez o problemă?",
+    "În formular indică dispozitivul, versiunea iOS, formatul și pașii de reproducere. Nu atașa documente sensibile."
+  ],
+  "sNote": "PDF-urile deteriorate sau protejate prin parolă pot să nu funcționeze. Consultă și ",
+  "sAboutTitle": "Despre JustPDFit",
+  "sAbout": "JustPDFit este un instrument PDF gratuit, fără cont sau filigran, operat de KL-MEHANNA LLC. Site: justpdfit.com."
+}

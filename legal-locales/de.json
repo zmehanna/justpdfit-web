@@ -1,0 +1,59 @@
+{
+  "nav": [
+    "PDF-Werkzeuge",
+    "Datenschutzerklärung",
+    "Hilfe",
+    "Kostenlos. Privat. Ohne Wasserzeichen.",
+    "Sprache wählen",
+    "Sprachen suchen…"
+  ],
+  "pTitle": "Datenschutzerklärung",
+  "pIntro": "Ihre Dokumente werden lokal verarbeitet. Erfahren Sie, wie wir mit Dateien und Daten umgehen.",
+  "updated": "Gültig ab 9. November 2026",
+  "p": [
+    "Betreiber von JustPDFit",
+    "JustPDFit wird von KL-MEHANNA LLC mit Sitz in den Vereinigten Arabischen Emiraten betrieben. Diese Erklärung gilt für die iPhone-/iPad-App, ihre Teilen-Erweiterung und justpdfit.com.",
+    "Verarbeitung auf dem Gerät",
+    "Unterstützte Konvertierungen, Scans, Zusammenführungen, Seitenextraktionen und Textanmerkungen erfolgen auf Ihrem Gerät. Sie wählen Dateien und Kameraeinsatz selbst. Die App benötigt kein Konto und verwendet weder Werbung noch Analysedienste oder Tracking.",
+    "Speicherung und Löschung",
+    "PDFs liegen im privaten Dokumentenordner der App, bis Sie sie löschen oder die App entfernen. Die Teilen-Erweiterung kann temporäre Dateien anlegen. Beim Löschen bleiben zuvor exportierte Kopien in Dateien, iCloud, Mail oder anderen Apps bestehen.",
+    "Weitergabe an Dritte",
+    "Nur wenn Sie eine Datei selbst teilen oder exportieren, übergibt iOS das PDF an den gewählten Dienst. Für diesen gilt dessen eigene Datenschutzerklärung.",
+    "Verwendung der Website",
+    "Auf justpdfit.com erfolgt die Konvertierung im Browser; die optionale Bibliothek nutzt IndexedDB. Das Löschen von Browserdaten kann gespeicherte PDFs entfernen. Hosting- und CDN-Anbieter können technische Verbindungsdaten wie IP-Adressen erhalten, jedoch keine Dokumentinhalte zur Konvertierung.",
+    "Supportnachrichten",
+    "Über das Kontaktformular von KL-MEHANNA übermitteln Sie freiwillig Name, E-Mail-Adresse, Betreff und Nachricht. Dieser getrennte Dienst unterliegt einer eigenen Datenschutzerklärung. Bitte senden Sie keine vertraulichen Dokumente.",
+    "Kinder und Änderungen",
+    "Die Kernfunktionen fragen nicht nach dem Alter und erheben keine personenbezogenen Daten. Wir aktualisieren diese Erklärung, bevor Cloud-Konvertierung, Konten oder Tracking eingeführt werden."
+  ],
+  "pContact": [
+    "Fragen zum Datenschutz",
+    "Wir führen keine Dokumentkopien auf unseren Servern. Bei Fragen nutzen Sie das Kontaktformular mit dem Betreff „JustPDFit Datenschutz“.",
+    "Betreiber kontaktieren"
+  ],
+  "sTitle": "Hilfe & Support",
+  "sIntro": "Antworten zu PDF-Konvertierung, Scannen, lokaler Speicherung und Teilen.",
+  "sContact": [
+    "Benötigen Sie Hilfe?",
+    "Nutzen Sie das Kontaktformular von KL-MEHANNA LLC mit dem Betreff „JustPDFit Support“. Nennen Sie Gerät, iOS-Version, Dateiformat und Problem. Keine privaten Dokumente anhängen.",
+    "Kontaktformular öffnen"
+  ],
+  "faqTitle": "Häufig gestellte Fragen",
+  "faq": [
+    "Welche Formate werden unterstützt?",
+    "PDF, JPG, PNG, HEIC, GIF, BMP, TIFF, TXT, Markdown, CSV und JSON. Auch Scannen, Zusammenführen, Seitenextraktion und einfache Textanmerkungen sind möglich.",
+    "Kann ich Word, Excel und PowerPoint konvertieren?",
+    "Noch nicht. DOCX, XLSX, PPTX und erweiterte Komprimierung sind in Entwicklung. Nicht unterstützte Formate werden nicht fälschlich umbenannt.",
+    "Werden meine Dateien hochgeladen?",
+    "Nein. Die iOS-App verarbeitet lokal, die Website im Browser. Nur beim ausdrücklich gewählten Teilen werden Dateien weitergegeben.",
+    "Wie scanne oder teile ich?",
+    "Wählen Sie „Zu PDF scannen“ und erlauben Sie den Kamerazugriff. In Fotos oder Dateien können Sie über Teilen → JustPDFit arbeiten, sofern verfügbar.",
+    "Wo finde ich meine PDFs?",
+    "In der App unter „Meine PDFs“, auf der Website im lokalen Browserspeicher. Exportierte Kopien bleiben getrennt.",
+    "Wie melde ich ein Problem?",
+    "Beschreiben Sie im Kontaktformular Gerät, iOS-Version, Dateiformat und Schritte zur Reproduktion. Keine vertraulichen Dokumente anhängen."
+  ],
+  "sNote": "Beschädigte oder passwortgeschützte PDFs werden möglicherweise nicht unterstützt. Beachten Sie auch unsere ",
+  "sAboutTitle": "Über JustPDFit",
+  "sAbout": "JustPDFit ist ein kostenloses PDF-Werkzeug ohne Konto und Wasserzeichen von KL-MEHANNA LLC. Website: justpdfit.com."
+}

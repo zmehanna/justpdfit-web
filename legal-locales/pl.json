@@ -1,0 +1,59 @@
+{
+  "nav": [
+    "Narzędzia PDF",
+    "Polityka prywatności",
+    "Pomoc",
+    "Za darmo. Prywatnie. Bez znaku wodnego.",
+    "Wybierz język",
+    "Szukaj języka…"
+  ],
+  "pTitle": "Polityka prywatności",
+  "pIntro": "Dokumenty są przetwarzane lokalnie. Sprawdź, jak traktujemy pliki i dane.",
+  "updated": "Obowiązuje od 9 listopada 2026 r.",
+  "p": [
+    "Operator JustPDFit",
+    "JustPDFit jest obsługiwany przez KL-MEHANNA LLC zarejestrowaną w Zjednoczonych Emiratach Arabskich. Polityka dotyczy aplikacji na iPhone’a i iPada, rozszerzenia udostępniania oraz strony justpdfit.com.",
+    "Przetwarzanie na urządzeniu",
+    "Obsługiwane konwersje, skanowanie, scalanie, wyodrębnianie stron i adnotacje tekstowe odbywają się na urządzeniu. Samodzielnie wybierasz pliki i użycie aparatu. Aplikacja nie wymaga konta, nie wyświetla reklam ani nie korzysta z analityki czy śledzenia.",
+    "Przechowywanie i usuwanie",
+    "PDF-y znajdują się w prywatnym katalogu aplikacji, dopóki ich nie usuniesz lub nie odinstalujesz aplikacji. Rozszerzenie udostępniania może tworzyć pliki tymczasowe. Usunięcie PDF-u nie usuwa kopii wyeksportowanych do Plików, iCloud, Poczty czy innych aplikacji.",
+    "Udostępnianie innym usługom",
+    "iOS przekazuje PDF do wybranej usługi tylko wtedy, gdy samodzielnie go udostępnisz lub wyeksportujesz. Usługi te mają własne polityki prywatności.",
+    "Korzystanie ze strony",
+    "Na justpdfit.com konwersja odbywa się w przeglądarce, a opcjonalna biblioteka używa IndexedDB. Wyczyszczenie danych przeglądarki może usunąć zapisane PDF-y. Dostawcy hostingu i CDN mogą otrzymywać dane techniczne, np. adres IP, ale nie treść dokumentów do konwersji.",
+    "Kontakt z pomocą",
+    "Przez formularz KL-MEHANNA dobrowolnie podajesz imię, adres e-mail, temat i wiadomość. Jest to osobna usługa z własną polityką prywatności. Nie wysyłaj poufnych dokumentów.",
+    "Dzieci i zmiany",
+    "Podstawowe funkcje nie pytają o wiek ani nie gromadzą danych osobowych. Zaktualizujemy tę politykę przed wprowadzeniem konwersji w chmurze, kont lub śledzenia."
+  ],
+  "pContact": [
+    "Pytania o prywatność",
+    "Nie przechowujemy kopii dokumentów na naszych serwerach. Skorzystaj z formularza i wpisz temat „JustPDFit privacy”.",
+    "Skontaktuj się z operatorem"
+  ],
+  "sTitle": "Pomoc i wsparcie",
+  "sIntro": "Odpowiedzi dotyczące konwersji PDF, skanowania, lokalnego zapisu i udostępniania.",
+  "sContact": [
+    "Potrzebujesz pomocy?",
+    "Użyj formularza KL-MEHANNA LLC z tematem „JustPDFit support”. Podaj urządzenie, wersję iOS, format i opis problemu. Nie dołączaj prywatnych dokumentów.",
+    "Otwórz formularz pomocy"
+  ],
+  "faqTitle": "Często zadawane pytania",
+  "faq": [
+    "Jakie formaty są obsługiwane?",
+    "PDF, JPG, PNG, HEIC, GIF, BMP, TIFF, TXT, Markdown, CSV i JSON. Dostępne są też skanowanie, scalanie, wyodrębnianie stron i proste adnotacje.",
+    "Czy można konwertować Word, Excel i PowerPoint?",
+    "Jeszcze nie. Obsługa DOCX, XLSX, PPTX i zaawansowanej kompresji jest w przygotowaniu. Nie udajemy konwersji przez zmianę nazwy.",
+    "Czy moje pliki są przesyłane?",
+    "Nie. Aplikacja działa lokalnie, a strona w przeglądarce. Przesyłanie następuje tylko po samodzielnym wybraniu udostępniania.",
+    "Jak skanować lub udostępniać?",
+    "Wybierz „Skanuj do PDF” i zezwól na aparat. W Zdjęciach lub Plikach możesz wybrać Udostępnij → JustPDFit, jeśli opcja jest dostępna.",
+    "Gdzie są moje PDF-y?",
+    "W aplikacji w sekcji „Moje PDF-y”, na stronie w pamięci przeglądarki. Wyeksportowane kopie są osobne.",
+    "Jak zgłosić błąd?",
+    "W formularzu podaj urządzenie, wersję iOS, format pliku i kroki odtworzenia problemu. Nie dołączaj poufnych plików."
+  ],
+  "sNote": "Uszkodzone lub zabezpieczone hasłem PDF-y mogą nie działać. Zobacz też ",
+  "sAboutTitle": "O JustPDFit",
+  "sAbout": "JustPDFit to darmowe narzędzie PDF bez konta i znaku wodnego, obsługiwane przez KL-MEHANNA LLC. Strona: justpdfit.com."
+}

@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /
+Allow: /privacy/
+Allow: /support/
+
+# The main tool website remains staged for SEO until full QA.
+# The privacy and support URLs are intentionally public for app review.

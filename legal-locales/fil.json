@@ -1,0 +1,59 @@
+{
+  "nav": [
+    "Mga PDF tool",
+    "Patakaran sa Privacy",
+    "Suporta",
+    "Libre. Pribado. Walang watermark.",
+    "Pumili ng wika",
+    "Maghanap ng wika…"
+  ],
+  "pTitle": "Patakaran sa Privacy",
+  "pIntro": "Sa iyong device pinoproseso ang mga dokumento. Alamin kung paano namin pinangangalagaan ang mga file at data.",
+  "updated": "Epektibo mula Nobyembre 9, 2026",
+  "p": [
+    "Sino ang nagpapatakbo ng JustPDFit?",
+    "Ang JustPDFit ay pinapatakbo ng KL-MEHANNA LLC na nakarehistro sa United Arab Emirates. Saklaw nito ang iPhone/iPad app, iOS Share Extension at justpdfit.com.",
+    "Pagproseso sa device",
+    "Ang mga suportadong conversion, pag-scan, pagsasama, pagkuha ng pahina at text annotation ay nangyayari sa iyong device. Ikaw ang pumipili ng file at kung kailan gagamitin ang camera. Hindi kailangan ng account at walang ads, analytics o tracking ang app.",
+    "Pag-iimbak at pagbura",
+    "Nasa pribadong folder ng app ang mga PDF hanggang burahin mo o i-uninstall ang app. Maaaring gumamit ng pansamantalang file ang Share Extension. Hindi nabubura ng pagtanggal sa app ang mga kopyang na-export sa Files, iCloud, Mail o ibang app.",
+    "Pagbabahagi sa iba",
+    "Ipinapasa lamang ng iOS ang PDF sa pinili mong serbisyo kapag ikaw mismo ang nag-share o nag-export. May sariling patakaran sa privacy ang mga serbisyong iyon.",
+    "Paggamit ng website",
+    "Sa justpdfit.com, nasa browser ang conversion at gumagamit ng IndexedDB ang opsyonal na library. Maaaring mawala ang mga naka-save na PDF kapag nilinis ang data ng browser. Maaaring makatanggap ang hosting at CDN ng teknikal na impormasyon gaya ng IP address, ngunit hindi ng nilalaman ng dokumento para sa conversion.",
+    "Mga mensahe sa suporta",
+    "Kapag ginamit mo ang form ng KL-MEHANNA, kusang ibinibigay ang pangalan, email, paksa at mensahe. Hiwalay itong serbisyo na may sariling patakaran sa privacy. Huwag magpadala ng kumpidensyal na dokumento.",
+    "Mga bata at pagbabago",
+    "Hindi nagtatanong ng edad o kumokolekta ng personal na data ang mga pangunahing feature. Ia-update namin ito bago magdagdag ng cloud conversion, account o tracking."
+  ],
+  "pContact": [
+    "Mga tanong sa privacy",
+    "Hindi kami nagtatago ng kopya ng iyong mga dokumento sa server. Gamitin ang contact form na may paksang 'JustPDFit privacy'.",
+    "Makipag-ugnayan sa operator"
+  ],
+  "sTitle": "Tulong at Suporta",
+  "sIntro": "Mga sagot tungkol sa PDF conversion, pag-scan, lokal na imbakan at pagbabahagi.",
+  "sContact": [
+    "Kailangan ng tulong?",
+    "Gamitin ang form ng KL-MEHANNA LLC na may paksang 'JustPDFit support'. Ilagay ang device, bersyon ng iOS, uri ng file at problema. Huwag mag-attach ng pribadong dokumento.",
+    "Buksan ang support form"
+  ],
+  "faqTitle": "Mga madalas itanong",
+  "faq": [
+    "Anong mga format ang suportado?",
+    "PDF, JPG, PNG, HEIC, GIF, BMP, TIFF, TXT, Markdown, CSV at JSON. Maaari ring mag-scan, magsama, kumuha ng pahina at maglagay ng simpleng text annotation.",
+    "Pwede bang mag-convert ng Word, Excel at PowerPoint?",
+    "Hindi pa. Ginagawa pa ang DOCX, XLSX, PPTX at advanced compression. Hindi kami nagpapanggap na nagko-convert.",
+    "Ina-upload ba ang aking mga file?",
+    "Hindi. Lokal sa device ang iOS app at nasa browser ang website. Naipapasa lang ang file kung ikaw ang nagbahagi.",
+    "Paano mag-scan o mag-share?",
+    "Piliin ang 'Scan to PDF' at payagan ang camera. Sa Photos o Files, piliin ang Share → JustPDFit kapag available.",
+    "Saan makikita ang PDF ko?",
+    "Sa 'My PDFs' ng app o sa lokal na browser storage ng website. Hiwalay ang mga na-export na kopya.",
+    "Paano mag-report ng problema?",
+    "Ilagay sa form ang device, bersyon ng iOS, uri ng file at mga hakbang para ulitin ang error. Huwag mag-attach ng sensitibong dokumento."
+  ],
+  "sNote": "Maaaring hindi gumana ang sira o password-protected na PDF. Basahin din ang aming ",
+  "sAboutTitle": "Tungkol sa JustPDFit",
+  "sAbout": "Ang JustPDFit ay libreng PDF tool na walang account o watermark, pinapatakbo ng KL-MEHANNA LLC. Website: justpdfit.com."
+}

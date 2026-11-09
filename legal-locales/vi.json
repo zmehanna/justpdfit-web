@@ -1,0 +1,59 @@
+{
+  "nav": [
+    "Công cụ PDF",
+    "Chính sách quyền riêng tư",
+    "Hỗ trợ",
+    "Miễn phí. Riêng tư. Không đóng dấu.",
+    "Chọn ngôn ngữ",
+    "Tìm ngôn ngữ…"
+  ],
+  "pTitle": "Chính sách quyền riêng tư",
+  "pIntro": "Tài liệu của bạn được xử lý ngay trên thiết bị. Tìm hiểu cách chúng tôi bảo vệ tệp và dữ liệu.",
+  "updated": "Có hiệu lực từ ngày 9 tháng 11 năm 2026",
+  "p": [
+    "Đơn vị vận hành JustPDFit",
+    "JustPDFit được vận hành bởi KL-MEHANNA LLC, đăng ký tại Các Tiểu vương quốc Ả Rập Thống nhất. Chính sách này áp dụng cho ứng dụng iPhone/iPad, tiện ích chia sẻ iOS và justpdfit.com.",
+    "Xử lý trên thiết bị",
+    "Chuyển đổi được hỗ trợ, quét, ghép PDF, trích xuất trang và chú thích văn bản đều diễn ra trên thiết bị. Bạn chủ động chọn tệp và thời điểm dùng camera. Ứng dụng không yêu cầu tài khoản, không có quảng cáo, phân tích hay theo dõi.",
+    "Lưu trữ và xóa",
+    "PDF được lưu trong thư mục riêng của ứng dụng cho đến khi bạn xóa hoặc gỡ ứng dụng. Tiện ích chia sẻ có thể dùng tệp tạm. Xóa PDF trong ứng dụng không xóa các bản sao đã xuất sang Files, iCloud, Mail hoặc ứng dụng khác.",
+    "Chia sẻ với bên thứ ba",
+    "iOS chỉ chuyển PDF đến dịch vụ bạn chọn khi bạn chủ động chia sẻ hoặc xuất tệp. Các dịch vụ đó áp dụng chính sách riêng.",
+    "Sử dụng trang web",
+    "Trên justpdfit.com, việc chuyển đổi diễn ra trong trình duyệt; thư viện tùy chọn dùng IndexedDB. Xóa dữ liệu trình duyệt có thể làm mất PDF đã lưu. Nhà cung cấp lưu trữ và CDN có thể nhận thông tin kỹ thuật như địa chỉ IP nhưng không nhận nội dung tài liệu để chuyển đổi.",
+    "Tin nhắn hỗ trợ",
+    "Khi dùng biểu mẫu KL-MEHANNA, bạn tự nguyện cung cấp tên, email, chủ đề và nội dung để nhận phản hồi. Dịch vụ riêng này có chính sách quyền riêng tư của mình. Không gửi tài liệu mật.",
+    "Trẻ em và thay đổi",
+    "Các chức năng chính không hỏi tuổi hay thu thập dữ liệu cá nhân. Chúng tôi sẽ cập nhật chính sách trước khi bổ sung chuyển đổi đám mây, tài khoản hoặc theo dõi."
+  ],
+  "pContact": [
+    "Câu hỏi về quyền riêng tư",
+    "Chúng tôi không lưu bản sao tài liệu của bạn trên máy chủ. Hãy dùng biểu mẫu với chủ đề 'JustPDFit privacy'.",
+    "Liên hệ đơn vị vận hành"
+  ],
+  "sTitle": "Trợ giúp và Hỗ trợ",
+  "sIntro": "Giải đáp về chuyển đổi PDF, quét tài liệu, lưu cục bộ và chia sẻ.",
+  "sContact": [
+    "Bạn cần hỗ trợ?",
+    "Dùng biểu mẫu của KL-MEHANNA LLC với chủ đề 'JustPDFit support'. Nêu thiết bị, phiên bản iOS, định dạng tệp và vấn đề. Không đính kèm tài liệu riêng tư.",
+    "Mở biểu mẫu hỗ trợ"
+  ],
+  "faqTitle": "Câu hỏi thường gặp",
+  "faq": [
+    "Hỗ trợ những định dạng nào?",
+    "PDF, JPG, PNG, HEIC, GIF, BMP, TIFF, TXT, Markdown, CSV và JSON. Cũng hỗ trợ quét, ghép, trích xuất trang và thêm chú thích văn bản đơn giản.",
+    "Có thể chuyển Word, Excel và PowerPoint không?",
+    "Chưa. DOCX, XLSX, PPTX và nén nâng cao đang được phát triển. Chúng tôi không giả lập chuyển đổi.",
+    "Tệp của tôi có được tải lên không?",
+    "Không. Ứng dụng iOS xử lý trên thiết bị, website xử lý trong trình duyệt. Tệp chỉ được gửi đến dịch vụ khác khi bạn chủ động chia sẻ.",
+    "Làm sao quét hoặc chia sẻ?",
+    "Chọn 'Quét thành PDF' và cho phép camera. Trong Ảnh hoặc Files, chọn Chia sẻ → JustPDFit nếu có.",
+    "PDF của tôi ở đâu?",
+    "Trong mục 'PDF của tôi' của ứng dụng; trên web nằm trong bộ nhớ cục bộ của trình duyệt. Bản xuất được quản lý riêng.",
+    "Làm sao báo lỗi?",
+    "Điền thiết bị, phiên bản iOS, định dạng và các bước tái hiện lỗi vào biểu mẫu. Không đính kèm tài liệu nhạy cảm."
+  ],
+  "sNote": "PDF hỏng hoặc được bảo vệ bằng mật khẩu có thể không được hỗ trợ. Xem thêm ",
+  "sAboutTitle": "Về JustPDFit",
+  "sAbout": "JustPDFit là công cụ PDF miễn phí, không cần tài khoản hay dấu chìm, do KL-MEHANNA LLC vận hành. Trang web: justpdfit.com."
+}

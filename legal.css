@@ -1,0 +1,53 @@
+/* Shared legal/support layout; visual identity matches justpdfit.com. */
+:root { color-scheme: light; }
+.legal-top-actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.legal-top-actions>a{font-size:13px;font-weight:730;color:#475675}
+.legal-top-actions>a:hover,.legal-links a:hover{text-decoration:underline}
+.locale-switch{display:flex;align-items:center;gap:4px;border:1px solid #e1e7f2;padding:4px;border-radius:11px;background:#f8faff}
+.locale-switch button{border:0;background:transparent;border-radius:7px;padding:7px 10px;color:#64728d;font-weight:750;font-size:12px;min-height:34px}
+.locale-switch button[aria-pressed="true"]{background:#fff;color:#233455;box-shadow:0 2px 8px #1a2e4d16}
+.legal-hero{background:linear-gradient(110deg,#132443 0%,#20345a 55%,#302356 100%);color:#fff}
+.legal-hero-inner{padding:51px 0 56px}
+.legal-kicker{color:#ffb7c8;letter-spacing:1.25px;font-weight:850;text-transform:uppercase;font-size:12px}
+.legal-hero h1{color:#fff;font-size:clamp(32px,5vw,51px);line-height:1.15;letter-spacing:-1.9px;max-width:900px;margin:13px 0 15px}
+.legal-hero p{font-size:16px;line-height:1.7;color:#dce7fa;max-width:730px;margin:0}
+.legal-article-wrap{padding:36px 0 72px}
+.legal-main{width:min(880px,100%);margin:auto}
+.legal-card{background:#fff;border:1px solid #e9edf5;border-radius:21px;box-shadow:0 18px 50px #1b2b4b0c;padding:clamp(22px,4.5vw,48px)}
+.legal-card h2{font-size:21px;letter-spacing:-.5px;color:#223252;line-height:1.4;margin:32px 0 10px}
+.legal-card h2:first-child{margin-top:0}
+.legal-card p,.legal-card li{font-size:15px;color:#53617a;line-height:1.85}
+.legal-card p{margin:0 0 16px}
+.legal-card ul{padding-left:22px;margin:10px 0 21px}
+.legal-card li{margin-bottom:5px}
+.legal-card a:not(.legal-primary){color:#b93758;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.legal-card a:not(.legal-primary):hover{color:#8e2846}
+.legal-card strong{color:#273951}
+.legal-stamp{display:inline-flex;align-items:center;border:1px solid #e6eaf3;background:#f6f8fc;color:#708098;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:650;margin-bottom:12px}
+.legal-note{margin:25px 0;padding:18px 20px;background:#f2f8ff;border-left:4px solid #537fce;border-radius:12px;color:#526481;line-height:1.7;font-size:14px}
+.legal-note p{margin:0}
+.legal-contact{margin:24px 0;border:1px solid #f5ccd6;background:linear-gradient(130deg,#fff4f6,#fff 80%);padding:22px;border-radius:16px}
+.legal-contact h2,.legal-contact h3{color:#30415e;margin:0 0 7px;font-size:19px}
+.legal-contact p{margin:0 0 16px}
+.legal-primary{display:inline-flex!important;align-items:center;justify-content:center;min-height:45px;border-radius:10px;background:linear-gradient(100deg,#ed465c,#fc6472);color:#fff!important;padding:11px 18px;text-decoration:none!important;font-size:14px;font-weight:800;box-shadow:0 9px 20px #ee4a6124}
+.legal-primary:hover{filter:brightness(.96)}
+.legal-faq{border-bottom:1px solid #e7ecf5;padding:5px 0}
+.legal-faq:last-child{border-bottom:0}
+.legal-faq summary{padding:15px 4px;font-size:15px;font-weight:750;color:#263857;cursor:pointer}
+.legal-faq p{padding:0 4px 13px;margin:0}
+.legal-faq summary::marker{color:#e94769}
+.legal-bottom-nav{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin:25px auto 0;font-size:13px;color:#61708c}
+.legal-bottom-nav a{padding:9px 12px;background:#fff;border:1px solid #e8edf5;border-radius:10px}
+.legal-bottom-nav a:hover{border-color:#f2a3b5}
+.legal-footer .footer-inner{padding-top:16px;padding-bottom:16px}
+.legal-footer .footer-links{gap:18px}
+.legal-footer .footer-inner{min-height:82px}
+@media(max-width:650px){.topbar-inner{gap:9px}.legal-top-actions{gap:8px}.legal-top-actions>a{font-size:12px}.legal-top-actions>a:first-child{display:none}.locale-switch button{padding:7px}.brand-wordmark{font-size:16px}.legal-hero-inner{padding:34px 0 39px}.legal-hero h1{letter-spacing:-.8px}.legal-article-wrap{padding:20px 0 46px}.legal-card{border-radius:15px}.legal-card p,.legal-card li{font-size:14px}.legal-card h2{font-size:19px}}
+
+/* Same searchable language menu and real flag assets as justpdfit.com. */
+.legal-top-actions .language-picker{z-index:90}
+.legal-operator-link{margin-top:14px}
+html[dir="rtl"] .legal-hero-inner,html[dir="rtl"] .legal-card{text-align:right}
+html[dir="rtl"] .legal-note{border-left:0;border-right:4px solid #537fce}
+html[dir="rtl"] .legal-bottom-nav,html[dir="rtl"] .legal-footer .footer-links{direction:rtl}
+@media(max-width:650px){.legal-top-actions>a{display:none}.legal-top-actions .language-menu{right:0;left:auto}}

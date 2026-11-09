@@ -1,0 +1,59 @@
+{
+  "nav": [
+    "PDF-hulpmiddelen",
+    "Privacybeleid",
+    "Ondersteuning",
+    "Gratis. Privé. Zonder watermerk.",
+    "Taal kiezen",
+    "Talen zoeken…"
+  ],
+  "pTitle": "Privacybeleid",
+  "pIntro": "Je documenten worden lokaal verwerkt. Lees hoe JustPDFit met bestanden en gegevens omgaat.",
+  "updated": "Geldig vanaf 9 november 2026",
+  "p": [
+    "Wie beheert JustPDFit?",
+    "JustPDFit wordt beheerd door KL-MEHANNA LLC, gevestigd in de Verenigde Arabische Emiraten. Dit beleid geldt voor de iPhone- en iPad-app, de deelextensie en justpdfit.com.",
+    "Lokale verwerking",
+    "Ondersteunde conversies, scans, samenvoegingen, het extraheren van pagina's en tekstannotaties gebeuren op je apparaat. Je kiest zelf de bestanden en wanneer de camera wordt gebruikt. De app vereist geen account en gebruikt geen advertenties, analyses of tracking.",
+    "Opslag en verwijderen",
+    "PDF's blijven in de privédocumentenmap van de app tot je ze verwijdert of de app de-installeert. De deelextensie kan tijdelijke bestanden opslaan. Een PDF verwijderen wist geen kopieën die je naar Bestanden, iCloud, Mail of andere apps exporteerde.",
+    "Delen met derden",
+    "iOS geeft een PDF alleen door aan een andere dienst als je zelf delen of exporteren kiest. Op die dienst is het eigen privacybeleid van toepassing.",
+    "De website",
+    "Op justpdfit.com vinden conversies in je browser plaats; de optionele bibliotheek gebruikt IndexedDB. Het wissen van browsergegevens kan opgeslagen PDF's verwijderen. Hosting- en CDN-diensten ontvangen mogelijk technische gegevens, zoals je IP-adres, maar geen documentinhoud voor conversie.",
+    "Ondersteuningsberichten",
+    "Via het contactformulier van KL-MEHANNA verstrek je vrijwillig je naam, e-mailadres, onderwerp en bericht. Dit is een afzonderlijke dienst met een eigen privacybeleid. Stuur geen vertrouwelijke documenten.",
+    "Kinderen en wijzigingen",
+    "De basisfuncties vragen niet naar je leeftijd en verzamelen geen persoonsgegevens. Dit beleid wordt bijgewerkt voordat we cloudconversies, accounts of tracking toevoegen."
+  ],
+  "pContact": [
+    "Vragen over privacy",
+    "We bewaren geen kopieën van je documenten op onze servers. Gebruik het contactformulier met als onderwerp ‘JustPDFit privacy’.",
+    "Contact opnemen"
+  ],
+  "sTitle": "Hulp en ondersteuning",
+  "sIntro": "Antwoorden over PDF-conversie, scannen, lokale opslag en delen.",
+  "sContact": [
+    "Hulp nodig?",
+    "Gebruik het formulier van KL-MEHANNA LLC met als onderwerp ‘JustPDFit ondersteuning’. Vermeld je apparaat, iOS-versie, bestandsformaat en probleem. Voeg geen privédocumenten toe.",
+    "Contactformulier openen"
+  ],
+  "faqTitle": "Veelgestelde vragen",
+  "faq": [
+    "Welke bestandsformaten worden ondersteund?",
+    "PDF, JPG, PNG, HEIC, GIF, BMP, TIFF, TXT, Markdown, CSV en JSON. Scannen, samenvoegen, pagina's extraheren en eenvoudige tekstannotaties zijn ook mogelijk.",
+    "Kan ik Word, Excel en PowerPoint converteren?",
+    "Nog niet. Ondersteuning voor DOCX, XLSX, PPTX en geavanceerde compressie is in ontwikkeling. We doen geen schijnconversies.",
+    "Worden mijn bestanden geüpload?",
+    "Nee. De iOS-app verwerkt lokaal en de website in je browser. Bestanden gaan alleen naar een andere dienst als je zelf deelt.",
+    "Hoe kan ik scannen of delen?",
+    "Kies ‘Scannen naar PDF’ en geef cameratoegang. Vanuit Foto's of Bestanden kun je Delen → JustPDFit gebruiken als die optie beschikbaar is.",
+    "Waar staan mijn PDF's?",
+    "In de app bij ‘Mijn PDF's’ en op de website in lokale browseropslag. Geëxporteerde kopieën staan apart.",
+    "Hoe meld ik een probleem?",
+    "Vermeld in het contactformulier je apparaat, iOS-versie, bestandsformaat en stappen om het probleem te herhalen. Voeg geen vertrouwelijke documenten toe."
+  ],
+  "sNote": "Beschadigde of met een wachtwoord beveiligde PDF's worden mogelijk niet ondersteund. Bekijk ook ons ",
+  "sAboutTitle": "Over JustPDFit",
+  "sAbout": "JustPDFit is een gratis PDF-tool zonder account of watermerk, beheerd door KL-MEHANNA LLC. Website: justpdfit.com."
+}

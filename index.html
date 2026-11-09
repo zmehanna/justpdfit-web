@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111d40">
+  <meta name="description" content="JustPDFit : convertir des images et textes en PDF, fusionner des documents, scanner depuis votre téléphone. Gratuit et privé.">
+  <title>JustPDFit — Outils PDF gratuits et privés</title>
+  <link rel="icon" type="image/svg+xml" href="./justpdfit-icon.svg">
+<link rel="apple-touch-icon" href="./justpdfit-icon.svg">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./tools.css">
+  <meta name="robots" content="noindex,nofollow">
+  <script defer src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+  <link rel="stylesheet" href="./i18n.css">
+<script defer src="./i18n-core.js"></script>
+<script defer src="./i18n-tools.js"></script>
+<script defer src="./i18n-feedback.js"></script>
+<script defer src="./i18n.js"></script>
+<script defer src="./app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#workbench" data-i18n="skip">Aller au convertisseur</a>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="./" aria-label="JustPDFit">
+        <img class="brand-icon" src="./justpdfit-icon.svg" width="46" height="46" alt="" aria-hidden="true">
+        <span class="brand-wordmark"><span class="brand-word">Just</span><span class="brand-pdf"><strong>PDF</strong></span><span class="brand-word">it!</span></span>
+      </a>
+      <div class="topbar-actions">
+        <span class="free-chip" data-i18n="free">100 % gratuit</span>
+        <label class="language-label" for="language" data-i18n="language">Langue</label>
+        <select id="language" aria-label="Langue / Language">
+          <option value="fr">FR</option>
+          <option value="en">EN</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-inner">
+        <div class="hero-text">
+          <div class="eyebrow"><span class="dot"></span><span data-i18n="eyebrow">Votre boîte à outils PDF, en toute simplicité</span></div>
+          <h1 data-i18n="headline">Tout en PDF.<br>Un clic. Gratuit.</h1>
+          <p data-i18n="subheadline">Convertissez vos photos et textes, fusionnez vos PDF et gardez vos documents à portée de main. Sans compte et sans filigrane.</p>
+          <div class="hero-tags">
+            <span>✓ <span data-i18n="privacyTag">Fichiers privés</span></span>
+            <span>✓ <span data-i18n="noUpload">Aucun envoi au serveur</span></span>
+            <span>✓ <span data-i18n="noWatermark">Sans filigrane</span></span>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="floating-file f1"><span>JPG</span><b>▧</b></div>
+          <div class="floating-file f2"><span>TXT</span><b>☰</b></div>
+          <div class="floating-file main-file"><span>PDF</span><b>✓</b></div>
+          <div class="connector c1"></div><div class="connector c2"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="container work-section" id="workbench">
+      <div class="section-header">
+        <div><div class="section-kicker" data-i18n="yourWorkspace">ESPACE DE TRAVAIL</div>
+          <h2 data-i18n="workTitle">Que souhaitez-vous faire ?</h2>
+          <p data-i18n="workHint">Ajoutez un ou plusieurs fichiers. L'ordre affiché sera celui du PDF final.</p>
+        </div>
+        <div class="lock-note"><span aria-hidden="true">🔒</span><span data-i18n="local">Traitement sur votre appareil</span></div>
+      </div>
+
+      <div class="workspace-grid">
+        <section class="panel input-panel" aria-labelledby="filesHeading">
+          <div class="panel-heading">
+            <span class="step-number">1</span><h3 id="filesHeading" data-i18n="chooseFiles">Choisissez vos fichiers</h3>
+            <span id="fileCount" class="count">0</span>
+          </div>
+          <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Ajouter des fichiers">
+            <div class="dropzone-icon" aria-hidden="true">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 16v3a1 1 0 001 1h12a1 1 0 001-1v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <strong data-i18n="dropTitle">Glissez vos fichiers ici</strong>
+            <p data-i18n="dropSubtitle">ou sélectionnez-les depuis votre appareil</p>
+            <button type="button" class="btn btn-secondary" id="browseButton" data-i18n="browse">Choisir des fichiers</button>
+            <small data-i18n="types">PDF · JPG · PNG · HEIC · TIFF · BMP · GIF · TXT · MD · CSV · JSON</small>
+          </div>
+          <input id="filePicker" type="file" multiple hidden accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.tif,.tiff,.bmp,.gif,.txt,.text,.md,.markdown,.csv,.json,application/pdf,image/*,text/plain">
+          <input id="cameraPicker" type="file" hidden accept="image/*" capture="environment">
+          <div class="quick-actions">
+            <button type="button" id="cameraButton" class="quick-btn"><span aria-hidden="true">📷</span><span data-i18n="takePhoto">Photographier un document</span></button>
+            <button type="button" id="addMoreButton" class="quick-btn"><span aria-hidden="true">＋</span><span data-i18n="addFiles">Ajouter des fichiers</span></button>
+          </div>
+          <div class="files-heading"><h4 data-i18n="yourFiles">Fichiers sélectionnés</h4><button type="button" id="clearButton" class="text-button" data-i18n="clear">Tout effacer</button></div>
+          <ol id="selectedFiles" class="file-list" aria-live="polite"></ol>
+          <div id="selectionEmpty" class="selection-empty" data-i18n="emptySelection">Vos fichiers apparaîtront ici. Vous pourrez changer leur ordre.</div>
+          <div class="process-area">
+            <button type="button" id="processButton" class="btn btn-primary" disabled><span aria-hidden="true">✦</span><span id="processLabel" data-i18n="convert">Créer mon PDF</span></button>
+            <div class="process-note" data-i18n="processNote">Vos fichiers ne quittent pas cet appareil.</div>
+          </div>
+        </section>
+
+        <section class="panel output-panel" aria-labelledby="previewHeading">
+          <div class="panel-heading"><span class="step-number purple">2</span><h3 id="previewHeading" data-i18n="result">Votre PDF</h3></div>
+          <div id="resultEmpty" class="result-empty"><div class="pdf-stack" aria-hidden="true">📄</div><h4 data-i18n="readyTitle">Votre document est presque prêt</h4><p data-i18n="readyDescription">Une fois vos fichiers convertis, prévisualisez et téléchargez votre PDF ici.</p></div>
+          <div id="resultReady" hidden>
+            <div class="result-meta"><div class="result-check">✓</div><div><strong id="resultName"></strong><span id="resultInfo"></span></div></div>
+            <div class="preview-box"><iframe id="pdfPreview" title="Aperçu PDF"></iframe></div>
+            <div class="result-buttons">
+              <button type="button" id="downloadButton" class="btn btn-primary" data-i18n="download">↓ Télécharger le PDF</button>
+              <button type="button" id="shareButton" class="btn btn-quiet" data-i18n="share">↗ Partager</button>
+            </div>
+          </div>
+          <div id="status" class="status" aria-live="polite" role="status"></div>
+          <div class="formats-note">
+            <span aria-hidden="true">ⓘ</span>
+            <p data-i18n="limitations">Les documents Office (Word, Excel, PowerPoint) ne sont pas encore pris en charge. Aucun fichier n'est renommé artificiellement en PDF.</p>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="container seo-tools" id="pdf-tools" aria-labelledby="tools-title"><div class="section-header"><div><div class="section-kicker">JUSTPDFIT · OUTILS PDF</div><h2 id="tools-title">Tous vos outils PDF au même endroit</h2><p>Conversion, fusion, extraction et annotation. Les outils encore en développement sont clairement identifiés.</p></div></div><div class="seo-tool-grid"><a class="seo-tool-card" href="./pdf-to-word/"><strong>PDF to Word</strong><p>Conversion Word modifiable en préparation</p><span class="tool-badge soon">En préparation →</span></a>
+<a class="seo-tool-card" href="./jpg-to-pdf/"><strong>JPG to PDF</strong><p>Convertir gratuitement plusieurs images en un PDF</p><span class="tool-badge ">Essayer l’outil →</span></a>
+<a class="seo-tool-card" href="./word-to-pdf/"><strong>Word to PDF</strong><p>Conversion DOCX avec mise en page en préparation</p><span class="tool-badge soon">En préparation →</span></a>
+<a class="seo-tool-card" href="./compress-pdf/"><strong>Compress PDF</strong><p>Réduction réelle du poids des PDF en préparation</p><span class="tool-badge soon">En préparation →</span></a>
+<a class="seo-tool-card" href="./merge-pdf/"><strong>Merge PDF</strong><p>Fusionner plusieurs PDF en un seul document</p><span class="tool-badge ">Essayer l’outil →</span></a>
+<a class="seo-tool-card" href="./edit-pdf/"><strong>Edit PDF</strong><p>Ajouter une annotation texte simple à une page PDF</p><span class="tool-badge ">Essayer l’outil →</span></a>
+<a class="seo-tool-card" href="./split-pdf/"><strong>Split PDF</strong><p>Extraire les pages choisies d’un document PDF</p><span class="tool-badge ">Essayer l’outil →</span></a></div></section>
+    <section class="container library-section" id="library">
+      <div class="section-header"><div><div class="section-kicker" data-i18n="libraryKicker">VOS DOCUMENTS</div><h2 data-i18n="libraryTitle">Votre bibliothèque locale</h2><p data-i18n="librarySubtitle">Les PDF enregistrés restent dans ce navigateur, sur cet appareil.</p></div><span class="library-badge" id="libraryCount">0 PDF</span></div>
+      <div class="panel library-panel"><div id="libraryEmpty" class="library-empty" data-i18n="libraryEmpty">Les PDF créés apparaîtront ici automatiquement.</div><div id="libraryList" class="library-list"></div></div>
+    </section>
+
+    <section class="language-showcase" id="languages" aria-labelledby="languages-heading">
+      <div class="container language-showcase-grid">
+        <div class="language-showcase-copy">
+          <div class="section-kicker">JUSTPDFIT · 🌐</div>
+          <h2 id="languages-heading"><span class="language-count">27</span> <span data-i18n="languages">languages</span></h2>
+          <p class="language-showcase-lead" data-i18n="simpleDetail">Convert images and text, combine files, and scan paper documents from your camera.</p>
+          <div class="language-proofs">
+            <span>🌍 <span data-i18n="language">Language</span></span>
+            <span>🔒 <span data-i18n="local">Processed on your device</span></span>
+            <span>✓ <span data-i18n="benefitNoWatermark">No watermark</span></span>
+          </div>
+          <p class="language-selection-note" data-i18n="languageHelp">Your language is selected automatically when supported, with English as the fallback. A manual choice is saved for future visits.</p>
+          <div class="language-flag-strip" aria-label="Examples of supported languages: English, French, Arabic, Spanish, German, Portuguese, Chinese, Japanese and Hindi">
+            <img src="./flags/gb.svg" alt="English" loading="lazy"><img src="./flags/fr.svg" alt="Français" loading="lazy"><img src="./flags/sa.svg" alt="العربية" loading="lazy"><img src="./flags/es.svg" alt="Español" loading="lazy"><img src="./flags/de.svg" alt="Deutsch" loading="lazy"><img src="./flags/pt.svg" alt="Português" loading="lazy"><img src="./flags/cn.svg" alt="简体中文" loading="lazy"><img src="./flags/jp.svg" alt="日本語" loading="lazy"><img src="./flags/in.svg" alt="हिन्दी" loading="lazy">
+          </div>
+        </div>
+        <div class="language-showcase-images">
+          <img class="website-desktop-shot" src="./justpdfit-web-desktop.jpg" width="1200" height="808" alt="Real screenshot of JustPDFit.com on desktop, showing the PDF workspace and language selector" loading="lazy">
+          <img class="website-mobile-shot" src="./justpdfit-web-mobile.jpg" width="390" height="844" alt="Real screenshot of JustPDFit.com on a narrow mobile screen" loading="lazy" decoding="async">
+        </div>
+      </div>
+    </section>
+
+    <section class="container info-section" id="privacy">
+      <div class="info-card"><div class="info-icon" aria-hidden="true">🛡️</div><div><h3 data-i18n="privacyTitle">Vos fichiers restent à vous.</h3><p data-i18n="privacyDetail">Conversion et fusion dans votre navigateur. Aucun document envoyé à nos serveurs, aucun compte, aucun suivi publicitaire. La bibliothèque utilise le stockage local de votre navigateur : effacer ses données peut supprimer les PDF enregistrés.</p></div></div>
+      <div class="info-card"><div class="info-icon" aria-hidden="true">✨</div><div><h3 data-i18n="simpleTitle">Une interface simple, pour tous.</h3><p data-i18n="simpleDetail">Photos, texte et PDF. Réorganisez vos fichiers avant la fusion. Utilisez l'appareil photo sur mobile pour créer un PDF à partir d'une page papier.</p></div></div>
+    </section>
+  </main>
+
+  <footer class="footer"><div class="container footer-inner"><div class="footer-brand">Just<strong>PDFit!</strong> <span>© 2026</span></div><div class="footer-links"><a href="./privacy/" data-i18n="privacyLink">Confidentialité</a><a href="https://kl-mehanna.com" target="_blank" rel="noopener noreferrer" data-i18n="official">Site officiel</a><a href="./support/" data-i18n="support">Assistance</a></div><span data-i18n="footerFree">Gratuit. Sans filigrane.</span></div></footer>
+</body>
+</html>

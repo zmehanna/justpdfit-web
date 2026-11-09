@@ -1,0 +1,59 @@
+{
+  "nav": [
+    "Strumenti PDF",
+    "Informativa sulla privacy",
+    "Assistenza",
+    "Gratis. Privato. Senza filigrana.",
+    "Scegli la lingua",
+    "Cerca una lingua…"
+  ],
+  "pTitle": "Informativa sulla privacy",
+  "pIntro": "I documenti vengono elaborati localmente. Scopri come trattiamo i file e i dati.",
+  "updated": "In vigore dal 9 novembre 2026",
+  "p": [
+    "Chi gestisce JustPDFit",
+    "JustPDFit è gestito da KL-MEHANNA LLC, società registrata negli Emirati Arabi Uniti. L'informativa riguarda l'app per iPhone e iPad, l'estensione Condividi e justpdfit.com.",
+    "Elaborazione sul dispositivo",
+    "Conversioni supportate, scansioni, unioni, estrazioni di pagine e annotazioni di testo avvengono sul dispositivo. Scegli tu file e utilizzo della fotocamera. L'app non richiede account e non usa pubblicità, statistiche o tracciamento.",
+    "Archiviazione e cancellazione",
+    "I PDF sono conservati nella cartella privata dell'app finché non li elimini o disinstalli l'app. L'estensione Condividi può usare file temporanei. Eliminare un PDF non cancella le copie esportate in File, iCloud, Mail o altre app.",
+    "Condivisione con terzi",
+    "iOS trasferisce il PDF al servizio scelto solo quando decidi di condividerlo o esportarlo. Tali servizi applicano le proprie informative sulla privacy.",
+    "Uso del sito web",
+    "Su justpdfit.com la conversione avviene nel browser e la libreria facoltativa utilizza IndexedDB. Cancellare i dati del browser può eliminare i PDF salvati. Hosting e CDN possono ricevere dati tecnici come l'indirizzo IP, ma non il contenuto dei documenti per la conversione.",
+    "Messaggi di assistenza",
+    "Usando il modulo di KL-MEHANNA fornisci volontariamente nome, email, oggetto e messaggio. Questo servizio separato segue la propria informativa sulla privacy. Non inviare documenti riservati.",
+    "Minori e modifiche",
+    "Le funzioni principali non chiedono l'età e non raccolgono dati personali. Aggiorneremo l'informativa prima di introdurre conversioni cloud, account o tracciamento."
+  ],
+  "pContact": [
+    "Domande sulla privacy",
+    "Non conserviamo copie dei tuoi documenti sui nostri server. Usa il modulo indicando «Privacy JustPDFit».",
+    "Contatta il gestore"
+  ],
+  "sTitle": "Aiuto e assistenza",
+  "sIntro": "Risposte su conversione PDF, scansione, archiviazione locale e condivisione.",
+  "sContact": [
+    "Hai bisogno di aiuto?",
+    "Usa il modulo di KL-MEHANNA LLC con oggetto «Assistenza JustPDFit». Indica dispositivo, versione iOS, formato e problema. Non allegare documenti privati.",
+    "Apri il modulo di assistenza"
+  ],
+  "faqTitle": "Domande frequenti",
+  "faq": [
+    "Quali formati sono supportati?",
+    "PDF, JPG, PNG, HEIC, GIF, BMP, TIFF, TXT, Markdown, CSV e JSON. Puoi anche scansionare, unire, estrarre pagine e aggiungere annotazioni semplici.",
+    "Posso convertire Word, Excel e PowerPoint?",
+    "Non ancora. DOCX, XLSX, PPTX e la compressione avanzata sono in sviluppo. Non simuliamo conversioni.",
+    "I miei file vengono caricati online?",
+    "No. L'app iOS elabora i file sul dispositivo e il sito nel browser. I file vengono inviati ad altri servizi solo se scegli di condividerli.",
+    "Come posso scansionare o condividere?",
+    "Seleziona «Scansiona in PDF» e autorizza la fotocamera. Da Foto o File usa Condividi → JustPDFit, quando disponibile.",
+    "Dove trovo i PDF?",
+    "Nell'app sotto «I miei PDF»; sul sito nello spazio locale del browser. Le copie esportate sono separate.",
+    "Come segnalo un problema?",
+    "Nel modulo indica dispositivo, versione iOS, formato del file e passaggi per riprodurre l'errore. Non allegare documenti sensibili."
+  ],
+  "sNote": "I PDF danneggiati o protetti da password potrebbero non funzionare. Consulta anche la nostra ",
+  "sAboutTitle": "Informazioni su JustPDFit",
+  "sAbout": "JustPDFit è uno strumento PDF gratuito, senza account né filigrana, gestito da KL-MEHANNA LLC. Sito: justpdfit.com."
+}

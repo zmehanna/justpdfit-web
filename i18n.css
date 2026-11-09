@@ -1,0 +1,43 @@
+/* JustPDFIt multilingual language picker, shared by home and all tool pages. */
+.topbar{position:relative;z-index:50}
+.language-picker{position:relative;z-index:60;flex:0 0 auto;direction:ltr}
+.language-switcher{display:flex;align-items:center;justify-content:center;gap:8px;min-width:116px;min-height:43px;border-radius:12px;border:1px solid #dfe5f1;background:#fff;color:#243555;padding:7px 11px;font-size:13px;font-weight:800;box-shadow:0 4px 12px #1e355309;transition:background .15s,border-color .15s}
+.language-switcher:hover,.language-switcher[aria-expanded="true"]{background:#f5f8ff;border-color:#9fb9ed}
+.language-flag{display:inline-flex;align-items:center;justify-content:center;width:26px;height:20px;flex:0 0 26px}
+.language-flag-image{display:block;width:24px;height:18px;border-radius:3px;object-fit:cover;border:1px solid #00000018;box-shadow:0 1px 2px #18254518;background:#fff}
+.language-emoji{font-size:21px;line-height:1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.language-flag-image[hidden],.language-emoji[hidden]{display:none!important}
+.language-native{max-width:125px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.language-chevron{font-size:18px;line-height:1;color:#7f8ca4;margin-inline-start:2px}
+.language-menu{position:absolute;top:calc(100% + 10px);right:0;width:340px;max-width:calc(100vw - 28px);overflow:hidden;background:#fff;border:1px solid #e4e9f3;border-radius:16px;box-shadow:0 18px 45px #091a3b2f;color:#233455;z-index:500;direction:ltr;text-align:left}
+.language-menu[hidden]{display:none}
+.language-menu-header{padding:16px 16px 8px;font-size:13px;font-weight:850;letter-spacing:.2px}
+.language-search{width:calc(100% - 32px);height:42px;margin:0 16px 8px;border:1px solid #d8e0ec;border-radius:10px;padding:9px 11px;outline-offset:1px;font-size:13px}
+.language-search:focus{border-color:#6a96e7;outline:2px solid #6a96e728}
+.language-options{overflow:auto;max-height:min(365px,50vh);padding:5px 8px 12px;overscroll-behavior:contain}
+.language-option{width:100%;border:0;background:#fff;text-align:left;display:flex;align-items:center;gap:10px;min-height:46px;padding:9px 10px;border-radius:9px;color:#2c3e5c;font:inherit;cursor:pointer}
+.language-option:hover,.language-option:focus-visible{background:#f1f6ff}
+.language-option.selected{background:#eaf0ff}
+.language-option.selected .language-name{font-weight:900;color:#3365b6}
+.language-name{font-size:13px;flex:1;white-space:nowrap}
+.language-code{font-size:11px;color:#7f8ca1;margin-left:auto}
+.language-no-results{font-size:12px;text-align:center;color:#8791a4;margin:15px 4px 20px}
+html[dir="rtl"] body{text-align:right}
+html[dir="rtl"] .language-picker{direction:ltr;text-align:left}
+html[dir="rtl"] .section-header,html[dir="rtl"] .panel,html[dir="rtl"] .tool-content{text-align:right}
+html[dir="rtl"] .dropzone,html[dir="rtl"] .result-empty,html[dir="rtl"] .library-empty{text-align:center}
+html[dir="rtl"] .file-name{text-align:right}
+html[dir="rtl"] .result-meta,html[dir="rtl"] .tool-aside,html[dir="rtl"] .tool-sections,html[dir="rtl"] .tool-faq{text-align:right}
+html[dir="rtl"] .language-menu{text-align:left}
+html[dir="rtl"] #edit-text{direction:auto}
+html[dir="rtl"] #page-range,html[dir="rtl"] #edit-page{direction:ltr}
+@media(max-width:650px){
+ .language-switcher{min-width:85px;padding:7px 8px;gap:6px;min-height:40px}
+ .language-native{max-width:80px}
+ .language-chevron{font-size:15px}
+ .language-menu{right:0}
+ .tool-page .topbar-inner{flex-wrap:wrap;gap:7px 12px;padding:10px 0}
+ .tool-page .language-picker{margin-inline-start:auto}
+ .tool-page .tools-toplink{order:3;width:100%;text-align:center;padding:0 0 3px}
+}
+@media(prefers-reduced-motion:reduce){.language-switcher{transition:none}}

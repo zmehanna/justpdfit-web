@@ -1,0 +1,59 @@
+{
+  "nav": [
+    "PDF araçları",
+    "Gizlilik Politikası",
+    "Destek",
+    "Ücretsiz. Özel. Filigransız.",
+    "Dil seçin",
+    "Dil ara…"
+  ],
+  "pTitle": "Gizlilik Politikası",
+  "pIntro": "Belgeleriniz cihazınızda işlenir. Dosya ve verileri nasıl ele aldığımızı öğrenin.",
+  "updated": "Yürürlük: 9 Kasım 2026",
+  "p": [
+    "JustPDFit'i kim işletiyor?",
+    "JustPDFit, Birleşik Arap Emirlikleri'nde kayıtlı KL-MEHANNA LLC tarafından işletilir. Bu politika iPhone/iPad uygulamasını, Paylaş uzantısını ve justpdfit.com sitesini kapsar.",
+    "Cihazda yerel işlem",
+    "Desteklenen dönüştürme, tarama, birleştirme, sayfa çıkarma ve metin açıklamaları cihazınızda yapılır. Dosyaları ve kamerayı ne zaman kullanacağınızı siz seçersiniz. Uygulama hesap gerektirmez; reklam, analiz veya izleme içermez.",
+    "Depolama ve silme",
+    "PDF'ler siz silene veya uygulamayı kaldırana kadar uygulamanın özel klasöründe tutulur. Paylaş uzantısı geçici dosyalar saklayabilir. PDF'yi silmek Dosyalar, iCloud, Mail veya diğer uygulamalara aktarılan kopyaları silmez.",
+    "Üçüncü taraflarla paylaşım",
+    "iOS, yalnızca siz paylaşmayı veya dışa aktarmayı seçtiğinizde PDF'yi başka bir hizmete gönderir. Bu hizmetlerin kendi gizlilik politikaları geçerlidir.",
+    "Web sitesinin kullanımı",
+    "justpdfit.com üzerindeki dönüştürmeler tarayıcınızda yapılır; isteğe bağlı kitaplık IndexedDB kullanır. Tarayıcı verilerinin silinmesi kaydedilen PDF'leri kaldırabilir. Barındırma ve CDN sağlayıcıları IP gibi teknik bağlantı bilgilerini alabilir, fakat dönüştürme için belgelerin içeriğini almaz.",
+    "Destek mesajları",
+    "KL-MEHANNA iletişim formunu kullanırsanız ad, e-posta, konu ve mesaj bilgilerini gönüllü verirsiniz. Ayrı hizmetin kendi gizlilik politikası vardır. Gizli belgeler göndermeyin.",
+    "Çocuklar ve değişiklikler",
+    "Temel işlevler yaş sormaz ve kişisel veri toplamaz. Bulut dönüştürme, hesaplar veya izleme eklemeden önce bu politikayı güncelleyeceğiz."
+  ],
+  "pContact": [
+    "Gizlilik soruları",
+    "Belgelerinizin kopyalarını sunucularımızda saklamıyoruz. Konusu “JustPDFit privacy” olan iletişim formunu kullanın.",
+    "İşleticiyle iletişime geçin"
+  ],
+  "sTitle": "Yardım ve destek",
+  "sIntro": "PDF dönüştürme, tarama, yerel depolama ve paylaşım hakkında yanıtlar.",
+  "sContact": [
+    "Yardıma mı ihtiyacınız var?",
+    "KL-MEHANNA LLC formunda konuyu “JustPDFit support” yazın. Cihaz, iOS sürümü, dosya biçimi ve sorunu belirtin. Özel belgeler eklemeyin.",
+    "Destek formunu açın"
+  ],
+  "faqTitle": "Sık sorulan sorular",
+  "faq": [
+    "Hangi biçimler desteklenir?",
+    "PDF, JPG, PNG, HEIC, GIF, BMP, TIFF, TXT, Markdown, CSV ve JSON. Tarama, birleştirme, sayfa çıkarma ve basit metin açıklamaları da yapılabilir.",
+    "Word, Excel ve PowerPoint dönüştürülebilir mi?",
+    "Henüz değil. DOCX, XLSX, PPTX ve gelişmiş sıkıştırma geliştiriliyor. Sahte dönüştürme yapmıyoruz.",
+    "Dosyalarım yükleniyor mu?",
+    "Hayır. iOS uygulaması cihazda, web sitesi tarayıcıda işler. Dosyalar yalnızca sizin seçtiğiniz paylaşımda başka hizmete aktarılır.",
+    "Nasıl tarar veya paylaşırım?",
+    "“PDF'ye Tara”yı seçin ve kamera izni verin. Fotoğraflar ya da Dosyalar'dan uygun olduğunda Paylaş → JustPDFit'i kullanın.",
+    "PDF'lerim nerede?",
+    "Uygulamada “PDF'lerim” bölümünde, web sitesinde yerel tarayıcı depolamasında. Dışa aktarılan kopyalar ayrıdır.",
+    "Bir sorunu nasıl bildirebilirim?",
+    "Formda cihazı, iOS sürümünü, dosya biçimini ve hatayı tekrarlama adımlarını yazın. Hassas belgeler eklemeyin."
+  ],
+  "sNote": "Parolalı veya bozuk PDF'ler desteklenmeyebilir. Ayrıca bkz. ",
+  "sAboutTitle": "JustPDFit hakkında",
+  "sAbout": "JustPDFit, KL-MEHANNA LLC tarafından sunulan, hesapsız ve filigransız ücretsiz bir PDF aracıdır. Site: justpdfit.com."
+}

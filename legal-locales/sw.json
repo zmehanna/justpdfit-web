@@ -1,0 +1,59 @@
+{
+  "nav": [
+    "Zana za PDF",
+    "Sera ya Faragha",
+    "Msaada",
+    "Bure. Faragha. Bila alama ya maji.",
+    "Chagua lugha",
+    "Tafuta lugha…"
+  ],
+  "pTitle": "Sera ya Faragha",
+  "pIntro": "Hati zako zinachakatwa kwenye kifaa chako. Fahamu jinsi tunavyoshughulikia faili na taarifa.",
+  "updated": "Inatumika kuanzia 9 Novemba 2026",
+  "p": [
+    "Mwendeshaji wa JustPDFit",
+    "JustPDFit inaendeshwa na KL-MEHANNA LLC, kampuni iliyosajiliwa katika Falme za Kiarabu. Sera hii inahusu programu ya iPhone/iPad, kiendelezi cha kushiriki cha iOS na justpdfit.com.",
+    "Uchakataji kwenye kifaa",
+    "Ubadilishaji unaotumika, uchanganuzi, kuunganisha, kutoa kurasa na maelezo ya maandishi hufanyika kwenye kifaa chako. Unachagua faili na wakati wa kutumia kamera. Programu haihitaji akaunti na haina matangazo, uchanganuzi wa matumizi wala ufuatiliaji.",
+    "Uhifadhi na ufutaji",
+    "PDF huhifadhiwa katika folda binafsi ya programu hadi uzifute au uondoe programu. Kiendelezi cha kushiriki kinaweza kutumia faili za muda. Kufuta PDF kwenye programu hakuondoi nakala ulizohamisha kwenye Files, iCloud, Mail au programu nyingine.",
+    "Kushiriki na huduma nyingine",
+    "iOS hutuma PDF kwa huduma nyingine tu unapoamua kuishiriki au kuisafirisha. Huduma hizo zina sera zao za faragha.",
+    "Matumizi ya tovuti",
+    "Kwenye justpdfit.com, ubadilishaji hufanyika ndani ya kivinjari na maktaba ya hiari hutumia IndexedDB. Kufuta data ya kivinjari kunaweza kuondoa PDF zilizohifadhiwa. Watoa huduma za upangishaji na CDN wanaweza kupokea taarifa za kiufundi kama anwani ya IP, lakini si maudhui ya hati kwa ubadilishaji.",
+    "Ujumbe wa msaada",
+    "Unapotumia fomu ya KL-MEHANNA, unatoa kwa hiari jina, barua pepe, mada na ujumbe. Huduma hii tofauti ina sera yake ya faragha. Usitume hati za siri.",
+    "Watoto na mabadiliko",
+    "Vipengele vikuu haviulizi umri wala kukusanya taarifa binafsi. Tutasasisha sera kabla ya kuongeza ubadilishaji wa wingu, akaunti au ufuatiliaji."
+  ],
+  "pContact": [
+    "Maswali ya faragha",
+    "Hatuhifadhi nakala za hati zako kwenye seva zetu. Tumia fomu ya mawasiliano yenye mada 'JustPDFit privacy'.",
+    "Wasiliana na mwendeshaji"
+  ],
+  "sTitle": "Msaada na Usaidizi",
+  "sIntro": "Majibu kuhusu ubadilishaji wa PDF, uchanganuzi, hifadhi ya ndani na kushiriki.",
+  "sContact": [
+    "Unahitaji msaada?",
+    "Tumia fomu ya KL-MEHANNA LLC yenye mada 'JustPDFit support'. Taja kifaa, toleo la iOS, aina ya faili na tatizo. Usiambatishe hati binafsi.",
+    "Fungua fomu ya msaada"
+  ],
+  "faqTitle": "Maswali yanayoulizwa mara nyingi",
+  "faq": [
+    "Ni aina gani za faili zinazokubaliwa?",
+    "PDF, JPG, PNG, HEIC, GIF, BMP, TIFF, TXT, Markdown, CSV na JSON. Unaweza pia kuchanganua, kuunganisha, kutoa kurasa na kuongeza maandishi mafupi.",
+    "Je, Word, Excel na PowerPoint zinabadilishwa?",
+    "Bado. Usaidizi wa DOCX, XLSX, PPTX na ukandamizaji wa hali ya juu unaandaliwa. Hatubadilishi jina tu na kudai faili imebadilishwa.",
+    "Faili zangu zinapakiwa mtandaoni?",
+    "Hapana. Programu ya iOS huchakata kwenye kifaa na tovuti ndani ya kivinjari. Faili hupelekwa huduma nyingine tu ukiamua kushiriki.",
+    "Ninawezaje kuchanganua au kushiriki?",
+    "Chagua 'Scan to PDF' na ruhusu kamera. Kutoka Photos au Files, chagua Share → JustPDFit ikiwa inaonekana.",
+    "PDF zangu zipo wapi?",
+    "Katika sehemu ya 'PDF Zangu' kwenye programu au hifadhi ya ndani ya kivinjari kwenye tovuti. Nakala zilizohamishwa ni tofauti.",
+    "Nitaripotije tatizo?",
+    "Katika fomu, taja kifaa, toleo la iOS, aina ya faili na hatua za kurudia tatizo. Usiambatishe hati nyeti."
+  ],
+  "sNote": "PDF zilizoharibika au kulindwa kwa nenosiri huenda zisitumike. Soma pia ",
+  "sAboutTitle": "Kuhusu JustPDFit",
+  "sAbout": "JustPDFit ni zana ya PDF ya bure bila akaunti au alama ya maji, inayoendeshwa na KL-MEHANNA LLC. Tovuti: justpdfit.com."
+}

@@ -1,0 +1,68 @@
+/* JustPDFit SEO tool hub and dedicated conversion pages. */
+.seo-tools{margin-top:58px;margin-bottom:58px}
+.seo-tools .section-header{align-items:end}
+.seo-tool-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.seo-tool-card{display:flex;gap:12px;flex-direction:column;align-items:flex-start;border:1px solid #e6ebf5;background:#fff;border-radius:16px;padding:22px;min-height:172px;box-shadow:0 8px 25px #15294a0b;transition:transform .16s,border-color .16s}
+.seo-tool-card:hover{transform:translateY(-3px);border-color:#b8c7e7}
+.seo-tool-card strong{font-size:18px;color:#1d2c4f}
+.seo-tool-card p{font-size:12px;color:#73809a;line-height:1.6;margin:0;flex:1}
+.tool-badge{display:inline-flex;align-items:center;font-size:11px;font-weight:750;border-radius:999px;padding:6px 10px;background:#e8f7ed;color:#187a52}
+.tool-badge.soon{background:#f6f0ff;color:#8255a4}
+.tools-toplink{font-size:13px;font-weight:750;color:#354b75;margin-right:12px;white-space:nowrap}
+.tools-toplink:hover{text-decoration:underline}
+.tool-page{background:#f8f9fc;color:#1c2544;min-height:100vh}
+.tool-page .container{max-width:1070px}
+.tool-nav{display:flex;align-items:center;gap:15px;flex-wrap:wrap;padding:15px 0;border-bottom:1px solid #e4eaf2;margin-bottom:35px;font-size:12px;color:#687996}
+.tool-nav a:hover,.related a:hover{color:#e0445d;text-decoration:underline}
+.tool-nav .current{color:#d83957;font-weight:800}
+.tool-hero{background:linear-gradient(115deg,#142545,#22365f 70%,#3d2a5b);color:#fff;padding:52px 0 55px}
+.tool-hero .breadcrumb{color:#bdcce8;font-size:12px;margin-bottom:20px}
+.tool-hero .breadcrumb a{text-decoration:underline}
+.tool-hero h1{font-size:clamp(34px,5vw,54px);line-height:1.12;margin:15px 0;letter-spacing:-1.5px}
+.tool-hero p{color:#d9e3f3;line-height:1.7;max-width:740px;font-size:16px}
+.tool-hero .tool-badge{background:#d7f7e6;color:#14794e}
+.tool-hero .tool-badge.soon{background:#ede6ff;color:#7050a0}
+.tool-content{padding:39px 0 70px}
+.tool-layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(240px,.6fr);gap:22px;align-items:start}
+.tool-box{background:#fff;border:1px solid #e8edf5;box-shadow:0 10px 34px #14244a0c;padding:28px;border-radius:19px}
+.tool-box h2{font-size:23px;color:#1c2b4c;margin:0 0 14px}
+.tool-box p{line-height:1.75;color:#73819a;font-size:14px}
+.tool-box small{color:#8593a9}
+.tool-upload{display:block;margin-top:22px;background:#f4f7ff;border:2px dashed #b4caed;padding:25px 20px;border-radius:14px}
+.tool-upload strong{display:block;font-size:15px;margin-bottom:12px}
+.tool-upload input{display:block;width:100%;max-width:100%;font:inherit;color:#465a78}
+.tool-upload input::file-selector-button{background:#fff;border:1px solid #cbdaf3;color:#315aa3;border-radius:9px;padding:10px 14px;font-weight:700;margin-right:12px;cursor:pointer}
+.tool-filename{font-size:12px;color:#617394;margin-top:11px;min-height:1em;overflow-wrap:anywhere}
+.tool-field{margin:17px 0}
+.tool-field label{display:block;font-weight:700;font-size:13px;margin-bottom:8px}
+.tool-field input{width:100%;border:1px solid #ced8e8;border-radius:9px;padding:12px;font:inherit;color:#253754}
+.tool-field input:focus-visible,.tool-upload input:focus-visible{outline:3px solid #6c9efb;outline-offset:2px}
+.tool-submit{border:0;background:linear-gradient(100deg,#ed465c,#fc6472);border-radius:11px;color:#fff;padding:16px 23px;font:inherit;font-weight:800;cursor:pointer;width:100%;margin-top:17px}
+.tool-submit:disabled{opacity:.55;cursor:not-allowed}
+.tool-feedback{margin-top:13px;min-height:21px;color:#266e54;font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+.tool-feedback.error{color:#b82c43}
+.tool-download{display:inline-flex;background:#168255;color:#fff;padding:13px 20px;border-radius:11px;font-weight:800;font-size:13px;margin-top:9px}
+.tool-download:hover{background:#126644}
+.tool-notice{padding:18px;border-radius:12px;background:#f5f2ff;border:1px solid #e6defc;color:#5a4b7a;font-size:14px;line-height:1.75}
+.tool-notice a{font-weight:750;text-decoration:underline}
+.tool-aside{display:flex;flex-direction:column;gap:15px}
+.tool-aside .tool-box{padding:23px}
+.tool-aside h3{font-size:17px;margin:0 0 10px}
+.tool-aside ul,.tool-aside ol{padding-left:20px;color:#718098;line-height:1.9;font-size:13px}
+.tool-sections{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px}
+.tool-sections article{background:#fff;border:1px solid #e8edf5;border-radius:14px;padding:25px}
+.tool-sections article h2{font-size:20px;margin:0 0 12px}
+.tool-sections article p,.tool-sections article ol{color:#687791;font-size:13px;line-height:1.75}
+.tool-faq{margin-top:33px}
+.tool-faq h2{margin-bottom:17px}
+.tool-faq details{border:1px solid #e8edf5;background:#fff;border-radius:11px;padding:17px 20px;margin-bottom:10px}
+.tool-faq summary{font-weight:800;cursor:pointer;color:#263655}
+.tool-faq p{color:#708099;font-size:13px;line-height:1.8}
+.related{margin-top:30px}
+.related h2{margin-bottom:14px}
+.related div{display:flex;gap:10px;flex-wrap:wrap}
+.related a{background:#fff;border:1px solid #dfe6f2;padding:10px 13px;border-radius:9px;font-size:13px;font-weight:700;color:#354a71}
+.tool-footer{background:white;border-top:1px solid #e8edf4;padding:24px 0;font-size:12px;color:#8291a4}
+.tool-footer .container{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}
+@media(max-width:900px){.seo-tool-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tool-layout{grid-template-columns:1fr}.tool-aside{display:grid;grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.seo-tool-grid{grid-template-columns:1fr}.seo-tool-card{min-height:140px}.tool-nav{gap:10px}.tool-hero{padding:38px 0}.tool-hero p{font-size:14px}.tool-content{padding:24px 0 45px}.tool-box{padding:20px}.tool-aside{grid-template-columns:1fr}.tool-sections{grid-template-columns:1fr}.tools-toplink{font-size:12px;margin:0}}
