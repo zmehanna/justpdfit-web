@@ -7,18 +7,6 @@ en:{title:"Your PDF is ready!",subtitle:"Your document was created successfully.
 ar:{title:"ملف PDF جاهز!",subtitle:"تم إنشاء المستند بنجاح.",name:"اسم الملف",rename:"إعادة التسمية",save:"حفظ الاسم",download:"تنزيل",share:"مشاركة",open:"فتح PDF",close:"تم",invalid:"أدخل اسم ملف صالحًا.",saved:"تم تحديث اسم الملف"}};
 Object.assign(translations,window.JustPDFItConfirmLocales||{});
 const lang=()=>{const raw=window.JustPDFItI18n?.getLanguage?.()||document.documentElement.lang||navigator.language||"en";const l=String(raw).toLowerCase().replace("_","-").split("-")[0];return translations[l]?l:"en"};
-const extraLabels={"es":["Renombrar","Abrir PDF","Listo","Introduce un nombre de archivo válido.","Nombre actualizado"],"de":["Umbenennen","PDF öffnen","Fertig","Bitte einen gültigen Dateinamen eingeben.","Dateiname aktualisiert"],"it":["Rinomina","Apri PDF","Fine","Inserisci un nome file valido.","Nome file aggiornato"],"pt":["Renomear","Abrir PDF","Concluir","Digite um nome de arquivo válido.","Nome do arquivo atualizado"],"nl":["Hernoemen","PDF openen","Gereed","Voer een geldige bestandsnaam in.","Bestandsnaam bijgewerkt"],"ru":["Переименовать","Открыть PDF","Готово","Введите допустимое имя файла.","Имя файла обновлено"],"pl":["Zmień nazwę","Otwórz PDF","Gotowe","Wpisz prawidłową nazwę pliku.","Nazwa pliku zaktualizowana"],"tr":["Yeniden adlandır","PDF aç","Bitti","Geçerli bir dosya adı girin.","Dosya adı güncellendi"],"zh":["重命名","打开 PDF","完成","请输入有效的文件名。","文件名已更新"],"ja":["名前を変更","PDF を開く","完了","有効なファイル名を入力してください。","ファイル名を更新しました"],"ko":["이름 바꾸기","PDF 열기","완료","올바른 파일 이름을 입력하세요.","파일 이름이 변경되었습니다"],"hi":["नाम बदलें","PDF खोलें","पूरा हुआ","मान्य फ़ाइल नाम दर्ज करें।","फ़ाइल नाम अपडेट हो गया"],"ur":["نام تبدیل کریں","PDF کھولیں","مکمل","درست فائل نام درج کریں۔","فائل کا نام اپ ڈیٹ ہو گیا"],"fa":["تغییر نام","باز کردن PDF","انجام شد","نام فایل معتبر وارد کنید.","نام فایل به‌روزرسانی شد"],"id":["Ubah nama","Buka PDF","Selesai","Masukkan nama berkas yang valid.","Nama berkas diperbarui"],"vi":["Đổi tên","Mở PDF","Hoàn tất","Nhập tên tệp hợp lệ.","Đã cập nhật tên tệp"],"th":["เปลี่ยนชื่อ","เปิด PDF","เสร็จสิ้น","กรุณากรอกชื่อไฟล์ที่ถูกต้อง","อัปเดตชื่อไฟล์แล้ว"],"ms":["Namakan semula","Buka PDF","Selesai","Masukkan nama fail yang sah.","Nama fail dikemas kini"],"fil":["Palitan ang pangalan","Buksan ang PDF","Tapos","Maglagay ng wastong pangalan ng file.","Na-update ang pangalan ng file"],"sv":["Byt namn","Öppna PDF","Klar","Ange ett giltigt filnamn.","Filnamnet uppdaterades"],"el":["Μετονομασία","Άνοιγμα PDF","Τέλος","Πληκτρολογήστε έγκυρο όνομα αρχείου.","Το όνομα αρχείου ενημερώθηκε"],"ro":["Redenumește","Deschide PDF","Gata","Introdu un nume de fișier valid.","Numele fișierului a fost actualizat"],"bn":["নাম পরিবর্তন","PDF খুলুন","সম্পন্ন","একটি সঠিক ফাইলের নাম লিখুন।","ফাইলের নাম হালনাগাদ হয়েছে"],"sw":["Badilisha jina","Fungua PDF","Imekamilika","Weka jina sahihi la faili.","Jina la faili limesasishwa"]};
-for(const [code,fields] of Object.entries(extraLabels)){
- const core=window.JustPDFItPacks?.[code]||{};
- const trim=(v)=>String(v||"").replace(/^[↓↗]\s*/u,"");
- translations[code]={
-  title:core.success||"Your PDF is ready!",
-  subtitle:core.readyDescription||"Your document was created successfully.",
-  name:core.file||"File name",
-  rename:fields[0],save:core.save||"Save",download:trim(core.download)||"Download",share:trim(core.share)||"Share",
-  open:fields[1],close:fields[2],invalid:fields[3],saved:fields[4]
- };
-}
 const safeName=v=>{const s=v.trim().replace(/[\\/:*?"<>|\x00-\x1f]/g,"").replace(/\.+$/,"").trim();return s?s.replace(/\.pdf$/i,"")+".pdf":""};
 let active=null;
 function open({blob,name,onRename}){
