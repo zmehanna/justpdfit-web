@@ -6,6 +6,7 @@
 <title>Signer un PDF | JustPDFit</title>
 <link rel="icon" href="../justpdfit-icon.svg"><link rel="stylesheet" href="../styles.css">
 <link rel="stylesheet" href="../file-picker.css">
+<link rel="stylesheet" href="../sign-wizard.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Dancing+Script:wght@600&family=Great+Vibes&family=Pacifico&display=swap" rel="stylesheet">
@@ -145,11 +146,24 @@ body{background:#f8f9fc;color:var(--ink)}
 <div class="sign-shell">
 <div class="sign-section-heading"><div class="section-kicker">VOTRE ESPACE DE SIGNATURE</div><h2>Comment souhaitez-vous signer ?</h2><p>Choisissez une option pour commencer.</p></div>
 <div class="modes" role="group" aria-label="Mode de signature"><button id="soloTab" type="button" class="mode" aria-pressed="true"><span>✍️ Signature locale</span><strong>Je signe seul</strong><span>Sans compte, sans envoi au serveur. Téléchargez votre PDF signé.</span><span class="price">Gratuit</span></button><button id="duoTab" type="button" class="mode" aria-pressed="false"><span>✉️ Deux personnes</span><strong>Nous signons à distance</strong><span>Un lien unique et un code email pour chaque signataire.</span><span class="price">Dès 1,99 €</span></button></div>
-<section id="solo" class="panel sign-panel" aria-labelledby="soloTitle"><h2 id="soloTitle">Signer un PDF gratuitement</h2><div class="steps"><span>1. Importer</span><span>2. Créer ma signature</span><span>3. Positionner</span><span>4. Télécharger</span></div>
+<section id="solo" class="panel sign-panel sign-wizard" aria-labelledby="soloTitle">
+<div class="wizard-heading"><div><h2 id="soloTitle">Signer un PDF gratuitement</h2><p>Un parcours simple, étape par étape. Votre document reste sur votre appareil.</p></div><span id="wizardCounter" class="wizard-counter">Étape 1 sur 4</span></div>
+<nav class="wizard-steps" aria-label="Progression de la signature">
+<button type="button" class="wizard-step" data-wizard-step="1" aria-current="step"><span class="wizard-step__number">1</span><span class="wizard-step__label">Importer le PDF</span></button>
+<button type="button" class="wizard-step" data-wizard-step="2" disabled><span class="wizard-step__number">2</span><span class="wizard-step__label">Créer la signature</span></button>
+<button type="button" class="wizard-step" data-wizard-step="3" disabled><span class="wizard-step__number">3</span><span class="wizard-step__label">Positionner</span></button>
+<button type="button" class="wizard-step" data-wizard-step="4" disabled><span class="wizard-step__number">4</span><span class="wizard-step__label">Télécharger</span></button>
+</nav>
+<div class="wizard-panel" id="wizardStep1" aria-labelledby="wizardTitle1">
+<div class="wizard-step-header"><span class="wizard-eyebrow">ÉTAPE 1 · VOTRE DOCUMENT</span><h3 id="wizardTitle1">Importez le document à signer</h3><p>Choisissez un fichier PDF (25 Mo maximum). Nous détecterons automatiquement toutes ses pages.</p></div>
 <div class="field"><label for="soloFile">Votre document PDF</label><input type="file" id="soloFile" data-jpi-picker accept="application/pdf,.pdf"></div>
-<div class="workspace">
-<div>
-<div class="sig-methods" role="tablist" aria-label="Méthode de signature">
+<div id="documentInfo" class="wizard-document-info" hidden><span class="wizard-document-icon" aria-hidden="true">PDF</span><div><strong id="documentName"></strong><span id="documentPages"></span></div><span aria-hidden="true" class="wizard-ok">✓</span></div>
+<div class="note wizard-note">🔒 Le fichier n'est pas envoyé à un serveur. Il reste dans votre navigateur pendant toute la signature.</div>
+</div>
+<div class="wizard-panel" id="wizardStep2" aria-labelledby="wizardTitle2" hidden>
+<div class="wizard-step-header"><span class="wizard-eyebrow">ÉTAPE 2 · VOTRE SIGNATURE</span><h3 id="wizardTitle2">Comment souhaitez-vous signer ?</h3><p>Saisissez votre nom, dessinez avec votre doigt ou importez une image. Choisissez ensuite votre style et votre couleur.</p></div>
+<div class="wizard-sign-grid">
+<div class="wizard-sign-editor"><div class="sig-methods" role="tablist" aria-label="Méthode de signature">
 <button type="button" id="typeSigTab" class="sig-method" role="tab" aria-selected="true" aria-controls="typeSigPanel">⌨️ Saisir</button>
 <button type="button" id="drawSigTab" class="sig-method" role="tab" aria-selected="false" aria-controls="drawSigPanel">✍️ Dessiner</button>
 <button type="button" id="imageSigTab" class="sig-method" role="tab" aria-selected="false" aria-controls="imageSigPanel">▧ Image</button>
@@ -171,7 +185,8 @@ body{background:#f8f9fc;color:var(--ink)}
 <label class="field" for="imageSigFile"><span style="font-weight:750;font-size:13px">Importer une signature existante</span><input id="imageSigFile" data-jpi-picker type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"></label>
 <p class="sig-upload-notice">PNG transparent recommandé, JPG ou WebP acceptés (max. 5 Mo). L'image est traitée uniquement sur cet appareil.</p>
 </div>
-<div class="sig-preview"><span id="sigPreviewLabel">Aperçu de votre signature</span>
+</div>
+<div class="wizard-sign-preview"><div class="sig-preview"><span id="sigPreviewLabel">Aperçu de votre signature</span>
 <div class="sig-colors" role="group" aria-label="Couleur de la signature">
 <button type="button" class="sig-color" data-ink="#151b34" style="background:#151b34" aria-label="Encre noire" aria-pressed="true"></button>
 <button type="button" class="sig-color" data-ink="#1f4ca5" style="background:#1f4ca5" aria-label="Encre bleue" aria-pressed="false"></button>
@@ -179,8 +194,11 @@ body{background:#f8f9fc;color:var(--ink)}
 <canvas id="sigCanvas" class="sigpad" width="700" height="220" aria-label="Aperçu et zone de dessin de la signature"></canvas>
 <div class="controls"><button class="btn ghost" type="button" id="clearSig">Effacer la signature</button></div>
 <div class="note" id="sigInstructions">Saisissez votre nom, puis choisissez un des quatre styles. Après chargement du PDF, touchez ou cliquez à l'endroit où placer votre signature, puis déplacez-la si besoin.</div></div>
-<div class="sidebar"><div class="field"><label for="pageNo">Page à signer</label><select id="pageNo" disabled><option value="1">1</option></select></div><div class="field"><label for="sigWidth">Largeur de signature</label><select id="sigWidth"><option value="140">Petite</option><option value="200" selected>Moyenne</option><option value="270">Grande</option></select></div><button id="downloadSigned" class="btn primary-sign" type="button" disabled>Télécharger le PDF signé</button><p class="hint">Le fichier et le dessin restent sur cet appareil. La signature est visuelle, non qualifiée.</p></div></div>
-<div id="previewArea" hidden>
+</div></div>
+<div class="wizard-panel" id="wizardStep3" aria-labelledby="wizardTitle3" hidden>
+<div class="wizard-step-header"><span class="wizard-eyebrow">ÉTAPE 3 · POSITIONNEMENT</span><h3 id="wizardTitle3">Choisissez la page et placez la signature</h3><p>Dans les PDF multipages, parcourez les pages, puis touchez ou cliquez sur le document pour positionner votre signature. Faites-la glisser pour l'ajuster.</p></div>
+<div class="wizard-position-grid">
+<div class="wizard-document-preview"><div id="previewArea" hidden>
 <div id="pagePicker" class="page-picker">
  <p class="page-picker__title">Choisissez la page à signer</p>
  <p class="page-picker__hint">Parcourez votre document et sélectionnez la page où vous souhaitez placer votre signature.</p>
@@ -190,8 +208,30 @@ body{background:#f8f9fc;color:var(--ink)}
   <button id="nextPage" type="button" aria-label="Afficher la page suivante">Suivante →</button>
   <span id="pageCounter" class="page-picker__count" aria-live="polite">Page 1 sur 1</span>
  </div>
-</div><h3 id="previewPageTitle">Positionnez votre signature</h3><div class="pdfstage" id="pdfStage"><canvas id="pdfPage"></canvas><div id="placedSig" class="placed" tabindex="0" role="img" aria-label="Position de la signature" hidden><img id="sigImage" alt=""></div></div></div>
-<p id="soloStatus" class="status" role="status" aria-live="polite"></p></section>
+</div><h3 id="previewPageTitle">Positionnez votre signature</h3><div class="pdfstage" id="pdfStage"><canvas id="pdfPage"></canvas><div id="placedSig" class="placed" tabindex="0" role="img" aria-label="Position de la signature" hidden><img id="sigImage" alt=""></div></div></div></div>
+<aside class="wizard-position-tools">
+<label class="wizard-tool-label" for="sigWidth">Taille de la signature</label>
+<select id="sigWidth"><option value="140">Petite</option><option value="200" selected>Moyenne</option><option value="270">Grande</option></select>
+<div class="wizard-placement-hint"><strong>✍️ Placez votre signature</strong><p id="positionStatus" aria-live="polite">Touchez le PDF à l'endroit où vous souhaitez signer.</p></div>
+<button class="btn ghost" type="button" id="changeSignature">← Modifier la signature</button>
+</aside></div>
+<select id="pageNo" hidden aria-hidden="true" tabindex="-1" disabled><option value="1">Page 1</option></select>
+</div>
+<div class="wizard-panel" id="wizardStep4" aria-labelledby="wizardTitle4" hidden>
+<div class="wizard-step-header"><span class="wizard-eyebrow">ÉTAPE 4 · VÉRIFICATION</span><h3 id="wizardTitle4">Votre PDF signé est prêt</h3><p>Vérifiez l'emplacement de votre signature avant de télécharger le document.</p></div>
+<div class="wizard-final-grid">
+<div class="wizard-final-preview"><canvas id="finalPreviewCanvas" width="420" height="580" role="img" aria-label="Aperçu du document avec la signature"></canvas></div>
+<div class="wizard-final-side"><div class="wizard-recap"><div><span>Fichier</span><strong id="finalFileName">—</strong></div><div><span>Page signée</span><strong id="finalPageName">—</strong></div><div><span>Méthode</span><strong id="finalMethodName">—</strong></div><div><span>Tarif</span><strong>Gratuit</strong></div></div>
+<button id="downloadSigned" class="btn primary-sign wizard-download" type="button" disabled>↓ Télécharger mon PDF signé</button>
+<p class="hint">Traitement local, sans compte et sans filigrane. Il s'agit d'une signature visuelle, non qualifiée.</p>
+</div></div></div>
+<div class="wizard-footer" id="wizardFooter">
+<button id="wizardBack" type="button" class="btn ghost" hidden>← Retour</button>
+<span id="wizardFooterHint" class="wizard-footer-hint">Importez votre PDF pour continuer.</span>
+<button id="wizardNext" type="button" class="btn primary-sign" disabled>Créer ma signature →</button>
+</div>
+<p id="soloStatus" class="status" role="status" aria-live="polite"></p>
+</section>
 <section id="duo" class="panel sign-panel" hidden aria-labelledby="duoTitle"><h2 id="duoTitle">Signature à deux, entièrement en ligne</h2><p class="hint">Les deux signataires reçoivent un email personnel. Aucun compte ni application à installer. La signature à deux sera activée après raccordement sécurisé du service de paiement, des invitations email et du stockage temporaire.</p>
 <div class="field"><label for="duoFile">Document PDF</label><input id="duoFile" data-jpi-picker type="file" accept="application/pdf,.pdf"></div><div class="field"><label for="signerA">Email du premier signataire</label><input id="signerA" type="email" autocomplete="email" placeholder="personne1@exemple.com"></div><div class="field"><label for="signerB">Email du deuxième signataire</label><input id="signerB" type="email" autocomplete="off" placeholder="personne2@exemple.com"></div>
 <div class="option"><input type="radio" name="verify" id="verifyEmail" value="standard" checked><label for="verifyEmail"><strong>Vérification par code email</strong><small>Deux invitations indépendantes, consentement et rapport de preuve · 1,99 €</small></label></div><div class="option"><input type="radio" name="verify" id="verifyDidit" value="didit"><label for="verifyDidit"><strong>Identification renforcée Didit</strong><small>Vérification des pièces d'identité et du visage pour chaque signataire · 3,99 €</small></label></div><div class="total"><span>Tarif par document</span><span id="duoTotal">1,99 €</span></div>
