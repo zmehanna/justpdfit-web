@@ -203,7 +203,7 @@ const init=()=>{
  $("darkPreview").addEventListener("change",updateDarkPreview);
  $("imageSigFile").addEventListener("change",async event=>{
   try{await loadSignatureImage(event.target.files?.[0]);status("");}
-  catch(error){imageSignature=null;clearSignatureOutput();status("Erreur : "+error.message);}
+  catch(error){imageSignature=null;clearSignatureOutput();status(st("error",{message:error.message},"Erreur : "+error.message));}
  });
  sig.addEventListener("pointerdown",event=>{
   if(method!=="draw")return;
@@ -293,10 +293,10 @@ const init=()=>{
   const generation=++pdfLoadGeneration,file=event.target.files?.[0];
   resetPdf();wizardCurrent=1;syncWizard();status("");
   if(!file)return;
-  status("Ouverture du PDF…");
+  status(st("pdfOpening",null,"Ouverture du PDF…"));
   try{
-   if(file.size>25*1024*1024)throw Error("Le PDF doit faire 25 Mo maximum.");
-   if(!window.PDFLib||!window.pdfjsLib)throw Error("Bibliothèques PDF indisponibles, rechargez la page.");
+   if(file.size>25*1024*1024)throw Error(st("pdfTooLarge",null,"Le PDF doit faire 25 Mo maximum."));
+   if(!window.PDFLib||!window.pdfjsLib)throw Error(st("pdfLibMissing",null,"Bibliothèques PDF indisponibles, rechargez la page."));
    const raw=new Uint8Array(await file.arrayBuffer());
    if(generation!==pdfLoadGeneration)return;
    const documentPdf=await PDFLib.PDFDocument.load(raw.slice(),{ignoreEncryption:false});
@@ -330,7 +330,7 @@ const init=()=>{
    status("");showWizardStep(2);
   }catch(error){
    if(generation!==pdfLoadGeneration)return;
-   resetPdf();wizardCurrent=1;syncWizard();status("Erreur : "+error.message);
+   resetPdf();wizardCurrent=1;syncWizard();status(st("error",{message:error.message},"Erreur : "+error.message));
   }
  });
 
@@ -451,7 +451,7 @@ const init=()=>{
    });
    actions.append(edit,remove);li.append(label,actions);list.append(li);
   }
-  $("placementCount").textContent=st("placementCount",{n:ordered.length},ordered.length+" position"+(ordered.length===1?"":"s"));
+  $("placementCount").textContent=String(ordered.length);
   $("placementsEmpty").hidden=ordered.length>0;
   $("addPlacement").dataset.armed=String(addMode);
  }
@@ -534,12 +534,12 @@ const init=()=>{
   syncFinalPager();
   $("finalFileName").textContent=$("soloFile").files?.[0]?.name||st("defaultDocument",null,"Document PDF");
   $("finalPageName").textContent=signedPages().join(", ");
-  $("finalPlacementCount").textContent=st("placementCount",{n:placements.length},placements.length+" position"+(placements.length===1?"":"s"));
+  $("finalPlacementCount").textContent=String(placements.length);
   $("finalMethodName").textContent=method==="type"?st("methodTyped",null,"Signature saisie"):method==="draw"?st("methodDrawn",null,"Signature dessinée"):st("methodImported",null,"Image importée");
   $("finalInkName").textContent=$("whiteSignature").checked?st("colorWhite",null,"Blanche"):method==="image"?st("colorOriginal",null,"Couleurs originales"):ink==="#1f4ca5"?st("colorBlue",null,"Bleue"):st("colorBlack",null,"Noire");
   $("finalWhiteHint").hidden=!$("whiteSignature").checked;
   syncDownloadPricing();
-  renderFinalPreview().catch(error=>status("Aperçu impossible : "+error.message));
+  renderFinalPreview().catch(error=>status(st("previewError",{message:error.message},"Aperçu impossible : "+error.message)));
  }
  function syncFinalPager(){
   const pages=Array.from({length:pdfView?.numPages||0},(_,i)=>i+1),current=Number($("finalPreviewPage").value)||pages[0]||1;
@@ -605,7 +605,7 @@ const init=()=>{
  }
  $("finalPreviewPage").addEventListener("change",()=>{
   syncFinalPager();
-  renderFinalPreview().catch(error=>status("Aperçu impossible : "+error.message));
+  renderFinalPreview().catch(error=>status(st("previewError",{message:error.message},"Aperçu impossible : "+error.message)));
  });
  $("finalPreviousPage").addEventListener("click",()=>navigateFinalPage(-1));
  $("finalNextPage").addEventListener("click",()=>navigateFinalPage(1));
@@ -616,11 +616,11 @@ const init=()=>{
 
  $("signWatermarkFree").addEventListener("change",()=>{
   syncDownloadPricing();
-  if(wizardCurrent===4)renderFinalPreview().catch(error=>status("Aperçu impossible : "+error.message));
+  if(wizardCurrent===4)renderFinalPreview().catch(error=>status(st("previewError",{message:error.message},"Aperçu impossible : "+error.message)));
  });
  $("signWatermarkPaid").addEventListener("change",()=>{
   syncDownloadPricing();
-  if(wizardCurrent===4)renderFinalPreview().catch(error=>status("Aperçu impossible : "+error.message));
+  if(wizardCurrent===4)renderFinalPreview().catch(error=>status(st("previewError",{message:error.message},"Aperçu impossible : "+error.message)));
  });
  $("startCleanCheckout").addEventListener("click",async()=>{
   if(!watermark?.backendReady||!documentFingerprint||checkoutStarting)return;
@@ -637,10 +637,10 @@ const init=()=>{
    pendingPaymentSession=result.sessionId;pendingPaymentFingerprint=documentFingerprint;
    try{sessionStorage.setItem("justpdfit-pending-clean-payment",JSON.stringify({fingerprint:documentFingerprint,sessionId:result.sessionId}));}catch{}
    tab.location.href=result.checkoutUrl;
-   paymentStatus("Paiement ouvert dans un nouvel onglet. Gardez cet onglet JustPDFit ouvert et revenez vérifier votre paiement.");
+   paymentStatus(st("paymentStripePending",null,"Paiement ouvert dans un nouvel onglet. Gardez cet onglet JustPDFit ouvert et revenez vérifier votre paiement."));
   }catch(error){
    try{tab?.close();}catch{}
-   paymentStatus("Erreur : "+error.message);
+   paymentStatus(st("error",{message:error.message},"Erreur : "+error.message));
   }finally{checkoutStarting=false;syncDownloadPricing();}
  });
  $("verifyCleanPayment").addEventListener("click",async()=>{
@@ -653,7 +653,7 @@ const init=()=>{
    paidDocumentFingerprint=documentFingerprint;
    pendingPaymentSession=null;pendingPaymentFingerprint=null;
    try{sessionStorage.removeItem("justpdfit-pending-clean-payment");}catch{}
-   paymentStatus("Paiement validé : téléchargement sans filigrane disponible.");
+   paymentStatus(st("paymentVerifiedInfo",null,"Paiement validé : téléchargement sans filigrane disponible."));
   }catch(error){paymentStatus("Vérification : "+error.message);}
   finally{paymentVerifying=false;syncDownloadPricing();}
  });
@@ -686,7 +686,7 @@ const init=()=>{
    document.body.append(a);a.click();a.remove();
    setTimeout(()=>URL.revokeObjectURL(url),10000);
    status("PDF signé : "+placements.length+" position"+(placements.length===1?"":"s")+" sur "+signedPages().length+" page(s). "+(pricingIsPaid()?"Sans filigrane (paiement vérifié).":"Filigrane JustPDFit.com cliquable sur chaque page.")+" Téléchargement démarré.");
-  }catch(error){status("Erreur : "+error.message);}
+  }catch(error){status(st("error",{message:error.message},"Erreur : "+error.message));}
   finally{syncWizard();}
  });
  function syncDuoPrice(){
