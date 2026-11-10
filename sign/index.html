@@ -140,9 +140,10 @@ body{background:#f8f9fc;color:var(--ink)}
  </div>
 </header>
 <main>
+<div id="paymentReturnNotice" class="payment-return-notice" hidden role="status">Paiement terminé dans cet onglet. Revenez à l’onglet JustPDFit d’origine, où votre document est ouvert, puis cliquez sur « Vérifier le paiement » pour télécharger sans filigrane.</div>
 <section class="sign-hero"><div class="container">
  <div><div class="eyebrow"><span class="dot"></span>JustPDFit · SIGNATURES</div><h1>Signez un PDF, simplement.</h1><p>Une signature individuelle gratuite, directement sur votre appareil. Pour deux signataires à distance, invitations individuelles et vérification par email.</p>
- <div class="hero-tags"><span>✓ Sans compte pour signer seul</span><span>✓ Sans filigrane</span><span>✓ Optimisé mobile et tablette</span></div></div>
+ <div class="hero-tags"><span>✓ Sans compte pour signer seul</span><span>✓ Filigrane cliquable en version gratuite</span><span>✓ Optimisé mobile et tablette</span></div></div>
  <div class="sign-hero-icon" aria-hidden="true">✍️</div>
 </div></section>
 <div class="sign-shell">
@@ -263,6 +264,7 @@ body{background:#f8f9fc;color:var(--ink)}
 <footer class="privacy">La signature individuelle ne téléverse pas votre PDF. Le service de signature à distance nécessitera un traitement sécurisé du document avec consentement explicite des deux signataires. <a href="../">JustPDFit.com</a></footer>
 </div></main><footer class="footer sign-footer"><div class="container footer-inner"><div class="footer-brand">Just<strong>PDFit!</strong> <span>© 2026</span></div><div class="footer-links"><a href="../privacy/">Confidentialité</a><a href="../support/">Assistance</a><a href="../">Tous les outils</a></div><span>Signature individuelle gratuite avec filigrane.</span></div></footer>
 <script defer src="../file-picker.js"></script>
+<script defer src="../payment-config.js"></script>
 <script defer src="../sign-watermark.js"></script>
 <script defer src="../sign-engine.js"></script>
 </body></html>
