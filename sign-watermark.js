@@ -34,15 +34,11 @@ function stamp(doc){
   }
  });
 }
-async function digestFingerprint(rawBytes,signature,placements){
+async function digestFingerprint(rawBytes){
+ // The purchase applies to one original PDF, independently of later signature edits.
  const bytes=rawBytes instanceof Uint8Array?rawBytes:new Uint8Array(rawBytes);
  const hash=await crypto.subtle.digest("SHA-256",bytes);
- const base=Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,"0")).join("");
- const canonical=placements.slice().sort((a,b)=>a.page-b.page||a.id-b.id)
-   .map(({page,x,y,w,h,canvasWidth,canvasHeight})=>[page,x,y,w,h,canvasWidth,canvasHeight].map(n=>Number(n).toFixed(4)).join(",")).join("|");
- const sigString=signature.slice(0,120)+":"+signature.length;
- const data=new TextEncoder().encode(base+":"+sigString+":"+canonical);
- return Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",data))).map(b=>b.toString(16).padStart(2,"0")).join("");
+ return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,"0")).join("");
 }
 async function jsonRequest(path,data){
  if(!backend)throw Error("Paiement sécurisé non activé pour JustPDFit.");
