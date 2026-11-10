@@ -142,8 +142,8 @@ const init=()=>{
   const generation=++imageLoadGeneration;
   imageSignature=null;
   if(!file){clearSignatureOutput();return;}
-  if(file.size>5*1024*1024)throw Error("L'image ne peut pas dépasser 5 Mo.");
-  if(!/^image\/(png|jpeg|webp)$/.test(file.type)&&!/\.(png|jpe?g|webp)$/i.test(file.name))throw Error("Choisissez une image PNG, JPG ou WebP.");
+  if(file.size>5*1024*1024)throw Error(st("errorImageSize",null,"Image must be 5 MB or smaller."));
+  if(!/^image\/(png|jpeg|webp)$/.test(file.type)&&!/\.(png|jpe?g|webp)$/i.test(file.name))throw Error(st("errorImageType",null,"Choose a PNG, JPG or WebP image."));
   const url=URL.createObjectURL(file);
   try{
    const img=new Image();
@@ -631,9 +631,9 @@ const init=()=>{
    try{tab.document.write("<!doctype html><html lang='fr'><title>Stripe</title><body style='font:16px Arial;padding:32px'>Ouverture du paiement sécurisé Stripe…</body></html>");tab.document.close();}catch{}
   }
   try{
-   if(!tab)throw Error("Autorisez les fenêtres contextuelles pour ouvrir Stripe, puis réessayez.");
+   if(!tab)throw Error(st("paymentPopupBlocked",null,"Allow pop-ups to open Stripe, then try again."));
    const result=await watermark.createCheckout(documentFingerprint);
-   if(!result?.sessionId||!/^https:\/\/checkout\.stripe\.com\//.test(result.checkoutUrl||""))throw Error("Réponse du service de paiement non valide.");
+   if(!result?.sessionId||!/^https:\/\/checkout\.stripe\.com\//.test(result.checkoutUrl||""))throw Error(st("paymentInvalidResponse",null,"Invalid response from payment service."));
    pendingPaymentSession=result.sessionId;pendingPaymentFingerprint=documentFingerprint;
    try{sessionStorage.setItem("justpdfit-pending-clean-payment",JSON.stringify({fingerprint:documentFingerprint,sessionId:result.sessionId}));}catch{}
    tab.location.href=result.checkoutUrl;
@@ -647,14 +647,14 @@ const init=()=>{
   if(!watermark?.backendReady||!documentFingerprint||!pendingPaymentSession||paymentVerifying)return;
   paymentVerifying=true;syncDownloadPricing();
   try{
-   if(documentFingerprint!==pendingPaymentFingerprint)throw Error("Ce paiement correspond à un autre document.");
+   if(documentFingerprint!==pendingPaymentFingerprint)throw Error(st("paymentWrongDocument",null,"This payment belongs to a different document."));
    const verified=await watermark.verifyCheckout(pendingPaymentSession,documentFingerprint);
-   if(verified?.paid!==true)throw Error("Le paiement n'est pas encore confirmé. Terminez-le sur Stripe puis réessayez.");
+   if(verified?.paid!==true)throw Error(st("paymentNotConfirmed",null,"Payment is not confirmed. Complete it in Stripe, then try again."));
    paidDocumentFingerprint=documentFingerprint;
    pendingPaymentSession=null;pendingPaymentFingerprint=null;
    try{sessionStorage.removeItem("justpdfit-pending-clean-payment");}catch{}
    paymentStatus(st("paymentVerifiedInfo",null,"Paiement validé : téléchargement sans filigrane disponible."));
-  }catch(error){paymentStatus("Vérification : "+error.message);}
+  }catch(error){paymentStatus(st("paymentVerifyPrefix",null,"Verification: ")+error.message);}
   finally{paymentVerifying=false;syncDownloadPricing();}
  });
 
@@ -666,7 +666,7 @@ const init=()=>{
    const png=await copy.embedPng(sigData);
    for(const item of orderedPlacements()){
     const page=copy.getPages()[item.page-1];
-    if(!page)throw Error("Page introuvable : "+item.page);
+    if(!page)throw Error(st("pageNotFound",{page:item.page},"Page not found: "+item.page));
     const dims=page.getSize();
     const sx=dims.width/item.canvasWidth,sy=dims.height/item.canvasHeight;
     page.drawImage(png,{
@@ -677,7 +677,7 @@ const init=()=>{
     });
    }
    // A paid option cannot be unlocked by just selecting a radio button.
-   if(pricingIsPaid()&&!cleanUnlocked())throw Error("Le paiement sans filigrane doit être vérifié avant le téléchargement.");
+   if(pricingIsPaid()&&!cleanUnlocked())throw Error(st("paymentUnverifiedDownload",null,"Verify payment before downloading without a watermark."));
    if(!pricingIsPaid())await watermark.stamp(copy);
    const out=await copy.save();
    const blob=new Blob([out],{type:"application/pdf"});
@@ -685,7 +685,7 @@ const init=()=>{
    a.href=url;a.download=($("soloFile").files[0].name.replace(/\.pdf$/i,"")||"document")+"-signe.pdf";
    document.body.append(a);a.click();a.remove();
    setTimeout(()=>URL.revokeObjectURL(url),10000);
-   status("PDF signé : "+placements.length+" position"+(placements.length===1?"":"s")+" sur "+signedPages().length+" page(s). "+(pricingIsPaid()?"Sans filigrane (paiement vérifié).":"Filigrane JustPDFit.com cliquable sur chaque page.")+" Téléchargement démarré.");
+   status(st("downloaded",{positions:placements.length,pages:signedPages().length},"Signed PDF downloaded.")+" · "+st(pricingIsPaid()?"watermarkDisplayPaid":"watermarkDisplayFree",null,"JustPDFit.com"));
   }catch(error){status(st("error",{message:error.message},"Erreur : "+error.message));}
   finally{syncWizard();}
  });
