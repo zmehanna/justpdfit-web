@@ -1,0 +1,69 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Invitation à signer — JustPDFit</title>
+<link rel="stylesheet" href="../../styles.css"><link rel="icon" href="../../justpdfit-icon.svg">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+.invite-area{width:min(1060px,calc(100% - 28px));margin:38px auto 65px}.invite-hero{background:linear-gradient(117deg,#132443,#183057 52%,#302356);padding:28px;color:white;border-radius:17px;margin-bottom:22px}.invite-hero h1{font-size:clamp(28px,5vw,40px);margin:8px 0}.invite-hero p{color:#d6e0f5;line-height:1.6}
+.panel{margin-bottom:20px}.action{background:linear-gradient(100deg,#ed465c,#fc6472);color:white}.row-buttons{display:flex;gap:10px;flex-wrap:wrap}.row-buttons .btn{min-height:47px}
+.field{display:grid;gap:8px;margin:16px 0}.field input,.field select{padding:12px;border-radius:10px;border:1px solid #dbe2ef;background:#fafcff;font:inherit;font-size:14px;width:100%}
+.sigpad{width:100%;height:140px;border:2px dashed #cbd9f3;border-radius:13px;touch-action:none;background:#fff}
+.stage{position:relative;width:max-content;max-width:100%;border:1px solid #dde4f0;line-height:0;touch-action:manipulation;margin:12px auto}.stage canvas{max-width:100%;height:auto;display:block}
+.mark{position:absolute;left:20%;top:65%;width:28%;height:9%;border:2px dashed #f05067;cursor:move;touch-action:none}.mark img{width:100%;height:100%;object-fit:contain;pointer-events:none}
+.check{display:flex;align-items:start;gap:12px;margin:14px 0;line-height:1.6;font-size:13px}.check input{width:auto;margin-top:5px}
+.status{font-size:13px;color:#52698b}.error{color:#bf304b}.success{color:#177b4d}
+[hidden]{display:none!important}@media(max-width:650px){.invite-area{margin:18px auto 40px}.panel{padding:17px}.row-buttons .btn{flex:1}}
+</style></head><body>
+<header class="topbar"><div class="container topbar-inner"><a class="brand" href="../../"><img class="brand-icon" src="../../justpdfit-icon.svg" alt=""><span class="brand-wordmark"><span class="brand-word">Just</span><span class="brand-pdf"><strong>PDF</strong></span><span class="brand-word">it!</span></span></a><a href="../../sign/" class="btn btn-secondary">Signatures</a></div></header>
+<main class="invite-area">
+<div class="invite-hero"><div class="eyebrow">DOCUMENT À SIGNER</div><h1>Votre invitation personnelle</h1><p>Vérifiez votre adresse email, examinez le document puis apposez votre signature. Aucun compte ni application ne sont nécessaires.</p></div>
+<section class="panel" id="loading"><p>Vérification de l'invitation…</p></section>
+<section class="panel" id="verify" hidden><h2>1. Confirmez votre email</h2><p id="maskedEmail" class="status"></p><div class="row-buttons"><button id="sendCode" class="btn btn-secondary">Recevoir mon code par email</button></div><div class="field"><label for="code">Code à 6 chiffres</label><input id="code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="000000"></div><button id="checkCode" class="btn action">Vérifier et voir le PDF</button></section>
+<section id="workspace" hidden>
+<section class="panel"><h2>2. Consultez le document</h2><p class="status">Lisez chaque page avant de signer. Vous pouvez télécharger une copie pour la consulter.</p>
+<div class="row-buttons"><button id="getPDF" class="btn btn-secondary">Télécharger le document</button><button id="prevPage" class="btn btn-secondary">← Page précédente</button><button id="nextPage" class="btn btn-secondary">Page suivante →</button></div>
+<p id="pageLabel" class="status"></p><div id="stage" class="stage"><canvas id="pdfPage"></canvas><div id="mark" class="mark" hidden><img id="markImg" alt="Emplacement de signature"></div></div></section>
+<section class="panel" id="signing"><h2>3. Signez le PDF</h2>
+<p class="status">Dessinez votre signature au doigt, au stylet ou avec la souris. Touchez ensuite l'emplacement choisi sur la page PDF.</p><canvas class="sigpad" id="sigpad" width="700" height="220"></canvas>
+<div class="row-buttons"><button id="clearSig" class="btn btn-secondary">Effacer</button><button id="diditStart" class="btn btn-secondary" hidden>Vérifier mon identité avec Didit</button></div>
+<label class="check"><input id="consent" type="checkbox"> J'ai lu le document, je souhaite le signer électroniquement et j'accepte que les informations de vérification et les dates de signature figurent dans le certificat de preuve.</label>
+<button id="signButton" class="btn action" disabled>Signer définitivement ce document</button>
+</section>
+<section id="finished" class="panel" hidden><h2>Signature enregistrée</h2><p id="finishText">Votre signature a été enregistrée. Le document final sera disponible une fois les deux signatures recueillies.</p><button id="getFinal" class="btn action" hidden>Télécharger le PDF final et son certificat</button><button id="refresh" class="btn btn-secondary">Actualiser l'état</button></section>
+</section><p id="message" role="status" class="status" aria-live="polite"></p>
+</main><footer class="footer"><div class="container footer-inner"><span>JustPDFit © 2026</span><div class="footer-links"><a href="../../privacy/">Confidentialité</a><a href="../../support/">Assistance</a></div></div></footer>
+<script>
+window.addEventListener('load',async()=>{
+const $=id=>document.getElementById(id),token=new URLSearchParams(location.search).get('token');
+const API='https://sign-api.justpdfit.com';let session='',pdf=null,pg=1,signature=null,position=null,drag=null,plan='',state=null,downloaded=false;
+const message=(s,error=false)=>{$('message').textContent=s;$('message').className='status '+(error?'error':'')};
+async function request(path,body,method='POST'){const r=await fetch(API+path,{method,headers:{...(body?{'content-type':'application/json'}:{}),...(session?{authorization:'Bearer '+session}:{})},body:body?JSON.stringify(body):undefined});const j=await r.json();if(!r.ok)throw Error(j.error||'Erreur du service');return j}
+async function getDocument(){const r=await fetch(API+'/api/document?token='+encodeURIComponent(token),{headers:{authorization:'Bearer '+session}});if(!r.ok)throw Error('Le PDF ne peut pas être téléchargé');return await r.blob()}
+async function saveBlob(blob,name){const link=document.createElement('a'),url=URL.createObjectURL(blob);link.href=url;link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),15000)}
+async function update(){state=await request('/api/state?token='+encodeURIComponent(token),null,'GET');plan=state.plan;
+if(state.status==='signed'){$('signing').hidden=true;$('finished').hidden=false;$('getFinal').hidden=state.document_status!=='completed';$('finishText').textContent=state.document_status==='completed'?'Les deux signatures ont été recueillies. Le PDF final contient le certificat de preuve.':'Votre signature est enregistrée. En attente de la seconde personne.';}
+else{$('signing').hidden=false;$('finished').hidden=true;$('diditStart').hidden=plan!=='enhanced'||state.kyc_status==='Approved';}
+}
+async function render(){if(!pdf)return;const page=await pdf.getPage(pg);const v=page.getViewport({scale:1}),scale=Math.min(1.35,Math.max(.38,660/v.width)),viewport=page.getViewport({scale}),canvas=$('pdfPage');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;$('pageLabel').textContent='Page '+pg+' / '+pdf.numPages;$('prevPage').disabled=pg===1;$('nextPage').disabled=pg===pdf.numPages;position=null;$('mark').hidden=true;valid();}
+function valid(){$('signButton').disabled=!(signature&&position&&$('consent').checked&&(plan!=='enhanced'||state?.kyc_status==='Approved'))}
+const pad=$('sigpad'),ctx=pad.getContext('2d');ctx.strokeStyle='#142044';ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';let drawing=false,last=null;
+function pt(e,el){const r=el.getBoundingClientRect();return{x:(e.clientX-r.left)*el.width/r.width,y:(e.clientY-r.top)*el.height/r.height}}
+pad.onpointerdown=e=>{drawing=true;pad.setPointerCapture(e.pointerId);last=pt(e,pad);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(last.x+.1,last.y+.1);ctx.stroke();signature=pad.toDataURL('image/png');$('markImg').src=signature;valid()};
+pad.onpointermove=e=>{if(!drawing)return;const p=pt(e,pad);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;signature=pad.toDataURL('image/png');$('markImg').src=signature;valid()};
+pad.onpointerup=()=>drawing=false;pad.onpointercancel=()=>drawing=false;
+$('clearSig').onclick=()=>{ctx.clearRect(0,0,pad.width,pad.height);signature=null;position=null;$('mark').hidden=true;valid()};
+function clamp(x,y){const c=$('pdfPage'),w=Math.min(210,c.width*.6),h=w*220/700;return{x:Math.max(0,Math.min(c.width-w,x)),y:Math.max(0,Math.min(c.height-h,y)),w,h}}
+function sync(){const c=$('pdfPage'),m=$('mark');m.style.left=position.x/c.width*100+'%';m.style.top=position.y/c.height*100+'%';m.style.width=position.w/c.width*100+'%';m.style.height=position.h/c.height*100+'%'}
+$('stage').onpointerdown=e=>{if(!signature||state?.status==='signed')return;const r=$('pdfPage').getBoundingClientRect(),c=$('pdfPage'),x=(e.clientX-r.left)*c.width/r.width,y=(e.clientY-r.top)*c.height/r.height;if(e.target.closest('#mark')&&position)drag={x:x-position.x,y:y-position.y};else{position=clamp(x-105,y-33);drag={x:x-position.x,y:y-position.y}}$('mark').hidden=false;sync();$('stage').setPointerCapture(e.pointerId);valid()};
+$('stage').onpointermove=e=>{if(!drag)return;const r=$('pdfPage').getBoundingClientRect(),c=$('pdfPage');position=clamp((e.clientX-r.left)*c.width/r.width-drag.x,(e.clientY-r.top)*c.height/r.height-drag.y);sync()};
+$('stage').onpointerup=()=>drag=null;$('stage').onpointercancel=()=>drag=null;
+$('consent').onchange=valid;
+$('sendCode').onclick=async()=>{try{await request('/api/otp/send',{token});message('Code envoyé. Vérifiez votre boîte email.')}catch(e){message(e.message,true)}};
+$('checkCode').onclick=async()=>{try{const j=await request('/api/otp/verify',{token,code:$('code').value.trim()});session=j.session;const blob=await getDocument();pdf=await pdfjsLib.getDocument({data:await blob.arrayBuffer()}).promise;$('verify').hidden=true;$('workspace').hidden=false;await update();await render();message('Adresse email vérifiée.')}catch(e){message(e.message,true)}};
+$('getPDF').onclick=async()=>{try{await saveBlob(await getDocument(),'justpdfit-document.pdf')}catch(e){message(e.message,true)}};
+$('getFinal').onclick=async()=>{try{await saveBlob(await getDocument(),'justpdfit-signe-et-certificat.pdf')}catch(e){message(e.message,true)}};
+$('prevPage').onclick=()=>{if(pg>1){pg--;render()}};$('nextPage').onclick=()=>{if(pdf&&pg<pdf.numPages){pg++;render()}};
+$('diditStart').onclick=async()=>{try{const j=await request('/api/didit/start',{token});if(j.url)location.href=j.url;else await update()}catch(e){message(e.message,true)}};
+$('refresh').onclick=async()=>{try{await update();message('Statut mis à jour.')}catch(e){message(e.message,true)}};
+$('signButton').onclick=async()=>{if(!confirm('Confirmez-vous votre signature définitive sur ce document ?'))return;try{$('signButton').disabled=true;const c=$('pdfPage');await request('/api/sign',{token,signature,page:pg-1,x:position.x/c.width,y:position.y/c.height,w:position.w/c.width,h:position.h/c.height,consent:true});await update();message('Signature enregistrée.')}catch(e){message(e.message,true);valid()}};
+try{if(!token)throw Error('Lien d’invitation manquant.');const j=await request('/api/invitation?token='+encodeURIComponent(token),null,'GET');$('maskedEmail').textContent='Adresse destinataire : '+j.email;$('loading').hidden=true;$('verify').hidden=false;}catch(e){$('loading').hidden=false;$('loading').textContent=e.message;message(e.message,true)}
+});
+</script></body></html>
