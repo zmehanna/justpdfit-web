@@ -1,0 +1,33 @@
+/* Trust-oriented, crawlable product content for JustPDFit. */
+.seo-trust{margin:58px auto 70px}
+.seo-trust-intro{max-width:800px;margin-bottom:25px}
+.seo-trust h2,.seo-locale-main h2{font-size:clamp(25px,3.3vw,34px);letter-spacing:-1px;color:#192849;margin:0 0 12px}
+.seo-trust p,.seo-locale-main p{color:#657590;font-size:14px;line-height:1.8}
+.seo-trust-grid,.seo-feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.seo-trust-card,.seo-feature{border:1px solid #e5e9f3;border-radius:17px;padding:21px;background:#fff;box-shadow:0 12px 24px #23355f0b}
+.seo-trust-card h3,.seo-feature h3{margin:0 0 10px;font-size:17px;color:#233654}
+.seo-trust-card p,.seo-feature p{margin:0;font-size:13px}
+.seo-faq{margin-top:38px;padding:32px;background:linear-gradient(150deg,#f0f5ff,#fff7fa);border:1px solid #e7eefa;border-radius:20px}
+.seo-faq h2{margin-bottom:22px}
+.seo-faq details{border-bottom:1px solid #dfe6f2;padding:13px 0}
+.seo-faq details:last-child{border-bottom:0}
+.seo-faq summary{color:#253856;font-weight:780;font-size:14px;cursor:pointer;line-height:1.5}
+.seo-faq details p{margin:9px 0 0}
+.seo-trust-clarity{padding:14px 17px;background:#fff7ed;border:1px solid #f5d9ba;border-radius:12px;margin:25px 0 0;color:#8e5c27!important;font-size:12px!important;line-height:1.65!important}
+.seo-locale-page .hero-inner{min-height:300px}
+.seo-locale-page .hero-text h1{max-width:850px}
+.seo-locale-page .hero-text p{max-width:810px}
+.seo-locale-main{margin:46px auto 74px}
+.seo-locale-main h2{margin:34px 0 19px}
+.seo-locale-actions{display:flex;flex-wrap:wrap;gap:12px;margin:26px 0}
+.seo-locale-actions a{font-size:14px;display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:12px 17px;border-radius:11px;background:#ed465c;color:#fff;font-weight:780}
+.seo-locale-actions a+ a{background:#e9edf8;color:#32456a}
+.seo-lang-nav{display:flex;gap:11px;align-items:center;flex-wrap:wrap}
+.seo-lang-nav a{font-size:12px;font-weight:800;color:#354565;padding:8px 10px;border-radius:8px}
+.seo-lang-nav a[aria-current=page]{background:#ffedf0;color:#e4435a}
+.seo-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.seo-feature a{display:inline-block;color:#d94561;font-weight:800;margin-top:15px;font-size:13px}
+.seo-feature-label{display:block;margin-bottom:9px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5678a4;font-weight:800}
+.seo-locale-page[dir=rtl] .seo-trust,.seo-locale-page[dir=rtl] .seo-locale-main,.seo-locale-page[dir=rtl] .seo-trust-card,.seo-locale-page[dir=rtl] .seo-feature{text-align:right}
+@media(max-width:850px){.seo-trust-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.seo-trust-grid,.seo-feature-grid{grid-template-columns:1fr}.seo-faq{padding:21px}.seo-locale-page .hero-inner{min-height:250px}.seo-trust{margin:42px auto 45px}.seo-locale-main{margin:32px auto 50px}.seo-locale-actions{flex-direction:column;align-items:stretch}}
