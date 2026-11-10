@@ -9,6 +9,42 @@ const init=()=>{
  let sigData=null,method="type",ink="#151b34",fontIndex=0,imageSignature=null,imageLoadGeneration=0;
  let drawing=false,last=null,wizardCurrent=1,drag=null,addMode=true,activePlacementId=null,nextPlacementId=1;
  let placements=[],finalRenderGeneration=0;
+ const watermark=window.JustPDFitWatermark;
+ let paidDocumentFingerprint=null, pendingPaymentSession=null, pendingPaymentFingerprint=null;
+ let paymentVerifying=false,checkoutStarting=false;
+ const paymentStatus=message=>$("signPaymentStatus").textContent=message;
+ const params=new URLSearchParams(location.search);
+ if(params.get("payment")==="success"||params.get("payment")==="cancelled"){
+  const notice=$("paymentReturnNotice");
+  if(notice){
+   notice.hidden=false;
+   if(params.get("payment")==="cancelled")notice.textContent="Paiement annulé. Aucun téléchargement sans filigrane n’a été débloqué. Revenez à l’onglet d’origine pour continuer avec la version gratuite.";
+  }
+ }
+
+ function pricingIsPaid(){return $("signWatermarkPaid").checked;}
+ function cleanUnlocked(){return !!(paidDocumentFingerprint&&paidDocumentFingerprint===documentFingerprint);}
+ let documentFingerprint=null;
+ function syncDownloadPricing(){
+  const enabled=!!(pdfDoc&&sigData&&placements.length);
+  const paid=pricingIsPaid();
+  const unlocked=cleanUnlocked();
+  $("downloadSigned").hidden=paid&&!unlocked;
+  $("startCleanCheckout").hidden=!paid||unlocked;
+  $("startCleanCheckout").disabled=!enabled||!watermark?.backendReady||checkoutStarting;
+  $("verifyCleanPayment").hidden=!paid||unlocked||!pendingPaymentSession;
+  $("verifyCleanPayment").disabled=paymentVerifying||!enabled;
+  $("downloadSigned").disabled=!enabled;
+  $("downloadSigned").textContent=paid?"↓ Télécharger mon PDF signé · Sans filigrane":"↓ Télécharger mon PDF signé · Gratuit";
+  $("finalWatermarkLabel").textContent=paid?"Sans filigrane":"JustPDFit.com · cliquable";
+  $("finalPriceLabel").textContent=paid?"1,99 €":"Gratuit";
+  if(!paid)paymentStatus("Le filigrane JustPDFit.com est cliquable et apparaît en bas de chaque page.");
+  else if(unlocked)paymentStatus("Paiement vérifié. Vous pouvez télécharger ce PDF sans filigrane.");
+  else if(!watermark?.backendReady)paymentStatus("Le paiement sécurisé sera activé dès la connexion du compte Stripe JustPDFit. Aucun débit n'est effectué.");
+  else if(pendingPaymentSession)paymentStatus("Terminez le paiement dans l'onglet Stripe, puis cliquez sur « Vérifier le paiement ».");
+  else paymentStatus("La version sans filigrane coûte 1,99 € par document, paiement unique via Stripe.");
+ }
+
  const methods=["type","draw","image"];
  const fontDefs=[
   {name:"Dancing Script",weight:"600",size:94},
@@ -222,8 +258,8 @@ const init=()=>{
    "Vérifiez les pages signées, puis téléchargez votre document."
   ];
   $("wizardFooterHint").textContent=hints[wizardCurrent];
-  $("downloadSigned").disabled=!(pdfDoc&&sigData&&placements.length);
   $("addPlacement").disabled=!sigData;
+  syncDownloadPricing();
  }
  function showWizardStep(step,{scroll=true}={}){
   const target=Number(step);
@@ -241,6 +277,7 @@ const init=()=>{
  function resetPdf(){
   pageRenderGeneration++;pageRenderedNumber=0;bytes=null;pdfDoc=null;pdfView=null;
   placements=[];activePlacementId=null;nextPlacementId=1;drag=null;addMode=true;
+  documentFingerprint=null;paidDocumentFingerprint=null;pendingPaymentSession=null;pendingPaymentFingerprint=null;
   $("previewArea").hidden=true;$("documentInfo").hidden=true;
   $("pageNo").disabled=true;
   $("previewPageNo").disabled=true;
@@ -261,6 +298,15 @@ const init=()=>{
    const view=await pdfjsLib.getDocument({data:raw.slice()}).promise;
    if(generation!==pdfLoadGeneration)return;
    bytes=raw;pdfDoc=documentPdf;pdfView=view;
+   documentFingerprint=await watermark.fingerprint(raw);
+   if(generation!==pdfLoadGeneration)return;
+   try{
+    const stored=JSON.parse(sessionStorage.getItem("justpdfit-pending-clean-payment")||"null");
+    if(stored?.fingerprint===documentFingerprint&&typeof stored.sessionId==="string"){
+     pendingPaymentSession=stored.sessionId;pendingPaymentFingerprint=stored.fingerprint;
+    }
+   }catch{}
+
    const internal=$("pageNo"),picker=$("previewPageNo");
    internal.replaceChildren();picker.replaceChildren();
    for(let page=1;page<=view.numPages;page++){
@@ -479,6 +525,7 @@ const init=()=>{
   $("finalMethodName").textContent=method==="type"?"Signature saisie":method==="draw"?"Signature dessinée":"Image importée";
   $("finalInkName").textContent=$("whiteSignature").checked?"Blanche":method==="image"?"Couleurs originales":ink==="#1f4ca5"?"Bleue":"Noire";
   $("finalWhiteHint").hidden=!$("whiteSignature").checked;
+  syncDownloadPricing();
   renderFinalPreview().catch(error=>status("Aperçu impossible : "+error.message));
  }
  async function renderFinalPreview(){
@@ -498,8 +545,65 @@ const init=()=>{
   for(const item of placements.filter(p=>p.page===page)){
    pen.drawImage(image,item.x/item.canvasWidth*canvas.width,item.y/item.canvasHeight*canvas.height,item.w/item.canvasWidth*canvas.width,item.h/item.canvasHeight*canvas.height);
   }
+  if(!pricingIsPaid()){
+   pen.save();
+   const footerText="Signé avec JustPDFit.com";
+   const size=Math.max(7,Math.min(10,canvas.width/60));
+   pen.font=size+"px Arial, sans-serif";
+   const textWidth=pen.measureText(footerText).width;
+   const baseline=canvas.height-10;
+   pen.fillStyle="rgba(255,255,255,.87)";
+   pen.fillRect(0,canvas.height-23,canvas.width,23);
+   pen.fillStyle="#636c87";
+   pen.fillText(footerText,(canvas.width-textWidth)/2,baseline);
+   pen.restore();
+  }
  }
  $("finalPreviewPage").addEventListener("change",()=>renderFinalPreview().catch(error=>status("Aperçu impossible : "+error.message)));
+
+ $("signWatermarkFree").addEventListener("change",()=>{
+  syncDownloadPricing();
+  if(wizardCurrent===4)renderFinalPreview().catch(error=>status("Aperçu impossible : "+error.message));
+ });
+ $("signWatermarkPaid").addEventListener("change",()=>{
+  syncDownloadPricing();
+  if(wizardCurrent===4)renderFinalPreview().catch(error=>status("Aperçu impossible : "+error.message));
+ });
+ $("startCleanCheckout").addEventListener("click",async()=>{
+  if(!watermark?.backendReady||!documentFingerprint||checkoutStarting)return;
+  checkoutStarting=true;syncDownloadPricing();
+  // Open synchronously as a consequence of the click, so browsers do not block Stripe.
+  const tab=window.open("about:blank","_blank");
+  if(tab){
+   try{tab.document.write("<!doctype html><html lang='fr'><title>Stripe</title><body style='font:16px Arial;padding:32px'>Ouverture du paiement sécurisé Stripe…</body></html>");tab.document.close();}catch{}
+  }
+  try{
+   if(!tab)throw Error("Autorisez les fenêtres contextuelles pour ouvrir Stripe, puis réessayez.");
+   const result=await watermark.createCheckout(documentFingerprint);
+   if(!result?.sessionId||!/^https:\/\/checkout\.stripe\.com\//.test(result.checkoutUrl||""))throw Error("Réponse du service de paiement non valide.");
+   pendingPaymentSession=result.sessionId;pendingPaymentFingerprint=documentFingerprint;
+   try{sessionStorage.setItem("justpdfit-pending-clean-payment",JSON.stringify({fingerprint:documentFingerprint,sessionId:result.sessionId}));}catch{}
+   tab.location.href=result.checkoutUrl;
+   paymentStatus("Paiement ouvert dans un nouvel onglet. Gardez cet onglet JustPDFit ouvert et revenez vérifier votre paiement.");
+  }catch(error){
+   try{tab?.close();}catch{}
+   paymentStatus("Erreur : "+error.message);
+  }finally{checkoutStarting=false;syncDownloadPricing();}
+ });
+ $("verifyCleanPayment").addEventListener("click",async()=>{
+  if(!watermark?.backendReady||!documentFingerprint||!pendingPaymentSession||paymentVerifying)return;
+  paymentVerifying=true;syncDownloadPricing();
+  try{
+   if(documentFingerprint!==pendingPaymentFingerprint)throw Error("Ce paiement correspond à un autre document.");
+   const verified=await watermark.verifyCheckout(pendingPaymentSession,documentFingerprint);
+   if(verified?.paid!==true)throw Error("Le paiement n'est pas encore confirmé. Terminez-le sur Stripe puis réessayez.");
+   paidDocumentFingerprint=documentFingerprint;
+   pendingPaymentSession=null;pendingPaymentFingerprint=null;
+   try{sessionStorage.removeItem("justpdfit-pending-clean-payment");}catch{}
+   paymentStatus("Paiement validé : téléchargement sans filigrane disponible.");
+  }catch(error){paymentStatus("Vérification : "+error.message);}
+  finally{paymentVerifying=false;syncDownloadPricing();}
+ });
 
  $("downloadSigned").addEventListener("click",async()=>{
   if(!pdfDoc||!sigData||!placements.length||!bytes)return;
@@ -519,19 +623,25 @@ const init=()=>{
      height:item.h*sy
     });
    }
+   // A paid option cannot be unlocked by just selecting a radio button.
+   if(pricingIsPaid()&&!cleanUnlocked())throw Error("Le paiement sans filigrane doit être vérifié avant le téléchargement.");
+   if(!pricingIsPaid())await watermark.stamp(copy);
    const out=await copy.save();
    const blob=new Blob([out],{type:"application/pdf"});
    const url=URL.createObjectURL(blob),a=document.createElement("a");
    a.href=url;a.download=($("soloFile").files[0].name.replace(/\.pdf$/i,"")||"document")+"-signe.pdf";
    document.body.append(a);a.click();a.remove();
    setTimeout(()=>URL.revokeObjectURL(url),10000);
-   status("PDF signé : "+placements.length+" position"+(placements.length===1?"":"s")+" sur "+signedPages().length+" page(s). Téléchargement démarré.");
+   status("PDF signé : "+placements.length+" position"+(placements.length===1?"":"s")+" sur "+signedPages().length+" page(s). "+(pricingIsPaid()?"Sans filigrane (paiement vérifié).":"Filigrane JustPDFit.com cliquable sur chaque page.")+" Téléchargement démarré.");
   }catch(error){status("Erreur : "+error.message);}
   finally{syncWizard();}
  });
- document.querySelectorAll('input[name="verify"]').forEach(input=>input.addEventListener("change",()=>{
-  $("duoTotal").textContent=$("verifyDidit").checked?"3,99 €":"1,99 €";
- }));
+ function syncDuoPrice(){
+  const base=$("verifyDidit").checked?3.99:1.99;
+  $("duoTotal").textContent=(base+($("duoNoWatermark").checked?1.99:0)).toFixed(2).replace(".",",")+" €";
+ }
+ document.querySelectorAll('input[name="verify"]').forEach(input=>input.addEventListener("change",syncDuoPrice));
+ $("duoNoWatermark").addEventListener("change",syncDuoPrice);
  renderPlacementList();syncWizard();
 };
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);

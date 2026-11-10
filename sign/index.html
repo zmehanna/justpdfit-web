@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="../file-picker.css">
 <link rel="stylesheet" href="../sign-wizard.css">
 <link rel="stylesheet" href="../sign-multi.css">
+<link rel="stylesheet" href="../sign-watermark.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Dancing+Script:wght@600&family=Great+Vibes&family=Pacifico&display=swap" rel="stylesheet">
@@ -139,9 +140,10 @@ body{background:#f8f9fc;color:var(--ink)}
  </div>
 </header>
 <main>
+<div id="paymentReturnNotice" class="payment-return-notice" hidden role="status">Paiement terminé dans cet onglet. Revenez à l’onglet JustPDFit d’origine, où votre document est ouvert, puis cliquez sur « Vérifier le paiement » pour télécharger sans filigrane.</div>
 <section class="sign-hero"><div class="container">
  <div><div class="eyebrow"><span class="dot"></span>JustPDFit · SIGNATURES</div><h1>Signez un PDF, simplement.</h1><p>Une signature individuelle gratuite, directement sur votre appareil. Pour deux signataires à distance, invitations individuelles et vérification par email.</p>
- <div class="hero-tags"><span>✓ Sans compte pour signer seul</span><span>✓ Sans filigrane</span><span>✓ Optimisé mobile et tablette</span></div></div>
+ <div class="hero-tags"><span>✓ Sans compte pour signer seul</span><span>✓ Filigrane cliquable en version gratuite</span><span>✓ Optimisé mobile et tablette</span></div></div>
  <div class="sign-hero-icon" aria-hidden="true">✍️</div>
 </div></section>
 <div class="sign-shell">
@@ -236,9 +238,17 @@ body{background:#f8f9fc;color:var(--ink)}
  <div class="wizard-final-selector"><label for="finalPreviewPage">Vérifier la page signée</label><select id="finalPreviewPage" aria-label="Page signée à vérifier"></select></div>
  <div class="wizard-final-preview"><canvas id="finalPreviewCanvas" width="420" height="580" role="img" aria-label="Aperçu du document avec les signatures placées"></canvas></div>
 </div>
-<div class="wizard-final-side"><div class="wizard-recap"><div><span>Fichier</span><strong id="finalFileName">—</strong></div><div><span>Pages signées</span><strong id="finalPageName">—</strong></div><div><span>Placements</span><strong id="finalPlacementCount">—</strong></div><div><span>Méthode</span><strong id="finalMethodName">—</strong></div><div><span>Couleur</span><strong id="finalInkName">—</strong></div><div><span>Tarif</span><strong>Gratuit</strong></div></div>
-<button id="downloadSigned" class="btn primary-sign wizard-download" type="button" disabled>↓ Télécharger mon PDF signé</button>
-<p id="finalWhiteHint" class="wizard-white-hint" hidden>La signature blanche est prévue pour les zones sombres des PDF. Un fond blanc peut la rendre invisible.</p><p class="hint">Traitement local, sans compte et sans filigrane. Il s'agit d'une signature visuelle, non qualifiée.</p>
+<div class="wizard-final-side"><div class="wizard-recap"><div><span>Fichier</span><strong id="finalFileName">—</strong></div><div><span>Pages signées</span><strong id="finalPageName">—</strong></div><div><span>Placements</span><strong id="finalPlacementCount">—</strong></div><div><span>Méthode</span><strong id="finalMethodName">—</strong></div><div><span>Couleur</span><strong id="finalInkName">—</strong></div><div><span>Filigrane</span><strong id="finalWatermarkLabel">JustPDFit.com · inclus</strong></div><div><span>Tarif</span><strong id="finalPriceLabel">Gratuit</strong></div></div>
+<div class="sign-pricing" role="group" aria-labelledby="signPricingTitle">
+<h4 id="signPricingTitle">Choisissez votre téléchargement</h4>
+<label class="sign-price-option" for="signWatermarkFree"><input id="signWatermarkFree" name="signWatermark" type="radio" value="free" checked><span class="sign-price-desc"><strong>PDF signé avec filigrane</strong><small>Lien discret « JustPDFit.com » en bas de chaque page</small></span><b>Gratuit</b></label>
+<label class="sign-price-option" for="signWatermarkPaid"><input id="signWatermarkPaid" name="signWatermark" type="radio" value="paid"><span class="sign-price-desc"><strong>PDF signé sans filigrane</strong><small>Une fois par document, sans abonnement</small></span><b>1,99 €</b></label>
+<p id="signPaymentStatus" class="sign-payment-status" role="status" aria-live="polite"></p>
+</div>
+<button id="downloadSigned" class="btn primary-sign wizard-download" type="button" disabled>↓ Télécharger mon PDF signé · Gratuit</button>
+<button id="startCleanCheckout" class="btn ghost wizard-download" type="button" hidden disabled>Payer 1,99 € pour supprimer le filigrane</button>
+<button id="verifyCleanPayment" class="btn ghost wizard-download" type="button" hidden>Vérifier le paiement</button>
+<p id="finalWhiteHint" class="wizard-white-hint" hidden>La signature blanche est prévue pour les zones sombres des PDF. Un fond blanc peut la rendre invisible.</p><p class="hint">Traitement local et sans compte. La version gratuite contient un filigrane cliquable en bas de chaque page. La signature est visuelle, non qualifiée.</p>
 </div></div></div>
 <div class="wizard-footer" id="wizardFooter">
 <button id="wizardBack" type="button" class="btn ghost" hidden>← Retour</button>
@@ -249,10 +259,12 @@ body{background:#f8f9fc;color:var(--ink)}
 </section>
 <section id="duo" class="panel sign-panel" hidden aria-labelledby="duoTitle"><h2 id="duoTitle">Signature à deux, entièrement en ligne</h2><p class="hint">Les deux signataires reçoivent un email personnel. Aucun compte ni application à installer. La signature à deux sera activée après raccordement sécurisé du service de paiement, des invitations email et du stockage temporaire.</p>
 <div class="field"><label for="duoFile">Document PDF</label><input id="duoFile" data-jpi-picker type="file" accept="application/pdf,.pdf"></div><div class="field"><label for="signerA">Email du premier signataire</label><input id="signerA" type="email" autocomplete="email" placeholder="personne1@exemple.com"></div><div class="field"><label for="signerB">Email du deuxième signataire</label><input id="signerB" type="email" autocomplete="off" placeholder="personne2@exemple.com"></div>
-<div class="option"><input type="radio" name="verify" id="verifyEmail" value="standard" checked><label for="verifyEmail"><strong>Vérification par code email</strong><small>Deux invitations indépendantes, consentement et rapport de preuve · 1,99 €</small></label></div><div class="option"><input type="radio" name="verify" id="verifyDidit" value="didit"><label for="verifyDidit"><strong>Identification renforcée Didit</strong><small>Vérification des pièces d'identité et du visage pour chaque signataire · 3,99 €</small></label></div><div class="total"><span>Tarif par document</span><span id="duoTotal">1,99 €</span></div>
+<div class="option"><input type="radio" name="verify" id="verifyEmail" value="standard" checked><label for="verifyEmail"><strong>Vérification par code email</strong><small>Deux invitations indépendantes, consentement et rapport de preuve · 1,99 €</small></label></div><div class="option"><input type="radio" name="verify" id="verifyDidit" value="didit"><label for="verifyDidit"><strong>Identification renforcée Didit</strong><small>Vérification des pièces d'identité et du visage pour chaque signataire · 3,99 €</small></label></div><div class="option"><input type="checkbox" id="duoNoWatermark"><label for="duoNoWatermark"><strong>Retirer le filigrane JustPDFit.com · +1,99 €</strong><small>Par défaut, un lien JustPDFit.com cliquable figure en bas de chaque page du document final.</small></label></div><div class="total"><span>Tarif par document</span><span id="duoTotal">1,99 €</span></div>
 <button type="button" class="btn primary-sign" id="startDuo" disabled title="Service de paiement et d'invitation en cours d'intégration">Paiement et envoi — bientôt disponibles</button><p class="status" aria-live="polite" id="duoStatus">Le service à deux est en préparation. Aucun paiement ni invitation n'est envoyé actuellement.</p></section>
 <footer class="privacy">La signature individuelle ne téléverse pas votre PDF. Le service de signature à distance nécessitera un traitement sécurisé du document avec consentement explicite des deux signataires. <a href="../">JustPDFit.com</a></footer>
-</div></main><footer class="footer sign-footer"><div class="container footer-inner"><div class="footer-brand">Just<strong>PDFit!</strong> <span>© 2026</span></div><div class="footer-links"><a href="../privacy/">Confidentialité</a><a href="../support/">Assistance</a><a href="../">Tous les outils</a></div><span>Gratuit. Sans filigrane.</span></div></footer>
+</div></main><footer class="footer sign-footer"><div class="container footer-inner"><div class="footer-brand">Just<strong>PDFit!</strong> <span>© 2026</span></div><div class="footer-links"><a href="../privacy/">Confidentialité</a><a href="../support/">Assistance</a><a href="../">Tous les outils</a></div><span>Signature individuelle gratuite avec filigrane.</span></div></footer>
 <script defer src="../file-picker.js"></script>
+<script defer src="../payment-config.js"></script>
+<script defer src="../sign-watermark.js"></script>
 <script defer src="../sign-engine.js"></script>
 </body></html>
