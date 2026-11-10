@@ -7,6 +7,7 @@
 <link rel="icon" href="../justpdfit-icon.svg"><link rel="stylesheet" href="../styles.css">
 <link rel="stylesheet" href="../file-picker.css">
 <link rel="stylesheet" href="../sign-wizard.css">
+<link rel="stylesheet" href="../sign-multi.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Dancing+Script:wght@600&family=Great+Vibes&family=Pacifico&display=swap" rel="stylesheet">
@@ -191,6 +192,11 @@ body{background:#f8f9fc;color:var(--ink)}
 <button type="button" class="sig-color" data-ink="#151b34" style="background:#151b34" aria-label="Encre noire" aria-pressed="true"></button>
 <button type="button" class="sig-color" data-ink="#1f4ca5" style="background:#1f4ca5" aria-label="Encre bleue" aria-pressed="false"></button>
 </div></div>
+<div class="sig-preview-options" role="group" aria-label="Options de couleur et d'aperçu">
+<label class="sig-preview-option" for="whiteSignature"><input id="whiteSignature" type="checkbox"> Signature blanche</label>
+<label class="sig-preview-option" for="darkPreview"><input id="darkPreview" type="checkbox"> Aperçu sur fond noir</label>
+</div>
+<p class="sig-preview-explain">Le fond noir sert uniquement à visualiser votre signature. Il ne change pas le fond de votre PDF.</p>
 <canvas id="sigCanvas" class="sigpad" width="700" height="220" aria-label="Aperçu et zone de dessin de la signature"></canvas>
 <div class="controls"><button class="btn ghost" type="button" id="clearSig">Effacer la signature</button></div>
 <div class="note" id="sigInstructions">Saisissez votre nom, puis choisissez un des quatre styles. Après chargement du PDF, touchez ou cliquez à l'endroit où placer votre signature, puis déplacez-la si besoin.</div></div>
@@ -208,22 +214,31 @@ body{background:#f8f9fc;color:var(--ink)}
   <button id="nextPage" type="button" aria-label="Afficher la page suivante">Suivante →</button>
   <span id="pageCounter" class="page-picker__count" aria-live="polite">Page 1 sur 1</span>
  </div>
-</div><h3 id="previewPageTitle">Positionnez votre signature</h3><div class="pdfstage" id="pdfStage"><canvas id="pdfPage"></canvas><div id="placedSig" class="placed" tabindex="0" role="img" aria-label="Position de la signature" hidden><img id="sigImage" alt=""></div></div></div></div>
+</div><h3 id="previewPageTitle">Positionnez votre signature</h3><div class="pdfstage" id="pdfStage"><canvas id="pdfPage"></canvas><div id="placementLayer" aria-label="Emplacements des signatures sur cette page"></div></div></div></div>
 <aside class="wizard-position-tools">
 <label class="wizard-tool-label" for="sigWidth">Taille de la signature</label>
 <select id="sigWidth"><option value="140">Petite</option><option value="200" selected>Moyenne</option><option value="270">Grande</option></select>
 <div class="wizard-placement-hint"><strong>✍️ Placez votre signature</strong><p id="positionStatus" aria-live="polite">Touchez le PDF à l'endroit où vous souhaitez signer.</p></div>
 <button class="btn ghost" type="button" id="changeSignature">← Modifier la signature</button>
 </aside></div>
+<div class="placements-manager" aria-label="Emplacements de signature enregistrés">
+ <div class="placements-manager__header"><h4>Placements enregistrés</h4><span id="placementCount">0 position</span></div>
+ <p class="placements-empty" id="placementsEmpty">Vous n'avez pas encore placé de signature. Choisissez une page et cliquez à l'endroit souhaité.</p>
+ <ul id="placementsList" class="placements-list" aria-live="polite"></ul>
+ <button id="addPlacement" type="button" class="add-placement">＋ Ajouter une autre position</button>
+</div>
 <select id="pageNo" hidden aria-hidden="true" tabindex="-1" disabled><option value="1">Page 1</option></select>
 </div>
 <div class="wizard-panel" id="wizardStep4" aria-labelledby="wizardTitle4" hidden>
 <div class="wizard-step-header"><span class="wizard-eyebrow">ÉTAPE 4 · VÉRIFICATION</span><h3 id="wizardTitle4">Votre PDF signé est prêt</h3><p>Vérifiez l'emplacement de votre signature avant de télécharger le document.</p></div>
 <div class="wizard-final-grid">
-<div class="wizard-final-preview"><canvas id="finalPreviewCanvas" width="420" height="580" role="img" aria-label="Aperçu du document avec la signature"></canvas></div>
-<div class="wizard-final-side"><div class="wizard-recap"><div><span>Fichier</span><strong id="finalFileName">—</strong></div><div><span>Page signée</span><strong id="finalPageName">—</strong></div><div><span>Méthode</span><strong id="finalMethodName">—</strong></div><div><span>Tarif</span><strong>Gratuit</strong></div></div>
+<div class="wizard-final-preview-group">
+ <div class="wizard-final-selector"><label for="finalPreviewPage">Vérifier la page signée</label><select id="finalPreviewPage" aria-label="Page signée à vérifier"></select></div>
+ <div class="wizard-final-preview"><canvas id="finalPreviewCanvas" width="420" height="580" role="img" aria-label="Aperçu du document avec les signatures placées"></canvas></div>
+</div>
+<div class="wizard-final-side"><div class="wizard-recap"><div><span>Fichier</span><strong id="finalFileName">—</strong></div><div><span>Pages signées</span><strong id="finalPageName">—</strong></div><div><span>Placements</span><strong id="finalPlacementCount">—</strong></div><div><span>Méthode</span><strong id="finalMethodName">—</strong></div><div><span>Couleur</span><strong id="finalInkName">—</strong></div><div><span>Tarif</span><strong>Gratuit</strong></div></div>
 <button id="downloadSigned" class="btn primary-sign wizard-download" type="button" disabled>↓ Télécharger mon PDF signé</button>
-<p class="hint">Traitement local, sans compte et sans filigrane. Il s'agit d'une signature visuelle, non qualifiée.</p>
+<p id="finalWhiteHint" class="wizard-white-hint" hidden>La signature blanche est prévue pour les zones sombres des PDF. Un fond blanc peut la rendre invisible.</p><p class="hint">Traitement local, sans compte et sans filigrane. Il s'agit d'une signature visuelle, non qualifiée.</p>
 </div></div></div>
 <div class="wizard-footer" id="wizardFooter">
 <button id="wizardBack" type="button" class="btn ghost" hidden>← Retour</button>
@@ -239,306 +254,5 @@ body{background:#f8f9fc;color:var(--ink)}
 <footer class="privacy">La signature individuelle ne téléverse pas votre PDF. Le service de signature à distance nécessitera un traitement sécurisé du document avec consentement explicite des deux signataires. <a href="../">JustPDFit.com</a></footer>
 </div></main><footer class="footer sign-footer"><div class="container footer-inner"><div class="footer-brand">Just<strong>PDFit!</strong> <span>© 2026</span></div><div class="footer-links"><a href="../privacy/">Confidentialité</a><a href="../support/">Assistance</a><a href="../">Tous les outils</a></div><span>Gratuit. Sans filigrane.</span></div></footer>
 <script defer src="../file-picker.js"></script>
-<script>
-window.addEventListener('DOMContentLoaded',()=>{
-const $=id=>document.getElementById(id);let bytes=null,pdfDoc=null,pdfView=null,sigData=null,position=null,drag=null;const sig=$('sigCanvas'),ctx=sig.getContext('2d');ctx.strokeStyle='#151b34';ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';
-function showMode(duo){$('solo').hidden=duo;$('duo').hidden=!duo;$('soloTab').setAttribute('aria-pressed',String(!duo));$('duoTab').setAttribute('aria-pressed',String(duo));}
-$('soloTab').onclick=()=>showMode(false);$('duoTab').onclick=()=>showMode(true);
-function point(e,el){const r=el.getBoundingClientRect();return {x:(e.clientX-r.left)*el.width/r.width,y:(e.clientY-r.top)*el.height/r.height};}
-const methods=["type","draw","image"];
-let method="type", ink="#151b34", fontIndex=0, imageSignature=null, drawing=false, last=null;
-const fontDefs=[
- {name:"Dancing Script", css:'600 94px "Dancing Script"',fallback:'italic 94px cursive'},
- {name:"Caveat",css:'600 110px "Caveat"',fallback:'italic 110px cursive'},
- {name:"Great Vibes",css:'96px "Great Vibes"',fallback:'italic 96px cursive'},
- {name:"Pacifico",css:'78px "Pacifico"',fallback:'italic 78px cursive'}
-];
-function updateStylePreview(){
- const name=$("typedName").value.trim()||"Votre signature";
- document.querySelectorAll(".sig-style").forEach(button=>{
-   button.textContent=name;
-   button.setAttribute("aria-pressed",String(Number(button.dataset.font)===fontIndex));
- });
- $("styleSelected").textContent="Style "+(fontIndex+1)+" / 4";
-}
-function clearCanvas(){ctx.clearRect(0,0,sig.width,sig.height);}
-function refreshSig(){
- sigData=sig.toDataURL("image/png");
- $("sigImage").src=sigData;
- if(position){$("placedSig").hidden=false;syncPlaced();}
- updateDownload();
-}
-function clearSignatureOutput(){
- clearCanvas();sigData=null;position=null;$("placedSig").hidden=true;$("sigImage").removeAttribute("src");updateDownload();
-}
-function fitText(text, baseSize, family){
- let size=baseSize;
- const maxWidth=sig.width-35;
- do {ctx.font=family(size);if(ctx.measureText(text).width<=maxWidth)break;size-=2;}while(size>18);
- return size;
-}
-function renderTyped(){
- clearCanvas();
- const value=$("typedName").value.trim();
- if(!value){clearSignatureOutput();return;}
- ctx.fillStyle=ink;
- const conf=fontDefs[fontIndex];
- const ready=document.fonts.check('22px "'+conf.name+'"');
- const fontFamily=size=>ready?conf.css.replace(/\d+px/,size+"px"):conf.fallback.replace(/\d+px/,size+"px");
- fitText(value,fontIndex===1?110:fontIndex===3?78:94,fontFamily);
- ctx.textAlign="center";ctx.textBaseline="middle";
- ctx.fillText(value,sig.width/2,sig.height/2+8,sig.width-35);
- refreshSig();
-}
-async function loadSignatureImage(file){
- if(!file){imageSignature=null;clearSignatureOutput();return;}
- if(file.size>5*1024*1024)throw Error("L'image ne peut pas dépasser 5 Mo.");
- if(!/^image\/(png|jpeg|webp)$/.test(file.type)&&!/\.(png|jpe?g|webp)$/i.test(file.name))throw Error("Choisissez une image PNG, JPG ou WebP.");
- const url=URL.createObjectURL(file);
- try{
-  const img=new Image();
-  await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error("Impossible de lire cette image."));img.src=url;});
-  if(!img.naturalWidth||!img.naturalHeight||img.naturalWidth*img.naturalHeight>20000000)throw Error("Image trop grande ou invalide.");
-  imageSignature=img;
-  renderImage();
- }finally{URL.revokeObjectURL(url);}
-}
-function renderImage(){
- clearCanvas();
- if(!imageSignature){clearSignatureOutput();return;}
- const maxW=sig.width-25,maxH=sig.height-14;
- const ratio=Math.min(maxW/imageSignature.naturalWidth,maxH/imageSignature.naturalHeight);
- const w=imageSignature.naturalWidth*ratio,h=imageSignature.naturalHeight*ratio;
- ctx.drawImage(imageSignature,(sig.width-w)/2,(sig.height-h)/2,w,h);
- refreshSig();
-}
-function selectMethod(next){
- method=next;
- for(const id of methods){
-  $(id+"SigTab").setAttribute("aria-selected",String(id===next));
-  $(id+"SigPanel").hidden=id!==next;
- }
- $("sigPreviewLabel").textContent=next==="draw"?"Dessinez votre signature":"Aperçu de votre signature";
- $("sigInstructions").textContent=next==="type"?"Saisissez votre nom et choisissez un style. Touchez ensuite la page PDF pour placer votre signature.":next==="draw"?"Dessinez au doigt, à la souris ou avec l'Apple Pencil. Touchez ensuite le document pour placer votre signature.":"Importez une image de votre signature, puis touchez la page PDF pour la positionner.";
- $("sigCanvas").style.cursor=next==="draw"?"crosshair":"default";
- const showInk=next!=="image";document.querySelector(".sig-colors").hidden=!showInk;
- if(next==="type")renderTyped();
- else if(next==="image")renderImage();
- else {clearCanvas();clearSignatureOutput();ctx.strokeStyle=ink;}
-}
-methods.forEach(id=>$(id+"SigTab").addEventListener("click",()=>selectMethod(id)));
-$("typedName").addEventListener("input",()=>{updateStylePreview();if(method==="type")renderTyped();});
-document.querySelectorAll(".sig-style").forEach(b=>b.addEventListener("click",()=>{
- fontIndex=Number(b.dataset.font);
- updateStylePreview();
- if(method==="type")renderTyped();
-}));
-function recolorDrawnSignature(){
- // Recolor existing strokes in place, preserving transparency and anti-aliasing.
- // Changing strokeStyle alone only affects FUTURE strokes, not the drawn signature.
- ctx.strokeStyle=ink;
- if(!sigData)return;
- ctx.save();
- ctx.globalCompositeOperation="source-in";
- ctx.fillStyle=ink;
- ctx.fillRect(0,0,sig.width,sig.height);
- ctx.restore();
- ctx.strokeStyle=ink;
- // Update both the canvas preview and the PNG embedded in the downloaded PDF.
- refreshSig();
-}
-document.querySelectorAll(".sig-color").forEach(b=>b.addEventListener("click",()=>{
- ink=b.dataset.ink;
- document.querySelectorAll(".sig-color").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
- if(method==="type")renderTyped();
- else if(method==="draw")recolorDrawnSignature();
-}));
-$("imageSigFile").addEventListener("change",async e=>{
- try{await loadSignatureImage(e.target.files?.[0]);$("soloStatus").textContent="";}
- catch(error){imageSignature=null;clearSignatureOutput();$("soloStatus").textContent="Erreur : "+error.message;}
-});
-sig.addEventListener("pointerdown",e=>{
- if(method!=="draw")return;
- drawing=true;sig.setPointerCapture(e.pointerId);last=point(e,sig);
- ctx.strokeStyle=ink;ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(last.x+.1,last.y+.1);ctx.stroke();refreshSig();
-});
-sig.addEventListener("pointermove",e=>{
- if(method!=="draw"||!drawing)return;
- const p=point(e,sig);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;refreshSig();
-});
-sig.addEventListener("pointerup",()=>{drawing=false;if(method==="draw"&&sigData)refreshSig();});
-sig.addEventListener("pointercancel",()=>{drawing=false;});
-$("clearSig").onclick=()=>{
- if(method==="type"){$("typedName").value="";updateStylePreview();}
- if(method==="image"){$("imageSigFile").value="";imageSignature=null;$("imageSigFile").dispatchEvent(new Event("change",{bubbles:true}));}
- clearSignatureOutput();
-};
-updateStylePreview();
-document.fonts.ready.then(()=>{if(method==="type"&&$("typedName").value.trim())renderTyped();});
-let wizardCurrent=1, pdfLoadGeneration=0;
-function maxWizardStep(){
- if(!pdfDoc||!pdfView||!pageRenderedNumber)return 1;
- if(!sigData)return 2;
- if(!position||pageRenderedNumber!==Number($('pageNo').value))return 3;
- return 4;
-}
-function syncWizardButtons(){
- const maximum=maxWizardStep();
- const names=["","Créer ma signature →","Positionner ma signature →","Vérifier mon PDF →"];
- for(const button of document.querySelectorAll("[data-wizard-step]")){
-  const stage=Number(button.dataset.wizardStep),isCurrent=stage===wizardCurrent;
-  button.disabled=stage>maximum;
-  button.dataset.state=stage<wizardCurrent?"done":isCurrent?"current":"pending";
-  if(isCurrent)button.setAttribute("aria-current","step");else button.removeAttribute("aria-current");
-  button.querySelector(".wizard-step__number").textContent=stage<wizardCurrent?"✓":String(stage);
- }
- for(let stage=1;stage<=4;stage++)$("wizardStep"+stage).hidden=stage!==wizardCurrent;
- $("wizardCounter").textContent="Étape "+wizardCurrent+" sur 4";
- $("wizardBack").hidden=wizardCurrent===1;
- $("wizardNext").hidden=wizardCurrent===4;
- if(wizardCurrent!==4){
-  $("wizardNext").textContent=names[wizardCurrent];
-  $("wizardNext").disabled=maximum<=wizardCurrent;
- }
- const hints=[
-  "",
-  pdfDoc?"Votre PDF est importé. Vous pouvez continuer.":"Choisissez un document PDF pour commencer.",
-  sigData?"Votre signature est prête. Passez à la page à signer.":"Choisissez une méthode et créez votre signature pour continuer.",
-  position?"La signature est placée. Vérifiez votre document.":"Touchez le PDF pour placer votre signature.",
-  "Vérifiez l'aperçu et téléchargez votre document signé."
- ];
- $("wizardFooterHint").textContent=hints[wizardCurrent];
-}
-function showWizardStep(stage,{scroll=true}={}){
- const target=Number(stage);
- if(target<1||target>maxWizardStep())return false;
- wizardCurrent=target;syncWizardButtons();
- if(target===4)renderFinalPreview().catch(error=>$("soloStatus").textContent="Aperçu non disponible : "+error.message);
- if(scroll)$("soloTitle").scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
- return true;
-}
-async function renderFinalPreview(){
- if(!sigData||!position||!pdfDoc)return;
- const source=$("pdfPage"),dst=$("finalPreviewCanvas"),ratio=Math.min(1,470/source.width);
- dst.width=Math.round(source.width*ratio);dst.height=Math.round(source.height*ratio);
- const pen=dst.getContext("2d");
- pen.fillStyle="#fff";pen.fillRect(0,0,dst.width,dst.height);
- pen.drawImage(source,0,0,dst.width,dst.height);
- $("finalFileName").textContent=$("soloFile").files?.[0]?.name||"Document PDF";
- $("finalPageName").textContent="Page "+$("pageNo").value+" sur "+pdfView.numPages;
- $("finalMethodName").textContent=method==="type"?"Signature saisie":method==="draw"?"Signature dessinée":"Image importée";
- const image=new Image();image.src=sigData;
- try{
-  if(image.decode)await image.decode();
-  else await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=reject;});
- }catch{return;}
- if(wizardCurrent===4)pen.drawImage(image,position.x*ratio,position.y*ratio,position.w*ratio,position.h*ratio);
-}
-document.querySelectorAll("[data-wizard-step]").forEach(button=>button.addEventListener("click",()=>showWizardStep(button.dataset.wizardStep)));
-$("wizardBack").onclick=()=>showWizardStep(wizardCurrent-1);
-$("wizardNext").onclick=()=>showWizardStep(wizardCurrent+1);
-$("changeSignature").onclick=()=>showWizardStep(2);
-function updateDownload(){
- $("downloadSigned").disabled=!(pdfDoc&&sigData&&position&&pageRenderedNumber===Number($("pageNo").value));
- syncWizardButtons();
-}
-$('soloFile').addEventListener('change',async e=>{
- const generation=++pdfLoadGeneration,file=e.target.files?.[0];
- pageRenderGeneration++;pageRenderedNumber=0;
- bytes=null;pdfDoc=null;pdfView=null;position=null;drag=null;
- $('placedSig').hidden=true;$('previewArea').hidden=true;$('documentInfo').hidden=true;
- wizardCurrent=1;syncWizardButtons();$('soloStatus').textContent='';
- if(!file)return;
- $('soloStatus').textContent='Ouverture du PDF…';
- try{
-  if(file.size>25*1024*1024)throw Error('Le PDF doit faire 25 Mo maximum.');
-  if(!window.PDFLib||!window.pdfjsLib)throw Error('Bibliothèques PDF indisponibles, rechargez la page.');
-  const raw=new Uint8Array(await file.arrayBuffer());
-  if(generation!==pdfLoadGeneration)return;
-  const doc=await PDFLib.PDFDocument.load(raw.slice(),{ignoreEncryption:false});
-  const view=await pdfjsLib.getDocument({data:raw.slice()}).promise;
-  if(generation!==pdfLoadGeneration)return;
-  bytes=raw;pdfDoc=doc;pdfView=view;
-  const internal=$('pageNo'),picker=$('previewPageNo');
-  internal.replaceChildren();picker.replaceChildren();
-  for(let i=1;i<=view.numPages;i++){
-   const option=document.createElement('option');option.value=String(i);option.textContent='Page '+i;
-   internal.append(option);picker.append(option.cloneNode(true));
-  }
-  internal.disabled=false;picker.disabled=false;internal.value='1';picker.value='1';
-  $('previewArea').hidden=false;syncPager();await renderPage();
-  if(generation!==pdfLoadGeneration)return;
-  $('documentName').textContent=file.name;
-  $('documentPages').textContent=view.numPages+' page'+(view.numPages===1?'':'s')+' · '+(file.size/1024/1024).toFixed(2)+' Mo';
-  $('documentInfo').hidden=false;
-  $('positionStatus').textContent="Touchez le PDF à l'endroit où vous souhaitez signer.";
-  $('soloStatus').textContent='';
-  showWizardStep(2);
- }catch(error){
-  if(generation!==pdfLoadGeneration)return;
-  pageRenderGeneration++;pageRenderedNumber=0;bytes=null;pdfDoc=null;pdfView=null;position=null;
-  $('previewArea').hidden=true;$('documentInfo').hidden=true;
-  wizardCurrent=1;syncWizardButtons();
-  $('soloStatus').textContent='Erreur : '+error.message;
- }
-});
-let pageRenderGeneration=0,pageRenderedNumber=0;
-function syncPager(){
- if(!pdfView)return;
- const n=Number($('pageNo').value),total=pdfView.numPages;
- $('previewPageNo').value=String(n);
- $('pageCounter').textContent='Page '+n+' sur '+total;
- $('previewPageTitle').textContent='Positionnez votre signature — page '+n;
- $('previousPage').disabled=n<=1;
- $('nextPage').disabled=n>=total;
-}
-async function selectPage(n){
- if(!pdfView)return;
- const next=Math.max(1,Math.min(pdfView.numPages,Number(n)||1));
- if(next===Number($('pageNo').value) && next===pageRenderedNumber)return;
- $('pageNo').value=String(next);
- syncPager();
- position=null;drag=null;$('placedSig').hidden=true;
- $('positionStatus').textContent="Touchez cette page pour y placer la signature.";
- pageRenderedNumber=0;
- updateDownload();
- try{await renderPage();$('soloStatus').textContent='Page '+next+' sur '+pdfView.numPages+' affichée. Touchez le document pour placer la signature.';}
- catch(e){$('soloStatus').textContent='Erreur d’affichage : '+e.message;}
-}
-async function renderPage(){
- if(!pdfView)return;
- const generation=++pageRenderGeneration;
- const requestedPage=Number($('pageNo').value);
- pageRenderedNumber=0;updateDownload();
- const currentView=pdfView;
- const pg=await currentView.getPage(requestedPage);
- if(generation!==pageRenderGeneration||currentView!==pdfView)return;
- const base=pg.getViewport({scale:1});
- const scale=Math.min(1.45,Math.max(.45,650/base.width));
- const vp=pg.getViewport({scale});
- // Render into an offscreen canvas; rapid page changes cannot mix PDF.js render tasks.
- const temporary=document.createElement('canvas');
- temporary.width=Math.round(vp.width);temporary.height=Math.round(vp.height);
- await pg.render({canvasContext:temporary.getContext('2d'),viewport:vp}).promise;
- if(generation!==pageRenderGeneration||currentView!==pdfView)return;
- const c=$('pdfPage');
- c.width=temporary.width;c.height=temporary.height;
- c.getContext('2d').drawImage(temporary,0,0);
- pageRenderedNumber=requestedPage;
- position=null;$('placedSig').hidden=true;updateDownload();
-}
-$('pageNo').onchange=()=>selectPage($('pageNo').value);
-$('previewPageNo').onchange=()=>selectPage($('previewPageNo').value);
-$('previousPage').onclick=()=>selectPage(Number($('pageNo').value)-1);
-$('nextPage').onclick=()=>selectPage(Number($('pageNo').value)+1);
-function boundPosition(x,y){const c=$('pdfPage');const w=Math.min(Number($('sigWidth').value),c.width*.7),h=w*220/700;return {x:Math.min(Math.max(0,x),Math.max(0,c.width-w)),y:Math.min(Math.max(0,y),Math.max(0,c.height-h)),w,h};}
-function syncPlaced(){if(!position)return;const el=$('placedSig');const c=$('pdfPage');el.style.left=(position.x/c.width*100)+'%';el.style.top=(position.y/c.height*100)+'%';el.style.width=(position.w/c.width*100)+'%';el.style.height=(position.h/c.height*100)+'%';}
-$('pdfStage').addEventListener('pointerdown',e=>{if(!pdfDoc||!sigData||pageRenderedNumber!==Number($('pageNo').value))return;const r=$('pdfPage').getBoundingClientRect(),c=$('pdfPage');const px=(e.clientX-r.left)*c.width/r.width,py=(e.clientY-r.top)*c.height/r.height;if(e.target.closest('#placedSig')&&position){drag={ox:px-position.x,oy:py-position.y};}else{const p=boundPosition(px-Number($('sigWidth').value)/2,py-Number($('sigWidth').value)*220/1400);position=p;drag={ox:px-p.x,oy:py-p.y};}$('placedSig').hidden=false;syncPlaced();$('positionStatus').textContent='✓ Signature placée sur la page '+$('pageNo').value+'. Vous pouvez la déplacer.';updateDownload();$('pdfStage').setPointerCapture(e.pointerId);});
-$('pdfStage').addEventListener('pointermove',e=>{if(!drag||!position)return;const r=$('pdfPage').getBoundingClientRect(),c=$('pdfPage');const px=(e.clientX-r.left)*c.width/r.width,py=(e.clientY-r.top)*c.height/r.height;position=boundPosition(px-drag.ox,py-drag.oy);syncPlaced();});
-$('pdfStage').addEventListener('pointerup',()=>drag=null);$('pdfStage').addEventListener('pointercancel',()=>drag=null);
-$('sigWidth').onchange=()=>{if(position){position=boundPosition(position.x,position.y);syncPlaced();}};
-$('downloadSigned').onclick=async()=>{try{if(!position||!sigData||!pdfDoc||pageRenderedNumber!==Number($('pageNo').value))return;const copy=await PDFLib.PDFDocument.load(bytes.slice());const page=copy.getPages()[Number($('pageNo').value)-1];const dims=page.getSize(),canvas=$('pdfPage');const png=await copy.embedPng(sigData);const sx=dims.width/canvas.width,sy=dims.height/canvas.height;page.drawImage(png,{x:position.x*sx,y:dims.height-(position.y+position.h)*sy,width:position.w*sx,height:position.h*sy});const out=await copy.save();const blob=new Blob([out],{type:'application/pdf'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=($('soloFile').files[0].name.replace(/\.pdf$/i,'')||'document')+'-signe.pdf';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);$('soloStatus').textContent='PDF signé généré localement et téléchargé.';}catch(e){$('soloStatus').textContent='Erreur : '+e.message;}};
-document.querySelectorAll('input[name="verify"]').forEach(r=>r.onchange=()=>$('duoTotal').textContent=$('verifyDidit').checked?'3,99 €':'1,99 €');
-});
-</script>
+<script defer src="../sign-engine.js"></script>
 </body></html>
