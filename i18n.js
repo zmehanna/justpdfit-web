@@ -187,13 +187,13 @@ function translate(){
   translateTool();
   const info=tools[document.body.dataset.tool];
   if(info){
-   document.title=document.querySelector(".tool-hero h1")?.textContent+" — JustPDFIt";
+   document.title=(document.querySelector(".tool-hero h1")?.textContent||t("toolsTitle"))+" — "+(info?.action==="comingSoon"?t("toolSoon"):t("free"))+" | JustPDFit";
    const desc=document.querySelector('meta[name="description"]');if(desc)desc.content=t(info.desc);
   }
  }else{
   translateHome();
-  document.title="JustPDFIt — "+t("toolsTitle");
-  const desc=document.querySelector('meta[name="description"]');if(desc)desc.content=t("subheadline");
+  document.title=current==="fr"?"JustPDFit : outils PDF gratuits, privés et sécurisés":current==="en"?"JustPDFit – Free, private PDF tools online":"JustPDFit — "+t("toolsTitle")+" · "+t("free");
+  const desc=document.querySelector('meta[name="description"]');if(desc)desc.content=current==="fr"?"Créez, fusionnez, divisez et annotez vos PDF gratuitement, sans compte. Conversion locale sans téléversement. Signature gratuite avec filigrane.":current==="en"?"Create, merge and split PDFs for free in your browser. No account or document upload for supported local tools. Free signing includes a watermark.":t("subheadline");
  }
  if(button){
   const lang=ALLOWED.get(current);
