@@ -5,7 +5,8 @@ const translations={
 fr:{title:"Votre PDF est prêt !",subtitle:"Votre document a été créé avec succès.",name:"Nom du fichier",rename:"Renommer",save:"Enregistrer le nom",download:"Télécharger",share:"Partager",open:"Ouvrir le PDF",close:"Terminer",invalid:"Veuillez saisir un nom de fichier valide.",saved:"Nom mis à jour"},
 en:{title:"Your PDF is ready!",subtitle:"Your document was created successfully.",name:"File name",rename:"Rename",save:"Save name",download:"Download",share:"Share",open:"Open PDF",close:"Done",invalid:"Enter a valid file name.",saved:"File name updated"},
 ar:{title:"ملف PDF جاهز!",subtitle:"تم إنشاء المستند بنجاح.",name:"اسم الملف",rename:"إعادة التسمية",save:"حفظ الاسم",download:"تنزيل",share:"مشاركة",open:"فتح PDF",close:"تم",invalid:"أدخل اسم ملف صالحًا.",saved:"تم تحديث اسم الملف"}};
-const lang=()=>{const l=(window.JustPDFItI18n?.getLanguage?.()||document.documentElement.lang||navigator.language||"en").slice(0,2);return translations[l]?l:"en"};
+Object.assign(translations,window.JustPDFItConfirmLocales||{});
+const lang=()=>{const raw=window.JustPDFItI18n?.getLanguage?.()||document.documentElement.lang||navigator.language||"en";const l=String(raw).toLowerCase().replace("_","-").split("-")[0];return translations[l]?l:"en"};
 const safeName=v=>{const s=v.trim().replace(/[\\/:*?"<>|\x00-\x1f]/g,"").replace(/\.+$/,"").trim();return s?s.replace(/\.pdf$/i,"")+".pdf":""};
 let active=null;
 function open({blob,name,onRename}){
