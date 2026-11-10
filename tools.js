@@ -29,7 +29,7 @@
     link.href = lastURL;
     link.download = name;
     link.hidden = false;
-    feedback(t("toolReadyMsg") + " (" + (blob.size / 1024).toFixed(0) + " KB).");
+    feedback(t("toolReadyMsg") + " (" + (blob.size / 1024).toFixed(0) + " KB).");window.JustPDFItConfirmation?.open({blob,name,onRename:newName=>{link.download=newName;}});
   }
   picker.addEventListener("change", () => {
     clearResult();
