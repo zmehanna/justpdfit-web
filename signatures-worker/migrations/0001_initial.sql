@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS signers (
  id TEXT PRIMARY KEY, document_id TEXT NOT NULL REFERENCES documents(id),
  email TEXT NOT NULL, slot INTEGER NOT NULL CHECK(slot IN (0,1)),
  status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','signed')),
- invite_hash TEXT UNIQUE, otp_hash TEXT, otp_exp INTEGER, otp_attempts INTEGER NOT NULL DEFAULT 0,
+ invite_hash TEXT UNIQUE, invite_sent_at INTEGER, final_sent_at INTEGER, otp_hash TEXT, otp_exp INTEGER, otp_attempts INTEGER NOT NULL DEFAULT 0,
  otp_sent_at INTEGER, otp_sends INTEGER NOT NULL DEFAULT 0,
  session_hash TEXT, session_exp INTEGER, verified_at INTEGER,
  kyc_id TEXT UNIQUE, kyc_status TEXT, signed_at INTEGER,
