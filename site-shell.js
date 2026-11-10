@@ -57,8 +57,19 @@
   const language=getLanguage();
   const t=catalog[language]||catalog.en;
   const brand=header.querySelector(".brand");
-  if(brand && !brand.querySelector(".jpi-powered")) {
-   const b=document.createElement("span");b.className="jpi-powered";b.textContent="by KL-MEHANNA";brand.appendChild(b);
+  // Keep the wordmark and company credit in a real stacked block;
+  // never rely on wrapping and negative margins (mobile overlaps).
+  if(brand && !brand.querySelector(".jpi-brand-text")) {
+   const wordmark=brand.querySelector(".brand-wordmark");
+   if(wordmark){
+    const credit=brand.querySelector(".jpi-powered")||document.createElement("span");
+    credit.className="jpi-powered";
+    credit.textContent="by KL-MEHANNA";
+    const stack=document.createElement("span");
+    stack.className="jpi-brand-text";
+    wordmark.before(stack);
+    stack.append(wordmark,credit);
+   }
   }
   let nav=document.querySelector(".jpi-global-nav");
   if(!nav){
@@ -70,10 +81,13 @@
   const createLink=xlink(createLabel,base+"#workbench");createLink.className="jpi-nav-link jpi-nav-create";
   const createIcon=document.createElement("span");createIcon.className="jpi-nav-icon";createIcon.textContent="✦";createLink.prepend(createIcon);wrap.appendChild(createLink);
   for(let i=0;i<tools.length;i++){
+   // The header only advertises working tools. Planned tools stay in
+   // the footer with an explicit "coming soon" indicator.
+   if(soon.has(tools[i][0]))continue;
    const a=xlink(t[i],pathFor(i));a.className="jpi-nav-link";
    if((i===0 && root)||(i>0 && location.pathname.includes("/"+tools[i][0]+"/")))a.setAttribute("aria-current","page");
    const icon=document.createElement("span");icon.className="jpi-nav-icon";icon.textContent=tools[i][1];icon.setAttribute("aria-hidden","true");a.prepend(icon);
-   if(soon.has(tools[i][0])){a.title=t[22];a.classList.add("jpi-nav-soon");}
+   if(soon.has(tools[i][0])){a.title=t[21];a.classList.add("jpi-nav-soon");}
    wrap.appendChild(a);
   }
   nav.replaceChildren(wrap);nav.setAttribute("aria-label",t[9]);
@@ -85,7 +99,7 @@
   const main=document.createElement("div");main.className="jpi-footer-grid";
   const company=document.createElement("div");company.className="jpi-footer-company";
   const companyLink=xlink("KL-MEHANNA LLC","https://kl-mehanna.com/",true);companyLink.className="jpi-company-title";
-  const strap=document.createElement("p");strap.textContent=t[21];
+  const strap=document.createElement("p");strap.textContent=t[20];
   const motto=document.createElement("p");motto.className="jpi-footer-motto";motto.textContent=t[19];
   const companyCTA=xlink(t[15]+" ↗","https://kl-mehanna.com/company/",true);companyCTA.className="jpi-footer-cta";
   company.append(companyLink,strap,motto,companyCTA);
@@ -114,7 +128,7 @@
   main.append(company,pdf,sites,corp);inner.appendChild(main);
   const foot=document.createElement("div");foot.className="jpi-footer-bottom";
   const left=document.createElement("span");left.textContent="© "+new Date().getFullYear()+" KL-MEHANNA LLC · JustPDFit";
-  const right=document.createElement("span");right.textContent=t[22];
+  const right=document.createElement("span");right.textContent=t[21];
   foot.append(left,right);inner.appendChild(foot);
   footer.replaceChildren(inner);
  }
