@@ -10,6 +10,7 @@
 <link rel="apple-touch-icon" href="./justpdfit-icon.svg">
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./tools.css">
+  <link rel="stylesheet" href="./home-cards.css">
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
   <script defer src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script>
@@ -18,6 +19,7 @@
 <script defer src="./i18n-core.js"></script>
 <script defer src="./i18n-tools.js"></script>
 <script defer src="./i18n-feedback.js"></script>
+<script defer src="./i18n-home-cards.js"></script>
 <script defer src="./i18n.js"></script>
 <script defer src="./app.js"></script>
 <link rel="stylesheet" href="./confirmation.css"><script defer src="./confirmation.js"></script><link rel="stylesheet" href="./site-shell.css">
@@ -143,13 +145,47 @@
       </div>
     </section>
 
-    <section class="container seo-tools" id="pdf-tools" aria-labelledby="tools-title"><div class="section-header"><div><div class="section-kicker">JUSTPDFIT · OUTILS PDF</div><h2 id="tools-title">Tous vos outils PDF au même endroit</h2><p>Conversion, fusion, extraction et annotation. Les outils encore en développement sont clairement identifiés.</p></div></div><div class="seo-tool-grid"><a class="seo-tool-card" href="./sign/"><strong>Signer un PDF</strong><p>Signature individuelle gratuite. Signature a deux a distance des 1,99 € (bientot disponible).</p><span class="tool-badge">Signer gratuitement →</span></a><a class="seo-tool-card" href="./pdf-to-word/"><strong>PDF to Word</strong><p>Conversion Word modifiable en préparation</p><span class="tool-badge soon">En préparation →</span></a>
-<a class="seo-tool-card" href="./jpg-to-pdf/"><strong>JPG to PDF</strong><p>Convertir gratuitement plusieurs images en un PDF</p><span class="tool-badge ">Essayer l’outil →</span></a>
-<a class="seo-tool-card" href="./word-to-pdf/"><strong>Word to PDF</strong><p>Conversion DOCX avec mise en page en préparation</p><span class="tool-badge soon">En préparation →</span></a>
-<a class="seo-tool-card" href="./compress-pdf/"><strong>Compress PDF</strong><p>Réduction réelle du poids des PDF en préparation</p><span class="tool-badge soon">En préparation →</span></a>
-<a class="seo-tool-card" href="./merge-pdf/"><strong>Merge PDF</strong><p>Fusionner plusieurs PDF en un seul document</p><span class="tool-badge ">Essayer l’outil →</span></a>
-<a class="seo-tool-card" href="./edit-pdf/"><strong>Edit PDF</strong><p>Ajouter une annotation texte simple à une page PDF</p><span class="tool-badge ">Essayer l’outil →</span></a>
-<a class="seo-tool-card" href="./split-pdf/"><strong>Split PDF</strong><p>Extraire les pages choisies d’un document PDF</p><span class="tool-badge ">Essayer l’outil →</span></a></div></section>
+    <section class="container seo-tools" id="pdf-tools" aria-labelledby="tools-title">
+      <div class="section-header seo-tools__heading">
+        <div>
+          <div class="section-kicker" data-i18n="homeToolsKicker">VOS OUTILS PDF</div>
+          <h2 id="tools-title" data-i18n="homeToolsHeading">Tous vos outils PDF, prêts à l’emploi</h2>
+          <p data-i18n="homeToolsIntro">Choisissez ce dont vous avez besoin et obtenez votre document en quelques clics. Des outils gratuits, simples et respectueux de vos fichiers.</p>
+        </div>
+      </div>
+      <div class="seo-tool-grid" aria-label="Outils PDF disponibles">
+      <a class="seo-tool-card seo-tool-card--sign" data-home-tool="sign" href="./sign/">
+        <div class="seo-tool-card__top"><span class="seo-tool-icon" aria-hidden="true">✍</span><span class="seo-tool-status" data-i18n="homeSignStatus">Gratuit avec filigrane</span></div>
+        <div class="seo-tool-card__copy"><h3 data-i18n="homeSignTitle">Signer un PDF</h3><p data-i18n="homeSignDesc">Ajoutez une signature manuscrite, dessinée ou importée. Téléchargement gratuit avec un lien JustPDFit discret.</p></div>
+        <span class="seo-tool-cta"><span data-i18n="homeSignCTA">Signer mon PDF</span><span aria-hidden="true">↗</span></span>
+      </a>
+      <a class="seo-tool-card seo-tool-card--create" data-home-tool="create" href="./#workbench">
+        <div class="seo-tool-card__top"><span class="seo-tool-icon" aria-hidden="true">✦</span><span class="seo-tool-status" data-i18n="homeFreeStatus">Gratuit · Sans compte</span></div>
+        <div class="seo-tool-card__copy"><h3 data-i18n="homeCreateTitle">Créer un PDF</h3><p data-i18n="homeCreateDesc">Transformez vos images et fichiers texte compatibles en un PDF, en quelques clics.</p></div>
+        <span class="seo-tool-cta"><span data-i18n="homeCreateCTA">Créer mon PDF</span><span aria-hidden="true">↗</span></span>
+      </a>
+      <a class="seo-tool-card seo-tool-card--merge" data-home-tool="merge" href="./merge-pdf/">
+        <div class="seo-tool-card__top"><span class="seo-tool-icon" aria-hidden="true">▣</span><span class="seo-tool-status" data-i18n="homeFreeStatus">Gratuit · Sans compte</span></div>
+        <div class="seo-tool-card__copy"><h3 data-i18n="homeMergeTitle">Fusionner des PDF</h3><p data-i18n="descMerge">Réunissez plusieurs PDF dans l’ordre de votre choix, directement dans le navigateur.</p></div>
+        <span class="seo-tool-cta"><span data-i18n="homeToolCTA">Utiliser l’outil</span><span aria-hidden="true">↗</span></span>
+      </a>
+      <a class="seo-tool-card seo-tool-card--split" data-home-tool="split" href="./split-pdf/">
+        <div class="seo-tool-card__top"><span class="seo-tool-icon" aria-hidden="true">✂</span><span class="seo-tool-status" data-i18n="homeFreeStatus">Gratuit · Sans compte</span></div>
+        <div class="seo-tool-card__copy"><h3 data-i18n="homeSplitTitle">Diviser un PDF</h3><p data-i18n="descSplit">Sélectionnez les pages à conserver et enregistrez un nouveau PDF.</p></div>
+        <span class="seo-tool-cta"><span data-i18n="homeToolCTA">Utiliser l’outil</span><span aria-hidden="true">↗</span></span>
+      </a>
+      <a class="seo-tool-card seo-tool-card--jpg" data-home-tool="jpg" href="./jpg-to-pdf/">
+        <div class="seo-tool-card__top"><span class="seo-tool-icon" aria-hidden="true">▧</span><span class="seo-tool-status" data-i18n="homeFreeStatus">Gratuit · Sans compte</span></div>
+        <div class="seo-tool-card__copy"><h3 data-i18n="homeJpgTitle">JPG en PDF</h3><p data-i18n="descJpg">Rassemblez vos photos JPG et PNG dans un PDF multipage.</p></div>
+        <span class="seo-tool-cta"><span data-i18n="homeToolCTA">Utiliser l’outil</span><span aria-hidden="true">↗</span></span>
+      </a>
+      <a class="seo-tool-card seo-tool-card--edit" data-home-tool="edit" href="./edit-pdf/">
+        <div class="seo-tool-card__top"><span class="seo-tool-icon" aria-hidden="true">✎</span><span class="seo-tool-status" data-i18n="homeFreeStatus">Gratuit · Sans compte</span></div>
+        <div class="seo-tool-card__copy"><h3 data-i18n="homeEditTitle">Modifier un PDF</h3><p data-i18n="descEdit">Ajoutez une annotation texte à une page PDF, sans effacer son contenu.</p></div>
+        <span class="seo-tool-cta"><span data-i18n="homeToolCTA">Utiliser l’outil</span><span aria-hidden="true">↗</span></span>
+      </a>
+      </div>
+    </section>
     <section class="container library-section" id="library">
       <div class="section-header"><div><div class="section-kicker" data-i18n="libraryKicker">VOS DOCUMENTS</div><h2 data-i18n="libraryTitle">Votre bibliothèque locale</h2><p data-i18n="librarySubtitle">Les PDF enregistrés restent dans ce navigateur, sur cet appareil.</p></div><span class="library-badge" id="libraryCount">0 PDF</span></div>
       <div class="panel library-panel"><div id="libraryEmpty" class="library-empty" data-i18n="libraryEmpty">Les PDF créés apparaîtront ici automatiquement.</div><div id="libraryList" class="library-list"></div></div>
