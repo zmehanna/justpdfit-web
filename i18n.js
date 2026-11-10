@@ -135,8 +135,8 @@ function translateTool(){
   "merge-pdf":"homeMergeTitle","split-pdf":"homeSplitTitle",
   "edit-pdf":"homeEditTitle","jpg-to-pdf":"homeJpgTitle"
  };
- const plannedTitles={"pdf-to-word":"PDF to Word","word-to-pdf":"Word to PDF","compress-pdf":"Compress PDF"};
- const localizedTitle=pageTitles[id]?t(pageTitles[id]):(plannedTitles[id]||id);
+ const plannedTitles={"pdf-to-word":"homePdfWordTitle","word-to-pdf":"homeWordPdfTitle","compress-pdf":"homeCompressTitle"};
+ const localizedTitle=pageTitles[id]?t(pageTitles[id]):(plannedTitles[id]?t(plannedTitles[id]):id);
  const heroTitle=document.querySelector(".tool-hero h1");
  if(heroTitle)heroTitle.textContent=localizedTitle;
  const crumb=document.querySelector(".breadcrumb");
