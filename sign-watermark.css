@@ -12,3 +12,6 @@
 .wizard-final-side #startCleanCheckout{margin:10px 0;background:#fff1f4;color:#ca4560;border:1px solid #f5b1be}
 .wizard-final-side #verifyCleanPayment{margin:10px 0;background:#eaf4ff;color:#27588b;border:1px solid #bdd6f5}
 #downloadSigned[hidden],#startCleanCheckout[hidden],#verifyCleanPayment[hidden]{display:none!important}
+
+.payment-return-notice{max-width:1120px;margin:16px auto 0;padding:15px 18px;background:#f0f7ff;border:1px solid #c7ddfa;border-radius:12px;color:#254566;font-size:13px;font-weight:700;line-height:1.65}
+.payment-return-notice[hidden]{display:none!important}
