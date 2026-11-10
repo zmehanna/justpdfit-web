@@ -154,7 +154,7 @@ async function appendText(pdf,file){
 }
 async function makePDF(){
  if(!state.files.length||state.busy)return;
- if(!window.PDFLib){status("Le moteur PDF n'a pas chargé. Vérifiez votre connexion Internet puis réessayez.",true);return;}
+ if(!window.PDFLib){status(t("errorEngine"),true);return;}
  state.busy=true;renderFiles();$("processLabel").textContent=t("processing");status(t("processing"));
  try{
   const pdf=await PDFLib.PDFDocument.create();const files=state.files.slice();
