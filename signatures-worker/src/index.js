@@ -13,7 +13,7 @@ const address=s=>typeof s==="string"&&s.length<255&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const reply=(body,status=200,origin="https://justpdfit.com")=>new Response(JSON.stringify(body),{status,headers:{"content-type":"application/json","cache-control":"no-store","access-control-allow-origin":origin,"vary":"Origin"}});
 const bodyJSON=async r=>{try{return await r.json()}catch{abort("JSON invalide")}};
 const site=e=>e.SITE_ORIGIN||"https://justpdfit.com";
-const ready=e=>!!(e.SIGNATURES_ENABLED==="true"&&e.STRIPE_SECRET_KEY&&e.STRIPE_WEBHOOK_SECRET&&e.RESEND_API_KEY&&e.MAIL_FROM&&e.OTP_PEPPER&&e.DOCUMENTS&&e.DB);
+const ready=e=>!!(e.SIGNATURES_ENABLED==="true"&&e.STRIPE_SECRET_KEY&&e.STRIPE_WEBHOOK_SECRET&&e.RESEND_API_KEY&&e.MAIL_FROM&&e.OTP_PEPPER&&e.INVITE_SECRET&&e.DOCUMENTS&&e.DB);
 async function mail(e,to,subject,content){
  const r=await fetch("https://api.resend.com/emails",{method:"POST",headers:{"authorization":"Bearer "+e.RESEND_API_KEY,"content-type":"application/json"},body:JSON.stringify({from:e.MAIL_FROM,to:[to],subject,html:content})});
  if(!r.ok)abort("Envoi email temporairement indisponible",502);
@@ -60,16 +60,20 @@ async function create(r,e){
   return reply({checkout_url:c.url});
  }catch(err){await e.DOCUMENTS.delete("original/"+id+".pdf");throw err}
 }
+async function deliverInvitations(e,id){
+ const people=(await e.DB.prepare("SELECT * FROM signers WHERE document_id=? AND invite_sent_at IS NULL ORDER BY slot").bind(id).all()).results;
+ for(const p of people){
+  const token=await hmac(e.INVITE_SECRET,p.id);
+  await e.DB.prepare("UPDATE signers SET invite_hash=? WHERE id=? AND invite_hash IS NULL").bind(await digest(token),p.id).run();
+  await mail(e,p.email,"JustPDFit : document à signer",'<p>Vous avez reçu une invitation personnelle pour signer un document.</p><p><a href="'+safe(signerLink(e,token))+'">Consulter et signer</a></p><p>Un code envoyé à votre adresse email sera exigé. Invitation valable 7 jours.</p>');
+  await e.DB.prepare("UPDATE signers SET invite_sent_at=? WHERE id=?").bind(now(),p.id).run();
+ }
+}
 async function paid(e,session){
  const d=await e.DB.prepare("SELECT * FROM documents WHERE id=?").bind(session.client_reference_id||"").first();
- if(!d||d.status!=="awaiting_payment"||d.checkout_id!==session.id||session.payment_status!=="paid"||session.currency!=="eur"||session.amount_total!==(d.plan==="enhanced"?399:199))return;
- const u=await e.DB.prepare("UPDATE documents SET status='invited',paid_at=? WHERE id=? AND status='awaiting_payment'").bind(now(),d.id).run();
- if(!u.meta.changes)return;
- const people=(await e.DB.prepare("SELECT * FROM signers WHERE document_id=? ORDER BY slot").bind(d.id).all()).results;
- for(const p of people){
-  const token=random();await e.DB.prepare("UPDATE signers SET invite_hash=? WHERE id=?").bind(await digest(token),p.id).run();
-  await mail(e,p.email,"JustPDFit : document à signer",'<p>Vous avez reçu une invitation personnelle pour signer un document.</p><p><a href="'+safe(signerLink(e,token))+'">Consulter et signer</a></p><p>Un code envoyé à votre adresse email sera exigé. Invitation valable 7 jours.</p>');
- }
+ if(!d||!["awaiting_payment","invited"].includes(d.status)||d.checkout_id!==session.id||session.payment_status!=="paid"||session.currency!=="eur"||session.amount_total!==(d.plan==="enhanced"?399:199))return;
+ if(d.status==="awaiting_payment")await e.DB.prepare("UPDATE documents SET status='invited',paid_at=? WHERE id=? AND status='awaiting_payment'").bind(now(),d.id).run();
+ await deliverInvitations(e,d.id);
 }
 async function stripeEvent(r,e){
  const raw=await r.text(),sig=r.headers.get("stripe-signature")||"",t=/t=(\d+)/.exec(sig)?.[1],v=[...sig.matchAll(/v1=([0-9a-f]+)/g)].map(x=>x[1]);
@@ -153,7 +157,14 @@ async function buildFinal(e,id){
  const result=await pdf.save(),hash=await digest(result);
  await e.DOCUMENTS.put("final/"+id+".pdf",result,{httpMetadata:{contentType:"application/pdf"}});
  const u=await e.DB.prepare("UPDATE documents SET status='completed',final_sha=?,completed_at=? WHERE id=? AND status='invited'").bind(hash,now(),id).run();
- if(u.meta.changes)for(const p of people)await mail(e,p.email,"JustPDFit : votre document signé",'<p>Les deux signatures ont été recueillies.</p><p>Ouvrez votre invitation initiale et confirmez votre adresse email pour télécharger le PDF final et son certificat de preuve.</p>');
+ if(u.meta.changes)await deliverFinalEmails(e,id);
+}
+async function deliverFinalEmails(e,id){
+ const recipients=(await e.DB.prepare("SELECT * FROM signers WHERE document_id=? AND final_sent_at IS NULL").bind(id).all()).results;
+ for(const p of recipients){
+  await mail(e,p.email,"JustPDFit : votre document signé",'<p>Les deux signatures ont été recueillies.</p><p>Ouvrez votre invitation initiale et confirmez votre adresse email pour télécharger le PDF final et son certificat de preuve.</p>');
+  await e.DB.prepare("UPDATE signers SET final_sent_at=? WHERE id=?").bind(now(),p.id).run();
+ }
 }
 async function sign(r,e){
  const b=await bodyJSON(r),s=await signer(e,b.token);await authenticate(r,e,s);
@@ -195,6 +206,14 @@ export default {
   }catch(err){return reply({error:err.message||"Erreur interne"},err.status||500);}
  },
  async scheduled(event,e){
+  if(ready(e)){
+   const needsMail=(await e.DB.prepare("SELECT DISTINCT d.id FROM documents d JOIN signers s ON s.document_id=d.id WHERE d.status='invited' AND s.invite_sent_at IS NULL LIMIT 30").all()).results;
+   for(const d of needsMail){try{await deliverInvitations(e,d.id)}catch(err){console.error("invite delivery failed",d.id,err.message)}}
+   const needsFinalize=(await e.DB.prepare("SELECT d.id FROM documents d WHERE d.status='invited' AND (SELECT count(*) FROM signers s WHERE s.document_id=d.id AND s.status='signed')=2 LIMIT 20").all()).results;
+   for(const d of needsFinalize){try{await buildFinal(e,d.id)}catch(err){console.error("finalization failed",d.id,err.message)}}
+   const needsFinalMail=(await e.DB.prepare("SELECT DISTINCT d.id FROM documents d JOIN signers s ON s.document_id=d.id WHERE d.status='completed' AND s.final_sent_at IS NULL LIMIT 30").all()).results;
+   for(const d of needsFinalMail){try{await deliverFinalEmails(e,d.id)}catch(err){console.error("final email failed",d.id,err.message)}}
+  }
   const expired=(await e.DB.prepare("SELECT id FROM documents WHERE expires_at<? LIMIT 100").bind(now()).all()).results;
   for(const d of expired){const people=(await e.DB.prepare("SELECT id FROM signers WHERE document_id=?").bind(d.id).all()).results;
    await Promise.all(["original/"+d.id+".pdf","final/"+d.id+".pdf",...people.map(p=>"signature/"+p.id+".png")].map(k=>e.DOCUMENTS.delete(k)));
