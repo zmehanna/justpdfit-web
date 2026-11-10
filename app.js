@@ -180,7 +180,7 @@ async function makePDF(){
   $("resultInfo").textContent=pdf.getPageCount()+" "+t(pdf.getPageCount()===1?"page":"pages")+" · "+fmt(blob.size);
   $("resultEmpty").hidden=true;$("resultReady").hidden=false;
   $("pdfPreview").src=state.resultUrl+"#toolbar=0";
-  status(t("success"));await saveToLibrary(state.resultName,blob);
+  status(t("success"));await saveToLibrary(state.resultName,blob);window.JustPDFItConfirmation?.open({blob,name:state.resultName,onRename:async name=>{state.resultName=name;$("resultName").textContent=name;}});
  }catch(err){console.error(err);status(err.message||t("error"),true)}
  finally{state.busy=false;$("processLabel").textContent=t("convert");renderFiles();}
 }
