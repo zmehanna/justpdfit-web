@@ -77,7 +77,7 @@
    header.insertAdjacentElement("afterend",nav);
   }
   const wrap=document.createElement("div");wrap.className="container jpi-nav-scroll";
-  const createLabel=({fr:"Créer un PDF",ar:"إنشاء PDF",es:"Crear PDF",de:"PDF erstellen",it:"Crea PDF",pt:"Criar PDF",nl:"PDF maken",zh:"创建 PDF",ja:"PDF を作成",ko:"PDF 만들기",hi:"PDF बनाएं",ru:"Создать PDF",tr:"PDF oluştur",pl:"Utwórz PDF"})[language]||"Create PDF";
+  const createLabel={"en":"Create a PDF","fr":"Créer un PDF","ar":"إنشاء PDF","es":"Crear PDF","de":"PDF erstellen","it":"Crea PDF","pt":"Criar PDF","nl":"PDF maken","ru":"Создать PDF","pl":"Utwórz PDF","tr":"PDF oluştur","zh":"创建 PDF","ja":"PDF を作成","ko":"PDF 만들기","hi":"PDF बनाएं","ur":"PDF بنائیں","fa":"ساخت PDF","id":"Buat PDF","vi":"Tạo PDF","th":"สร้าง PDF","ms":"Cipta PDF","fil":"Gumawa ng PDF","sv":"Skapa PDF","el":"Δημιουργία PDF","ro":"Creează PDF","bn":"PDF তৈরি করুন","sw":"Unda PDF"}[language]||"Create PDF";
   const createLink=xlink(createLabel,base+"#workbench");createLink.className="jpi-nav-link jpi-nav-create";
   const createIcon=document.createElement("span");createIcon.className="jpi-nav-icon";createIcon.textContent="✦";createLink.prepend(createIcon);wrap.appendChild(createLink);
   for(let i=0;i<tools.length;i++){
