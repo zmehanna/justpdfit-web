@@ -696,6 +696,10 @@ const init=()=>{
  document.querySelectorAll('input[name="verify"]').forEach(input=>input.addEventListener("change",syncDuoPrice));
  $("duoNoWatermark").addEventListener("change",syncDuoPrice);
  renderPlacementList();syncWizard();
+ document.addEventListener("justpdfit-language",()=>{
+  syncWizard();
+  if(pdfView){syncPager();if(wizardCurrent===4)syncFinalPager();}
+ });
 };
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);
 else init();
