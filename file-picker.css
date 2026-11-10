@@ -1,0 +1,21 @@
+/* Branded, accessible file controls shared by PDF tools and the signing page. */
+.jpi-file-picker{display:flex;align-items:center;gap:12px;min-height:62px;max-width:100%;padding:6px 10px;background:#f5f8ff;border:1px dashed #c7d9fb;border-radius:12px;position:relative;direction:inherit}
+.jpi-file-picker__input{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;overflow:hidden!important;clip-path:inset(50%)!important;padding:0!important;border:0!important;pointer-events:none!important}
+.jpi-file-picker__choose{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:12px 18px;min-height:46px;flex:0 0 auto;border:0;border-radius:11px;background:linear-gradient(100deg,#ed465c,#fc6472);color:#fff;font:inherit;font-size:13px;font-weight:800;line-height:1.25;cursor:pointer;box-shadow:0 7px 17px #ee4a6120;transition:transform .15s,box-shadow .15s}
+.jpi-file-picker__choose:hover{box-shadow:0 9px 18px #ee4a613b}
+.jpi-file-picker__choose:active{transform:scale(.98)}
+.jpi-file-picker__choose svg{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.jpi-file-picker__choose:focus-visible,.jpi-file-picker__clear:focus-visible{outline:3px solid #6c9efb;outline-offset:3px}
+.jpi-file-picker__choose:disabled{opacity:.5;cursor:not-allowed}
+.jpi-file-picker__name{color:#344365;font-size:13px;line-height:1.45;flex:1;min-width:0;overflow-wrap:anywhere;word-break:break-word}
+.jpi-file-picker__name[data-empty=true]{color:#8392ab}
+.jpi-file-picker__clear{display:grid;place-items:center;background:#e7edf8;border:0;border-radius:50%;height:28px;width:28px;min-width:28px;color:#384b6b;font-size:20px;line-height:1;cursor:pointer}
+.jpi-file-picker__clear:hover{background:#dae3f2}
+.tool-upload .jpi-file-picker{margin-top:12px;background:#f7f9ff}
+.tool-upload .tool-filename[hidden]{display:none!important}
+@media(max-width:540px){
+ .jpi-file-picker{gap:9px;flex-wrap:wrap;padding:9px}
+ .jpi-file-picker__choose{width:100%;flex:1 1 100%;min-width:0}
+ .jpi-file-picker__name{font-size:12px;padding-inline-start:4px}
+ .jpi-file-picker__clear{margin-inline-start:auto}
+}
