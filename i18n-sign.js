@@ -363,7 +363,9 @@
  window.JustPDFItSignI18n={t,translate,packs};
  // Defer scripts load before DOMContentLoaded. Run once on initial load,
  // not only when the visitor manually changes the language.
- if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",translate);
- else translate();
+ // In defer scripts, readyState is often "interactive" before the next
+ // locale pack loads. Wait for DOMContentLoaded so all 27 packs are ready.
+ if(document.readyState==="complete")translate();
+ else document.addEventListener("DOMContentLoaded",translate,{once:true});
  document.addEventListener("justpdfit-language",translate);
 })();
