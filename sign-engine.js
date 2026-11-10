@@ -38,7 +38,7 @@ const init=()=>{
   $("downloadSigned").disabled=!enabled;
   $("downloadSigned").textContent=paid?st("paidDownloadLabel",null,"↓ Télécharger mon PDF signé · Sans filigrane"):st("freeDownloadLabel",null,"↓ Télécharger mon PDF signé · Gratuit");
   $("finalWatermarkLabel").textContent=paid?st("watermarkDisplayPaid",null,"Sans filigrane"):st("watermarkDisplayFree",null,"JustPDFit.com · cliquable");
-  $("finalPriceLabel").textContent=paid?"1,99 €":st("free",null,"Gratuit");
+  $("finalPriceLabel").textContent=paid?st("premiumPrice",null,"1,99 €"):st("free",null,"Gratuit");
   if(!paid)paymentStatus(st("paymentFreeInfo",null,"Le filigrane JustPDFit.com est cliquable et apparaît en bas de chaque page."));
   else if(unlocked)paymentStatus(st("paymentVerifiedInfo",null,"Paiement vérifié. Vous pouvez télécharger ce PDF sans filigrane."));
   else if(!watermark?.backendReady)paymentStatus(st("paymentStripeNotReady",null,"Le paiement sécurisé sera activé dès la connexion du compte Stripe JustPDFit. Aucun débit n'est effectué."));
@@ -691,14 +691,17 @@ const init=()=>{
  });
  function syncDuoPrice(){
   const base=$("verifyDidit").checked?3.99:1.99;
-  $("duoTotal").textContent=(base+($("duoNoWatermark").checked?1.99:0)).toFixed(2).replace(".",",")+" €";
+  $("duoTotal").textContent=new Intl.NumberFormat(window.JustPDFItSignI18n?.getLanguage?.()||"fr",{style:"currency",currency:"EUR"}).format(base+($("duoNoWatermark").checked?1.99:0));
  }
  document.querySelectorAll('input[name="verify"]').forEach(input=>input.addEventListener("change",syncDuoPrice));
  $("duoNoWatermark").addEventListener("change",syncDuoPrice);
  renderPlacementList();syncWizard();
  document.addEventListener("justpdfit-language",()=>{
+  updateStylePreview();
+  renderPlacementList();
   syncWizard();
-  if(pdfView){syncPager();if(wizardCurrent===4)syncFinalPager();}
+  syncDuoPrice();
+  if(pdfView){syncPager();if(wizardCurrent===4)prepareFinalPreview();}
  });
 };
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);
