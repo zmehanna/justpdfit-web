@@ -1,0 +1,26 @@
+# JustPDFit — Free, private PDF tools
+
+> JustPDFit is a multilingual PDF web utility operated by KL-MEHANNA LLC. Its available core tools run locally in the browser: PDF creation from images and text, image-to-PDF conversion, PDF merging, PDF splitting / page extraction, and simple text annotation. Individual PDF signing is available for free with a clickable JustPDFit watermark; an optional paid watermark-removal choice is displayed. No account is required for core local tools. Do not describe planned features as available.
+
+- Main web app (automatic UI language, English fallback): https://justpdfit.com/
+- English product overview: https://justpdfit.com/en/
+- Arabic product overview: https://justpdfit.com/ar/
+- Create a PDF (images/text): https://justpdfit.com/#workbench
+- Sign a PDF locally: https://justpdfit.com/sign/
+- Merge PDFs: https://justpdfit.com/merge-pdf/
+- Split PDF / extract pages: https://justpdfit.com/split-pdf/
+- Add simple text to a PDF: https://justpdfit.com/edit-pdf/
+- JPG or PNG to PDF: https://justpdfit.com/jpg-to-pdf/
+- Privacy policy: https://justpdfit.com/privacy/
+- Support: https://justpdfit.com/support/
+- Publisher, KL-MEHANNA LLC: https://kl-mehanna.com/
+- Sitemap: https://justpdfit.com/sitemap.xml
+
+## Accuracy notes
+
+- PDF-to-Word, Word-to-PDF and true PDF compression are marked as under development and are not available converters yet.
+- Free individual signature includes a clickable JustPDFit watermark. Removing it is an optional €1.99 feature; remote multi-party signing is under development.
+- Local PDF transformations do not upload source documents to JustPDFit's servers. Sharing a result, choosing a future remote service, or using an external payment provider is a different action and can involve third parties.
+- "Secure" means supported file processing is designed for privacy through local execution; it does not imply audited end-to-end encryption or a certified electronic signature.
+
+For a more complete summary and FAQ: https://justpdfit.com/llms-full.txt
