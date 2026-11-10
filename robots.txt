@@ -1,7 +1,35 @@
+# JustPDFit public website: enable search and AI-assisted retrieval.
+# User documents are processed locally by supported tools and are never published here.
 User-agent: *
-Disallow: /
-Allow: /privacy/
-Allow: /support/
+Allow: /
 
-# The main tool website remains staged for SEO until full QA.
-# The privacy and support URLs are intentionally public for app review.
+# Search and user-initiated AI retrieval (OpenAI, Anthropic, Mistral).
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: MistralAI-Index
+Allow: /
+
+User-agent: MistralAI-User
+Allow: /
+
+# Public site content may be indexed without opting in to model-training crawls.
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: MistralAI-Training
+Disallow: /
+
+Sitemap: https://justpdfit.com/sitemap.xml
