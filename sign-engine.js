@@ -180,7 +180,7 @@ const init=()=>{
    $(id+"SigPanel").hidden=id!==next;
   }
   $("sigPreviewLabel").textContent=next==="draw"?st("drawPreview",null,"Dessinez votre signature"):st("signaturePreview",null,"Aperçu de votre signature");
-  $("sigInstructions").textContent=next==="type"?"Saisissez votre nom et choisissez un style. Vous pourrez ensuite le placer sur plusieurs pages.":next==="draw"?"Dessinez au doigt, à la souris ou avec l'Apple Pencil. Votre dessin sera réutilisable sur plusieurs pages.":"Importez votre image de signature (PNG, JPG, WebP). Chaque page pourra avoir sa propre position.";
+  $("sigInstructions").textContent=st(next==="type"?"instructionsType":next==="draw"?"instructionsDraw":"instructionsImage");
   sig.style.cursor=next==="draw"?"crosshair":"default";
   document.querySelector(".sig-colors").hidden=next==="image";
   if(next==="type")renderTyped();
@@ -356,7 +356,7 @@ const init=()=>{
   try{
    await renderPage();
    status(st("pageShown",{page:next,total:pdfView.numPages},"Page "+next+" sur "+pdfView.numPages+" affichée."));
-  }catch(error){status("Erreur d'affichage : "+error.message);}
+  }catch(error){status(st("displayError",{message:error.message},"Erreur d\'affichage : "+error.message));}
  }
  async function renderPage(){
   if(!pdfView)return;
