@@ -281,6 +281,10 @@ const init=()=>{
   $("previewArea").hidden=true;$("documentInfo").hidden=true;
   $("pageNo").disabled=true;
   $("previewPageNo").disabled=true;
+  $("signPageJump").value="1";$("signPageJump").max="1";$("signPageJump").disabled=true;
+  $("finalPageJump").value="1";$("finalPageJump").max="1";
+  $("previousPage").disabled=true;$("nextPage").disabled=true;
+  $("finalPreviousPage").disabled=true;$("finalNextPage").disabled=true;
   $("placementLayer").replaceChildren();
   renderPlacementList();syncWizard();
  }
@@ -314,6 +318,7 @@ const init=()=>{
     internal.append(option);picker.append(option.cloneNode(true));
    }
    internal.disabled=false;picker.disabled=false;internal.value="1";picker.value="1";
+   $("signPageJump").disabled=false;$("signPageJump").max=String(view.numPages);
    $("previewArea").hidden=false;syncPager();
    await renderPage();
    if(generation!==pdfLoadGeneration)return;
@@ -332,7 +337,9 @@ const init=()=>{
   if(!pdfView)return;
   const page=currentPage(),total=pdfView.numPages;
   $("previewPageNo").value=String(page);
-  $("pageCounter").textContent="Page "+page+" sur "+total;
+  $("signPageJump").value=String(page);
+  $("signPageJump").max=String(total);
+  $("pageCounter").textContent="/ "+total;
   $("previewPageTitle").textContent="Positionnez votre signature — page "+page;
   $("previousPage").disabled=page<=1;
   $("nextPage").disabled=page>=total;
@@ -340,7 +347,7 @@ const init=()=>{
  async function selectPage(value){
   if(!pdfView)return;
   const next=clamp(Number(value)||1,1,pdfView.numPages);
-  if(next===currentPage()&&next===pageRenderedNumber)return;
+  if(next===currentPage()&&next===pageRenderedNumber){syncPager();return;}
   $("pageNo").value=String(next);syncPager();
   drag=null;activePlacementId=placements.find(p=>p.page===next)?.id||null;
   addMode=!activePlacementId;
@@ -369,6 +376,10 @@ const init=()=>{
  }
  $("pageNo").addEventListener("change",()=>selectPage($("pageNo").value));
  $("previewPageNo").addEventListener("change",()=>selectPage($("previewPageNo").value));
+ $("signPageJump").addEventListener("change",()=>selectPage($("signPageJump").value));
+ $("signPageJump").addEventListener("keydown",event=>{
+  if(event.key==="Enter"){event.preventDefault();selectPage($("signPageJump").value);$("signPageJump").blur();}
+ });
  $("previousPage").addEventListener("click",()=>selectPage(currentPage()-1));
  $("nextPage").addEventListener("click",()=>selectPage(currentPage()+1));
 
@@ -519,6 +530,7 @@ const init=()=>{
    selector.append(option);
   }
   selector.value=String(pages.includes(previous)?previous:pages[0]);
+  syncFinalPager();
   $("finalFileName").textContent=$("soloFile").files?.[0]?.name||"Document PDF";
   $("finalPageName").textContent=pages.join(", ");
   $("finalPlacementCount").textContent=placements.length+" position"+(placements.length===1?"":"s");
@@ -528,8 +540,39 @@ const init=()=>{
   syncDownloadPricing();
   renderFinalPreview().catch(error=>status("Aperçu impossible : "+error.message));
  }
+ function syncFinalPager(){
+  const pages=signedPages(),current=Number($("finalPreviewPage").value)||pages[0]||1;
+  const index=pages.indexOf(current);
+  $("finalPageJump").value=String(current);
+  $("finalPageJump").max=String(pdfView?.numPages||1);
+  $("finalPageCount").textContent="/ "+(pdfView?.numPages||1);
+  $("finalPreviousPage").disabled=index<=0;
+  $("finalNextPage").disabled=index<0||index>=pages.length-1;
+ }
+ function navigateFinalPage(direction){
+  const pages=signedPages(),current=Number($("finalPreviewPage").value);
+  const next=pages[pages.indexOf(current)+direction];
+  if(next==null)return;
+  $("finalPreviewPage").value=String(next);
+  $("finalPreviewPage").dispatchEvent(new Event("change",{bubbles:true}));
+ }
+ function jumpFinalPage(){
+  const value=Number($("finalPageJump").value);
+  const pages=signedPages();
+  if(!pages.includes(value)){
+   syncFinalPager();
+   $("finalPageJump").setAttribute("aria-invalid","true");
+   $("finalPageJump").title="Choisissez une page signée : "+pages.join(", ");
+   return;
+  }
+  $("finalPageJump").removeAttribute("aria-invalid");
+  $("finalPageJump").title="";
+  $("finalPreviewPage").value=String(value);
+  $("finalPreviewPage").dispatchEvent(new Event("change",{bubbles:true}));
+ }
  async function renderFinalPreview(){
   if(!pdfView||!sigData||!placements.length)return;
+  syncFinalPager();
   const generation=++finalRenderGeneration,view=pdfView,page=Number($("finalPreviewPage").value)||signedPages()[0];
   const original=await view.getPage(page),unit=original.getViewport({scale:1});
   const viewport=original.getViewport({scale:Math.min(1,420/unit.width)});
@@ -559,7 +602,16 @@ const init=()=>{
    pen.restore();
   }
  }
- $("finalPreviewPage").addEventListener("change",()=>renderFinalPreview().catch(error=>status("Aperçu impossible : "+error.message)));
+ $("finalPreviewPage").addEventListener("change",()=>{
+  syncFinalPager();
+  renderFinalPreview().catch(error=>status("Aperçu impossible : "+error.message));
+ });
+ $("finalPreviousPage").addEventListener("click",()=>navigateFinalPage(-1));
+ $("finalNextPage").addEventListener("click",()=>navigateFinalPage(1));
+ $("finalPageJump").addEventListener("change",jumpFinalPage);
+ $("finalPageJump").addEventListener("keydown",event=>{
+  if(event.key==="Enter"){event.preventDefault();jumpFinalPage();$("finalPageJump").blur();}
+ });
 
  $("signWatermarkFree").addEventListener("change",()=>{
   syncDownloadPricing();
