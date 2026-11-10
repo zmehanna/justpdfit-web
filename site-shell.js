@@ -66,6 +66,9 @@
    header.insertAdjacentElement("afterend",nav);
   }
   const wrap=document.createElement("div");wrap.className="container jpi-nav-scroll";
+  const createLabel=({fr:"Créer un PDF",ar:"إنشاء PDF",es:"Crear PDF",de:"PDF erstellen",it:"Crea PDF",pt:"Criar PDF",nl:"PDF maken",zh:"创建 PDF",ja:"PDF を作成",ko:"PDF 만들기",hi:"PDF बनाएं",ru:"Создать PDF",tr:"PDF oluştur",pl:"Utwórz PDF"})[language]||"Create PDF";
+  const createLink=xlink(createLabel,base+"#workbench");createLink.className="jpi-nav-link jpi-nav-create";
+  const createIcon=document.createElement("span");createIcon.className="jpi-nav-icon";createIcon.textContent="✦";createLink.prepend(createIcon);wrap.appendChild(createLink);
   for(let i=0;i<tools.length;i++){
    const a=xlink(t[i],pathFor(i));a.className="jpi-nav-link";
    if((i===0 && root)||(i>0 && location.pathname.includes("/"+tools[i][0]+"/")))a.setAttribute("aria-current","page");
@@ -91,7 +94,7 @@
     const h=document.createElement("h2");h.textContent=title;el.appendChild(h);
     for(const [label,href,ext] of items)el.appendChild(xlink(label,href,ext));return el;
   }
-  const pdf=group(t[9],tools.map((tool,i)=>[t[i]+(soon.has(tool[0])?" · "+(language==="fr"?"bientôt":language==="ar"?"قريبًا":"soon"):""),pathFor(i),false]));
+  const pdf=group(t[9],[[createLabel,base+"#workbench",false],...tools.map((tool,i)=>[t[i]+(soon.has(tool[0])?" · "+(language==="fr"?"bientôt":language==="ar"?"قريبًا":"soon"):""),pathFor(i),false])]);
   const sites=group(t[11],[
    ["JustPDFit","https://justpdfit.com/",true],
    ["FairTaxy","https://fairtaxy.com/",true],
