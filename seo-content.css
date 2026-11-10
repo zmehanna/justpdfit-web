@@ -28,6 +28,10 @@
 .seo-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .seo-feature a{display:inline-block;color:#d94561;font-weight:800;margin-top:15px;font-size:13px}
 .seo-feature-label{display:block;margin-bottom:9px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5678a4;font-weight:800}
-.seo-locale-page[dir=rtl] .seo-trust,.seo-locale-page[dir=rtl] .seo-locale-main,.seo-locale-page[dir=rtl] .seo-trust-card,.seo-locale-page[dir=rtl] .seo-feature{text-align:right}
+html[dir=rtl] .seo-trust,html[dir=rtl] .seo-locale-main,html[dir=rtl] .seo-trust-card,html[dir=rtl] .seo-feature{text-align:right}
 @media(max-width:850px){.seo-trust-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.seo-trust-grid,.seo-feature-grid{grid-template-columns:1fr}.seo-faq{padding:21px}.seo-locale-page .hero-inner{min-height:250px}.seo-trust{margin:42px auto 45px}.seo-locale-main{margin:32px auto 50px}.seo-locale-actions{flex-direction:column;align-items:stretch}}
+
+.seo-language-links{display:flex;gap:12px;flex-wrap:wrap;margin:23px 0 20px}
+.seo-language-links a{display:inline-flex;align-items:center;padding:9px 14px;background:#fff;border:1px solid #e0e6f1;color:#354d75;font-size:13px;font-weight:800;border-radius:999px}
+.seo-language-links a:hover{border-color:#f05067;color:#cf3c58;background:#fff7f9}
