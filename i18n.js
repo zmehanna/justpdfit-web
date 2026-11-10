@@ -112,13 +112,8 @@ function translateHome(){
  writeFirst(".seo-tools .section-kicker","toolsTitle");
  writeFirst(".seo-tools #tools-title","toolsTitle");
  writeFirst(".seo-tools .section-header p","toolsIntro");
- const cards=document.querySelectorAll(".seo-tool-card");
- const ids=["pdf-to-word","jpg-to-pdf","word-to-pdf","compress-pdf","merge-pdf","edit-pdf","split-pdf"];
- cards.forEach((card,index)=>{
-  const meta=tools[ids[index]];if(!meta)return;
-  writeFirst("p",meta.desc,card);
-  writeFirst(".tool-badge",meta.action==="comingSoon"?"toolSoon":"toolReady",card);
- });
+ // Homepage tool cards are now translated exclusively by their data-i18n keys.
+ // Never associate descriptions with DOM positions: cards can be reordered.
  const drop=document.getElementById("dropzone");if(drop)drop.setAttribute("aria-label",t("addFiles"));
  const iframe=document.getElementById("pdfPreview");if(iframe)iframe.title=t("result");
 }
