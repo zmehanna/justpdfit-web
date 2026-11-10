@@ -442,6 +442,10 @@
     const pack=packs[lang]=packs[lang]||{};
     keys.forEach((key,i)=>pack[key]=row[i]);
     pack.homeToolsKicker=pack.toolsTitle||"PDF tools";
+    const upcoming={"en":["PDF to Word","Word to PDF","Compress PDF"],"fr":["PDF vers Word","Word vers PDF","Compresser PDF"],"ar":["PDF إلى Word","Word إلى PDF","ضغط PDF"],"es":["PDF a Word","Word a PDF","Comprimir PDF"],"de":["PDF zu Word","Word zu PDF","PDF komprimieren"],"it":["PDF in Word","Word in PDF","Comprimi PDF"],"pt":["PDF para Word","Word para PDF","Comprimir PDF"],"nl":["PDF naar Word","Word naar PDF","PDF comprimeren"],"tr":["PDF'den Word'e","Word'den PDF'ye","PDF sıkıştır"],"ru":["PDF в Word","Word в PDF","Сжать PDF"],"zh":["PDF 转 Word","Word 转 PDF","压缩 PDF"],"ja":["PDF を Word に","Word を PDF に","PDF を圧縮"],"ko":["PDF를 Word로","Word를 PDF로","PDF 압축"],"hi":["PDF से Word","Word से PDF","PDF संपीड़ित"],"ur":["PDF سے Word","Word سے PDF","PDF کمپریس"],"fa":["PDF به Word","Word به PDF","فشرده‌سازی PDF"],"id":["PDF ke Word","Word ke PDF","Kompres PDF"],"vi":["PDF sang Word","Word sang PDF","Nén PDF"],"th":["PDF เป็น Word","Word เป็น PDF","บีบอัด PDF"],"ms":["PDF ke Word","Word ke PDF","Mampat PDF"],"fil":["PDF to Word","Word to PDF","I-compress PDF"],"sv":["PDF till Word","Word till PDF","Komprimera PDF"],"el":["PDF σε Word","Word σε PDF","Συμπίεση PDF"],"ro":["PDF în Word","Word în PDF","Comprimă PDF"],"bn":["PDF থেকে Word","Word থেকে PDF","PDF সংকুচিত"],"sw":["PDF hadi Word","Word hadi PDF","Bana PDF"],"pl":["PDF na Word","Word na PDF","Kompresuj PDF"]};
+    const upcomingNames=upcoming[lang]||upcoming.en;
+    [pack.homePdfWordTitle,pack.homeWordPdfTitle,pack.homeCompressTitle]=upcomingNames;
+
     pack.homeFreeStatus=(pack.free||"Free")+" · "+(pack.benefitNoSignup||"No account");
   }
 })();
