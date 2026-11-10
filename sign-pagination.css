@@ -1,0 +1,30 @@
+/* Simple, keyboard-accessible PDF pagination for the JustPDFit sign wizard */
+.jpi-page-control-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.jpi-pager{display:inline-flex;align-items:center;justify-content:center;gap:8px;direction:ltr;min-height:47px;padding:5px;border:1px solid #dfe7f3;border-radius:13px;background:#fff;box-shadow:0 5px 16px #1e35530a}
+.jpi-pager-button{width:37px;height:37px;min-width:37px;border:0;border-radius:9px;background:#f1f5fc;color:#283e61;font-size:30px;font-weight:500;line-height:1;display:inline-grid;place-items:center;cursor:pointer}
+.jpi-pager-button:hover:not(:disabled){background:#ffecf0;color:#d53f5c}
+.jpi-pager-button:disabled{opacity:.3;cursor:not-allowed}
+.jpi-pager-button:focus-visible,.jpi-page-jump:focus-visible{outline:3px solid #81a7f0;outline-offset:2px}
+.jpi-page-prefix{color:#53647c;font-size:12px;font-weight:800;white-space:nowrap}
+.jpi-page-jump{appearance:textfield;-moz-appearance:textfield;width:50px;min-width:50px;height:36px!important;min-height:36px!important;padding:6px 4px!important;margin:0!important;box-sizing:border-box;border:1px solid #dfe6f1!important;border-radius:8px!important;background:#fff!important;color:#192b4e!important;font:inherit;font-size:14px!important;font-weight:850!important;text-align:center;line-height:1.3}
+.jpi-page-jump::-webkit-outer-spin-button,.jpi-page-jump::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.jpi-page-total{font-size:13px;color:#667791;min-width:38px;font-weight:800;white-space:nowrap}
+.page-picker .page-picker__hint{font-size:12px;line-height:1.5}
+.wizard-final-selector{align-items:center;gap:12px}
+.wizard-final-selector>.jpi-pager{flex:none}
+.wizard-final-selector select[hidden],.page-picker select[hidden]{display:none!important}
+/* The whole selected page remains visible, with no scrollbars inside preview */
+.wizard-final-preview{display:flex;align-items:center;justify-content:center;min-height:310px;max-height:none;overflow:hidden;padding:13px;background:#f4f7fb}
+.wizard-final-preview canvas{display:block;align-self:center;width:auto;height:auto;max-width:100%;max-height:min(67vh,570px);object-fit:contain;box-shadow:0 7px 23px #1c25441a}
+@media(max-width:900px){.wizard-final-preview{max-height:none}.wizard-final-preview canvas{max-height:min(65vh,510px)}}
+@media(max-width:600px){
+ .jpi-page-control-row{justify-content:center}
+ .jpi-pager{gap:5px}
+ .jpi-pager-button{min-width:40px;width:40px;height:40px}
+ .jpi-page-jump{width:46px;min-width:46px}
+ .wizard-final-selector{justify-content:center;flex-direction:column;align-items:stretch;gap:10px}
+ .wizard-final-selector>label{text-align:center}
+ .wizard-final-selector>.jpi-pager{align-self:center}
+ .wizard-final-preview{min-height:220px;max-height:none}
+ .wizard-final-preview canvas{max-height:min(62vh,470px)}
+}
