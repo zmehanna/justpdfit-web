@@ -35,7 +35,7 @@ a{color:#9c2350}.shell{max-width:1120px;margin:auto;padding:22px 20px 70px}.head
 <section id="duo" class="panel" hidden aria-labelledby="duoTitle"><h2 id="duoTitle">Signature à deux, entièrement en ligne</h2><p class="hint">Les deux signataires reçoivent un email personnel. Aucun compte ni application à installer. La signature à deux sera activée après raccordement sécurisé du service de paiement, des invitations email et du stockage temporaire.</p>
 <div class="field"><label for="duoFile">Document PDF</label><input id="duoFile" type="file" accept="application/pdf,.pdf"></div><div class="field"><label for="signerA">Email du premier signataire</label><input id="signerA" type="email" autocomplete="email" placeholder="personne1@exemple.com"></div><div class="field"><label for="signerB">Email du deuxième signataire</label><input id="signerB" type="email" autocomplete="off" placeholder="personne2@exemple.com"></div>
 <div class="option"><input type="radio" name="verify" id="verifyEmail" value="standard" checked><label for="verifyEmail"><strong>Vérification par code email</strong><small>Deux invitations indépendantes, consentement et rapport de preuve · 1,99 €</small></label></div><div class="option"><input type="radio" name="verify" id="verifyDidit" value="didit"><label for="verifyDidit"><strong>Identification renforcée Didit</strong><small>Vérification des pièces d'identité et du visage pour chaque signataire · 3,99 €</small></label></div><div class="total"><span>Tarif par document</span><span id="duoTotal">1,99 €</span></div>
-<button type="button" class="btn" id="startDuo" disabled title="Service de paiement et d'invitation en cours d'intégration">Paiement et envoi — bientôt disponibles</button><p class="status" aria-live="polite" id="duoStatus">Le service à deux est en préparation. Aucun paiement ni invitation n'est envoyé actuellement.</p></section>
+<button type="button" class="btn" id="startDuo" disabled title="Service de paiement et d'invitation en cours d'intégration">Payer et envoyer les invitations</button><p class="status" aria-live="polite" id="duoStatus">Le service à deux est en préparation. Aucun paiement ni invitation n'est envoyé actuellement.</p></section>
 <footer class="privacy">La signature individuelle ne téléverse pas votre PDF. Le service de signature à distance nécessitera un traitement sécurisé du document avec consentement explicite des deux signataires. <a href="../">JustPDFit.com</a></footer>
 </main>
 <script>
@@ -64,4 +64,4 @@ $('downloadSigned').onclick=async()=>{try{if(!position||!sigData||!pdfDoc)return
 document.querySelectorAll('input[name="verify"]').forEach(r=>r.onchange=()=>$('duoTotal').textContent=$('verifyDidit').checked?'3,99 €':'1,99 €');
 });
 </script>
-</body></html>
+<script defer src="./duo.js"></script></body></html>
