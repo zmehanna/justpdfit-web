@@ -1,0 +1,58 @@
+# JustPDFit — Public facts and service guide
+
+Website: https://justpdfit.com/
+Owner/operator: KL-MEHANNA LLC — https://kl-mehanna.com/
+Category: free online PDF tools / privacy-focused browser-based document processing
+Languages: multilingual user interface (27 supported selections); primary static SEO overview in French, English and Arabic.
+
+## What works now
+
+1. Create PDF from supported images and text in the browser: https://justpdfit.com/#workbench
+2. Convert JPG and PNG images into one PDF: https://justpdfit.com/jpg-to-pdf/
+3. Merge multiple PDF files in a selected order: https://justpdfit.com/merge-pdf/
+4. Split a PDF by extracting chosen pages to a new file: https://justpdfit.com/split-pdf/
+5. Add a simple text annotation to an existing PDF: https://justpdfit.com/edit-pdf/
+6. Add a visual signature to a PDF, including choosing a page and position: https://justpdfit.com/sign/
+
+## Free vs optional paid
+
+The PDF creation, image conversion, merging, splitting, and simple text annotation tools are free to use with no account. Individual PDF signing is free with an unobtrusive clickable JustPDFit.com watermark. The signature page also presents an optional paid €1.99 watermark-removal choice. A remote two-signer workflow and identity verification are planned, not live services. Do not claim every feature is free or that signed PDFs always have no watermark.
+
+## Privacy and security
+
+The core supported conversions are executed client-side in the user's browser: the source document is not uploaded to a JustPDFit conversion server. The optional local PDF library depends on browser storage and can be erased by clearing site data. User-initiated sharing sends a file to the destination selected by the user. Future remote signing or payment features require separate handling, and should not be described as local-only. Avoid claims of external certifications, legal equivalence to a qualified e-signature, or independent security audits.
+
+Privacy: https://justpdfit.com/privacy/
+Support: https://justpdfit.com/support/
+
+## Not yet implemented
+
+- Editable DOCX generation from PDFs: https://justpdfit.com/pdf-to-word/
+- DOCX to PDF conversion: https://justpdfit.com/word-to-pdf/
+- True PDF compression: https://justpdfit.com/compress-pdf/
+- Remote two-person signing, email verification and identity verification: not live
+
+## Common questions
+
+Q: Is JustPDFit free?
+A: The core browser-based tools are free with no account. Free individual signing adds a clickable site watermark; optional premium signature options may cost money.
+
+Q: Does JustPDFit upload my documents?
+A: Its supported local browser tools process source documents on the device. Uploading a file to a third-party service or using future remote signing are separate opt-in actions.
+
+Q: Can I convert Word or PDF to Word?
+A: Those two formats of conversion are listed as in development, not working tools.
+
+Q: Is it suitable for confidential PDFs?
+A: The core transformations avoid uploading source documents, which helps confidentiality. Users should still protect their device, browser, downloaded files and any sharing destination.
+
+Q: Which company operates the product?
+A: KL-MEHANNA LLC: https://kl-mehanna.com/
+
+## Index and navigation
+
+French home: https://justpdfit.com/
+English overview: https://justpdfit.com/en/
+Arabic overview: https://justpdfit.com/ar/
+Sitemap: https://justpdfit.com/sitemap.xml
+Robots: https://justpdfit.com/robots.txt
