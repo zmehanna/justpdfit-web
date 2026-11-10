@@ -1,0 +1,28 @@
+/* Shared JustPDFit / KL-MEHANNA navigation */
+.topbar .brand{flex-wrap:wrap;column-gap:11px;row-gap:0}
+.topbar .brand-wordmark{align-self:center}
+.jpi-powered{display:block;flex-basis:100%;padding-left:57px;font-size:10px;font-weight:750;letter-spacing:.04em;color:#7784a4;margin-top:-8px;white-space:nowrap}
+.jpi-global-nav{background:#fff;border-bottom:1px solid #e9eef6;box-shadow:0 8px 20px #15264808;position:relative;z-index:9}
+.jpi-nav-scroll{display:flex;gap:7px;align-items:center;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;padding:9px 0}
+.jpi-nav-link{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 12px;white-space:nowrap;flex:0 0 auto;border-radius:10px;color:#354564;font-size:12px;font-weight:750;line-height:1.2;transition:background .2s,color .2s}
+.jpi-nav-link:hover{background:#f4f6fc;color:#ed465c}
+.jpi-nav-link[aria-current=page]{background:#fff0f3;color:#d93b5d;box-shadow:inset 0 0 0 1px #ffd4de}
+.jpi-nav-icon{font-size:15px;font-weight:900}
+.jpi-nav-soon{color:#8793a8}
+.jpi-site-footer{background:linear-gradient(120deg,#111d3a,#1b2953 62%,#29234d);color:#d6e2f8;padding:58px 0 0;border:0;position:relative;clear:both}
+.jpi-footer-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr .9fr;gap:38px;padding-bottom:48px}
+.jpi-footer-company{max-width:320px}
+.jpi-company-title{color:#fff;font-size:24px;font-weight:900;letter-spacing:-.8px;display:block;margin-bottom:15px}
+.jpi-footer-company p{color:#bfcbe1;font-size:13px;line-height:1.8;margin:0 0 12px}
+.jpi-footer-company .jpi-footer-motto{color:#fff;font-size:15px;font-weight:750;line-height:1.5}
+.jpi-footer-cta{display:inline-block;margin-top:12px;padding:12px 15px;background:linear-gradient(90deg,#ed465c,#f66b7b);border-radius:10px;color:#fff;font-size:12px;font-weight:800}
+.jpi-footer-column{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.jpi-footer-column h2{color:#fff;font-size:12px;font-weight:850;text-transform:uppercase;letter-spacing:.09em;margin:0 0 9px}
+.jpi-footer-column a{color:#bdcce3;font-size:13px;line-height:1.45}
+.jpi-footer-column a:hover,.jpi-company-title:hover{color:#fff;text-decoration:underline;text-underline-offset:4px}
+.jpi-footer-bottom{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:20px 0;border-top:1px solid #ffffff24;color:#acbbd2;font-size:11px;line-height:1.6}
+html[dir=rtl] .jpi-footer-column,html[dir=rtl] .jpi-footer-company{text-align:right;align-items:flex-start}
+html[dir=rtl] .jpi-powered{padding-left:0;padding-right:57px}
+@media(max-width:1020px){.jpi-footer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:36px}.jpi-nav-link{padding:9px 11px}}
+@media(max-width:620px){.jpi-footer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:27px 16px}.jpi-footer-company{grid-column:1/-1;max-width:none}.jpi-site-footer{padding-top:36px}.jpi-footer-column a{font-size:12px}.jpi-nav-scroll{padding:8px 0}.jpi-powered{padding-left:49px;font-size:9px;margin-top:-5px}.jpi-company-title{font-size:22px}}
+@media(max-width:380px){.jpi-footer-grid{grid-template-columns:1fr}.jpi-footer-company{grid-column:auto}}
