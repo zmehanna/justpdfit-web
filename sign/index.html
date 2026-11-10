@@ -68,6 +68,17 @@ body{background:#f8f9fc;color:var(--ink)}
 .sig-method-panel .jpi-file-picker{margin:8px 0}
 .sigpad{touch-action:none;border:2px dashed #cbd9f3;border-radius:16px;width:100%;height:164px;background:linear-gradient(180deg,#f9fbff,#fff);display:block}
 .workspace{display:grid;grid-template-columns:minmax(0,1fr) 245px;gap:22px;align-items:start}
+.page-picker{border:1px solid #e4eaf5;background:linear-gradient(125deg,#f8faff,#fff5f7);border-radius:15px;padding:17px;margin:0 0 18px}
+.page-picker__title{font-size:15px;font-weight:850;color:#253452;margin:0 0 6px}
+.page-picker__hint{font-size:12px;color:#637391;margin:0 0 12px;line-height:1.55}
+.page-picker__row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.page-picker__row select{min-height:44px;flex:1;min-width:150px;max-width:330px;border:1px solid #d7e1f0;border-radius:10px;padding:10px 12px;font:inherit;font-size:13px;background:#fff;color:#243451}
+.page-picker__row button{min-height:44px;border:1px solid #dfe6f2;border-radius:10px;background:#fff;padding:10px 15px;color:#334868;font-size:12px;font-weight:800;cursor:pointer}
+.page-picker__row button:not(:disabled):hover{border-color:#f394a3;color:#dc425c}
+.page-picker__row button:disabled{opacity:.45;cursor:not-allowed}
+.page-picker__count{font-size:12px;font-weight:850;color:#dc425c;white-space:nowrap}
+.page-picker__row select:focus-visible,.page-picker__row button:focus-visible{outline:3px solid #6c9efb;outline-offset:2px}
+@media(max-width:540px){.page-picker__row select{order:-2;flex-basis:100%;max-width:none}.page-picker__count{order:-1;flex-basis:100%}.page-picker__row button{flex:1}}
 .pdfstage{border:1px solid #e8edf6;border-radius:13px;position:relative;max-width:100%;width:max-content;overflow:hidden;background:white;line-height:0;touch-action:manipulation;box-shadow:0 8px 25px #23355f14}
 .pdfstage canvas{max-width:100%;height:auto;display:block}
 .placed{position:absolute;border:2px dashed #ed465c;cursor:move;touch-action:none;min-width:70px;min-height:25px}
@@ -169,7 +180,17 @@ body{background:#f8f9fc;color:var(--ink)}
 <div class="controls"><button class="btn ghost" type="button" id="clearSig">Effacer la signature</button></div>
 <div class="note" id="sigInstructions">Saisissez votre nom, puis choisissez un des quatre styles. Après chargement du PDF, touchez ou cliquez à l'endroit où placer votre signature, puis déplacez-la si besoin.</div></div>
 <div class="sidebar"><div class="field"><label for="pageNo">Page à signer</label><select id="pageNo" disabled><option value="1">1</option></select></div><div class="field"><label for="sigWidth">Largeur de signature</label><select id="sigWidth"><option value="140">Petite</option><option value="200" selected>Moyenne</option><option value="270">Grande</option></select></div><button id="downloadSigned" class="btn primary-sign" type="button" disabled>Télécharger le PDF signé</button><p class="hint">Le fichier et le dessin restent sur cet appareil. La signature est visuelle, non qualifiée.</p></div></div>
-<div id="previewArea" hidden><h3>Positionnez votre signature</h3><div class="pdfstage" id="pdfStage"><canvas id="pdfPage"></canvas><div id="placedSig" class="placed" tabindex="0" role="img" aria-label="Position de la signature" hidden><img id="sigImage" alt=""></div></div></div>
+<div id="previewArea" hidden>
+<div id="pagePicker" class="page-picker">
+ <p class="page-picker__title">Choisissez la page à signer</p>
+ <p class="page-picker__hint">Parcourez votre document et sélectionnez la page où vous souhaitez placer votre signature.</p>
+ <div class="page-picker__row">
+  <button id="previousPage" type="button" aria-label="Afficher la page précédente">← Précédente</button>
+  <select id="previewPageNo" aria-label="Page du document à signer"></select>
+  <button id="nextPage" type="button" aria-label="Afficher la page suivante">Suivante →</button>
+  <span id="pageCounter" class="page-picker__count" aria-live="polite">Page 1 sur 1</span>
+ </div>
+</div><h3 id="previewPageTitle">Positionnez votre signature</h3><div class="pdfstage" id="pdfStage"><canvas id="pdfPage"></canvas><div id="placedSig" class="placed" tabindex="0" role="img" aria-label="Position de la signature" hidden><img id="sigImage" alt=""></div></div></div>
 <p id="soloStatus" class="status" role="status" aria-live="polite"></p></section>
 <section id="duo" class="panel sign-panel" hidden aria-labelledby="duoTitle"><h2 id="duoTitle">Signature à deux, entièrement en ligne</h2><p class="hint">Les deux signataires reçoivent un email personnel. Aucun compte ni application à installer. La signature à deux sera activée après raccordement sécurisé du service de paiement, des invitations email et du stockage temporaire.</p>
 <div class="field"><label for="duoFile">Document PDF</label><input id="duoFile" data-jpi-picker type="file" accept="application/pdf,.pdf"></div><div class="field"><label for="signerA">Email du premier signataire</label><input id="signerA" type="email" autocomplete="email" placeholder="personne1@exemple.com"></div><div class="field"><label for="signerB">Email du deuxième signataire</label><input id="signerB" type="email" autocomplete="off" placeholder="personne2@exemple.com"></div>
@@ -314,17 +335,67 @@ $("clearSig").onclick=()=>{
 };
 updateStylePreview();
 document.fonts.ready.then(()=>{if(method==="type"&&$("typedName").value.trim())renderTyped();});
-function updateDownload(){$('downloadSigned').disabled=!(pdfDoc&&sigData&&position)}
-$('soloFile').addEventListener('change',async e=>{try{const f=e.target.files?.[0];if(!f)return;if(f.size>25*1024*1024)throw Error('Le PDF doit faire 25 Mo maximum.');if(!window.PDFLib||!window.pdfjsLib)throw Error('Bibliothèques PDF indisponibles, rechargez la page.');bytes=new Uint8Array(await f.arrayBuffer());pdfDoc=await PDFLib.PDFDocument.load(bytes.slice(),{ignoreEncryption:false});pdfView=await pdfjsLib.getDocument({data:bytes.slice()}).promise;const s=$('pageNo');s.innerHTML='';for(let i=1;i<=pdfView.numPages;i++){const o=document.createElement('option');o.value=i;o.textContent='Page '+i;s.append(o);}s.disabled=false;position=null;$('placedSig').hidden=true;await renderPage();$('previewArea').hidden=false;$('soloStatus').textContent='PDF chargé. Touchez la page pour positionner votre signature.';updateDownload();}catch(err){pdfDoc=null;pdfView=null;$('previewArea').hidden=true;$('soloStatus').textContent='Erreur : '+err.message;updateDownload();}});
-async function renderPage(){if(!pdfView)return;const pg=await pdfView.getPage(Number($('pageNo').value));const base=pg.getViewport({scale:1});const scale=Math.min(1.45, Math.max(.45, 650/base.width));const vp=pg.getViewport({scale});const c=$('pdfPage');c.width=Math.round(vp.width);c.height=Math.round(vp.height);await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;position=null;$('placedSig').hidden=true;updateDownload();}
-$('pageNo').onchange=()=>renderPage().catch(e=>$('soloStatus').textContent=e.message);
+function updateDownload(){$('downloadSigned').disabled=!(pdfDoc&&sigData&&position&&pageRenderedNumber===Number($('pageNo').value))}
+$('soloFile').addEventListener('change',async e=>{try{const f=e.target.files?.[0];if(!f)return;if(f.size>25*1024*1024)throw Error('Le PDF doit faire 25 Mo maximum.');if(!window.PDFLib||!window.pdfjsLib)throw Error('Bibliothèques PDF indisponibles, rechargez la page.');bytes=new Uint8Array(await f.arrayBuffer());pdfDoc=await PDFLib.PDFDocument.load(bytes.slice(),{ignoreEncryption:false});pdfView=await pdfjsLib.getDocument({data:bytes.slice()}).promise;const s=$('pageNo'),p=$('previewPageNo');s.innerHTML='';p.innerHTML='';
+for(let i=1;i<=pdfView.numPages;i++){const o=document.createElement('option');o.value=i;o.textContent='Page '+i;s.append(o);p.append(o.cloneNode(true));}
+s.disabled=false;p.disabled=false;s.value='1';p.value='1';position=null;$('placedSig').hidden=true;
+$('previewArea').hidden=false;syncPager();await renderPage();
+$('soloStatus').textContent=pdfView.numPages>1?'PDF chargé ('+pdfView.numPages+' pages). Choisissez la page à signer, puis touchez la page pour positionner votre signature.':'PDF chargé. Touchez la page pour positionner votre signature.';updateDownload();}catch(err){pageRenderGeneration++;pageRenderedNumber=0;pdfDoc=null;pdfView=null;$('previewArea').hidden=true;$('soloStatus').textContent='Erreur : '+err.message;updateDownload();}});
+let pageRenderGeneration=0,pageRenderedNumber=0;
+function syncPager(){
+ if(!pdfView)return;
+ const n=Number($('pageNo').value),total=pdfView.numPages;
+ $('previewPageNo').value=String(n);
+ $('pageCounter').textContent='Page '+n+' sur '+total;
+ $('previewPageTitle').textContent='Positionnez votre signature — page '+n;
+ $('previousPage').disabled=n<=1;
+ $('nextPage').disabled=n>=total;
+}
+async function selectPage(n){
+ if(!pdfView)return;
+ const next=Math.max(1,Math.min(pdfView.numPages,Number(n)||1));
+ if(next===Number($('pageNo').value) && next===pageRenderedNumber)return;
+ $('pageNo').value=String(next);
+ syncPager();
+ position=null;drag=null;$('placedSig').hidden=true;
+ pageRenderedNumber=0;
+ updateDownload();
+ try{await renderPage();$('soloStatus').textContent='Page '+next+' sur '+pdfView.numPages+' affichée. Touchez le document pour placer la signature.';}
+ catch(e){$('soloStatus').textContent='Erreur d’affichage : '+e.message;}
+}
+async function renderPage(){
+ if(!pdfView)return;
+ const generation=++pageRenderGeneration;
+ const requestedPage=Number($('pageNo').value);
+ pageRenderedNumber=0;updateDownload();
+ const currentView=pdfView;
+ const pg=await currentView.getPage(requestedPage);
+ if(generation!==pageRenderGeneration||currentView!==pdfView)return;
+ const base=pg.getViewport({scale:1});
+ const scale=Math.min(1.45,Math.max(.45,650/base.width));
+ const vp=pg.getViewport({scale});
+ // Render into an offscreen canvas; rapid page changes cannot mix PDF.js render tasks.
+ const temporary=document.createElement('canvas');
+ temporary.width=Math.round(vp.width);temporary.height=Math.round(vp.height);
+ await pg.render({canvasContext:temporary.getContext('2d'),viewport:vp}).promise;
+ if(generation!==pageRenderGeneration||currentView!==pdfView)return;
+ const c=$('pdfPage');
+ c.width=temporary.width;c.height=temporary.height;
+ c.getContext('2d').drawImage(temporary,0,0);
+ pageRenderedNumber=requestedPage;
+ position=null;$('placedSig').hidden=true;updateDownload();
+}
+$('pageNo').onchange=()=>selectPage($('pageNo').value);
+$('previewPageNo').onchange=()=>selectPage($('previewPageNo').value);
+$('previousPage').onclick=()=>selectPage(Number($('pageNo').value)-1);
+$('nextPage').onclick=()=>selectPage(Number($('pageNo').value)+1);
 function boundPosition(x,y){const c=$('pdfPage');const w=Math.min(Number($('sigWidth').value),c.width*.7),h=w*220/700;return {x:Math.min(Math.max(0,x),Math.max(0,c.width-w)),y:Math.min(Math.max(0,y),Math.max(0,c.height-h)),w,h};}
 function syncPlaced(){if(!position)return;const el=$('placedSig');const c=$('pdfPage');el.style.left=(position.x/c.width*100)+'%';el.style.top=(position.y/c.height*100)+'%';el.style.width=(position.w/c.width*100)+'%';el.style.height=(position.h/c.height*100)+'%';}
-$('pdfStage').addEventListener('pointerdown',e=>{if(!pdfDoc||!sigData)return;const r=$('pdfPage').getBoundingClientRect(),c=$('pdfPage');const px=(e.clientX-r.left)*c.width/r.width,py=(e.clientY-r.top)*c.height/r.height;if(e.target.closest('#placedSig')&&position){drag={ox:px-position.x,oy:py-position.y};}else{const p=boundPosition(px-Number($('sigWidth').value)/2,py-Number($('sigWidth').value)*220/1400);position=p;drag={ox:px-p.x,oy:py-p.y};}$('placedSig').hidden=false;syncPlaced();updateDownload();$('pdfStage').setPointerCapture(e.pointerId);});
+$('pdfStage').addEventListener('pointerdown',e=>{if(!pdfDoc||!sigData||pageRenderedNumber!==Number($('pageNo').value))return;const r=$('pdfPage').getBoundingClientRect(),c=$('pdfPage');const px=(e.clientX-r.left)*c.width/r.width,py=(e.clientY-r.top)*c.height/r.height;if(e.target.closest('#placedSig')&&position){drag={ox:px-position.x,oy:py-position.y};}else{const p=boundPosition(px-Number($('sigWidth').value)/2,py-Number($('sigWidth').value)*220/1400);position=p;drag={ox:px-p.x,oy:py-p.y};}$('placedSig').hidden=false;syncPlaced();updateDownload();$('pdfStage').setPointerCapture(e.pointerId);});
 $('pdfStage').addEventListener('pointermove',e=>{if(!drag||!position)return;const r=$('pdfPage').getBoundingClientRect(),c=$('pdfPage');const px=(e.clientX-r.left)*c.width/r.width,py=(e.clientY-r.top)*c.height/r.height;position=boundPosition(px-drag.ox,py-drag.oy);syncPlaced();});
 $('pdfStage').addEventListener('pointerup',()=>drag=null);$('pdfStage').addEventListener('pointercancel',()=>drag=null);
 $('sigWidth').onchange=()=>{if(position){position=boundPosition(position.x,position.y);syncPlaced();}};
-$('downloadSigned').onclick=async()=>{try{if(!position||!sigData||!pdfDoc)return;const copy=await PDFLib.PDFDocument.load(bytes.slice());const page=copy.getPages()[Number($('pageNo').value)-1];const dims=page.getSize(),canvas=$('pdfPage');const png=await copy.embedPng(sigData);const sx=dims.width/canvas.width,sy=dims.height/canvas.height;page.drawImage(png,{x:position.x*sx,y:dims.height-(position.y+position.h)*sy,width:position.w*sx,height:position.h*sy});const out=await copy.save();const blob=new Blob([out],{type:'application/pdf'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=($('soloFile').files[0].name.replace(/\.pdf$/i,'')||'document')+'-signe.pdf';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);$('soloStatus').textContent='PDF signé généré localement et téléchargé.';}catch(e){$('soloStatus').textContent='Erreur : '+e.message;}};
+$('downloadSigned').onclick=async()=>{try{if(!position||!sigData||!pdfDoc||pageRenderedNumber!==Number($('pageNo').value))return;const copy=await PDFLib.PDFDocument.load(bytes.slice());const page=copy.getPages()[Number($('pageNo').value)-1];const dims=page.getSize(),canvas=$('pdfPage');const png=await copy.embedPng(sigData);const sx=dims.width/canvas.width,sy=dims.height/canvas.height;page.drawImage(png,{x:position.x*sx,y:dims.height-(position.y+position.h)*sy,width:position.w*sx,height:position.h*sy});const out=await copy.save();const blob=new Blob([out],{type:'application/pdf'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=($('soloFile').files[0].name.replace(/\.pdf$/i,'')||'document')+'-signe.pdf';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);$('soloStatus').textContent='PDF signé généré localement et téléchargé.';}catch(e){$('soloStatus').textContent='Erreur : '+e.message;}};
 document.querySelectorAll('input[name="verify"]').forEach(r=>r.onchange=()=>$('duoTotal').textContent=$('verifyDidit').checked?'3,99 €':'1,99 €');
 });
 </script>
