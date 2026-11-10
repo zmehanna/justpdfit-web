@@ -60,7 +60,7 @@ const ar=[
 function render(){
 const raw=window.JustPDFItI18n?.getLanguage?.()||document.documentElement.lang||"fr";
 const lang=raw.split("-")[0];
-const data=lang==="fr"?null:lang==="ar"?ar:en;
+const data=lang==="fr"?null:lang==="ar"?ar:(window.JustPDFItSeoLocales?.[lang]||en);
 nodes.forEach((el,i)=>{
  if(!el)return;
  if(!data){el.innerHTML=fr[i];return;}
