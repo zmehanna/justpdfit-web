@@ -3,6 +3,7 @@
 "use strict";
 const init=()=>{
  const $=id=>document.getElementById(id);
+ const st=(key,vars,fallback)=>{const value=window.JustPDFItSignI18n?.t?.(key,vars);return value&&value!==key?value:fallback;};
  const sig=$("sigCanvas"),ctx=sig.getContext("2d");
  ctx.lineCap="round";ctx.lineJoin="round";ctx.lineWidth=3;
  let bytes=null,pdfDoc=null,pdfView=null,pdfLoadGeneration=0,pageRenderGeneration=0,pageRenderedNumber=0;
@@ -234,7 +235,7 @@ const init=()=>{
  }
  function syncWizard(){
   const maximum=maxWizardStep();
-  const names=["","Créer ma signature →","Positionner ma signature →","Vérifier mon PDF →"];
+  const names=["",st("buttonCreate",null,"Créer ma signature →"),st("buttonPosition",null,"Positionner ma signature →"),st("buttonReview",null,"Vérifier mon PDF →")];
   for(const button of document.querySelectorAll("[data-wizard-step]")){
    const step=Number(button.dataset.wizardStep),current=step===wizardCurrent;
    button.disabled=step>maximum;
@@ -243,7 +244,7 @@ const init=()=>{
    button.querySelector(".wizard-step__number").textContent=step<wizardCurrent?"✓":String(step);
   }
   for(let step=1;step<=4;step++)$("wizardStep"+step).hidden=step!==wizardCurrent;
-  $("wizardCounter").textContent="Étape "+wizardCurrent+" sur 4";
+  $("wizardCounter").textContent=st("stepCount",{step:wizardCurrent},"Étape "+wizardCurrent+" sur 4");
   $("wizardBack").hidden=wizardCurrent===1;
   $("wizardNext").hidden=wizardCurrent===4;
   if(wizardCurrent<4){
@@ -252,10 +253,10 @@ const init=()=>{
   }
   const hints=[
    "",
-   pdfDoc?"Votre PDF est prêt. Passez à votre signature.":"Choisissez un document PDF pour commencer.",
-   sigData?"Votre signature est prête. Passez au positionnement.":"Créez votre signature pour continuer.",
-   placements.length?placements.length+" position(s) enregistrée(s). Vous pouvez en ajouter.":"Cliquez sur le PDF pour placer votre première signature.",
-   "Vérifiez les pages signées, puis téléchargez votre document."
+   pdfDoc?st("hintPdfReady",null,"Votre PDF est prêt. Passez à votre signature."):st("hintChoosePdf",null,"Choisissez un document PDF pour commencer."),
+   sigData?st("hintSigReady",null,"Votre signature est prête. Passez au positionnement."):st("hintMakeSig",null,"Créez votre signature pour continuer."),
+   placements.length?st("hintPositions",{n:placements.length},placements.length+" position(s) enregistrée(s). Vous pouvez en ajouter."):st("hintClickFirst",null,"Cliquez sur le PDF pour placer votre première signature."),
+   st("hintFinal",null,"Vérifiez les pages signées, puis téléchargez votre document.")
   ];
   $("wizardFooterHint").textContent=hints[wizardCurrent];
   $("addPlacement").disabled=!sigData;
@@ -340,7 +341,7 @@ const init=()=>{
   $("signPageJump").value=String(page);
   $("signPageJump").max=String(total);
   $("pageCounter").textContent="/ "+total;
-  $("previewPageTitle").textContent="Positionnez votre signature — page "+page;
+  $("previewPageTitle").textContent=st("pagePositionTitle",{page},"Positionnez votre signature — page "+page);
   $("previousPage").disabled=page<=1;
   $("nextPage").disabled=page>=total;
  }
