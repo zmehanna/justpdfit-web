@@ -131,6 +131,45 @@ function replaceFaq(){
 }
 function translateTool(){
  const id=document.body.dataset.tool,info=tools[id];if(!info)return;
+ const pageTitles={
+  "merge-pdf":"homeMergeTitle","split-pdf":"homeSplitTitle",
+  "edit-pdf":"homeEditTitle","jpg-to-pdf":"homeJpgTitle"
+ };
+ const plannedTitles={"pdf-to-word":"PDF to Word","word-to-pdf":"Word to PDF","compress-pdf":"Compress PDF"};
+ const localizedTitle=pageTitles[id]?t(pageTitles[id]):(plannedTitles[id]||id);
+ const heroTitle=document.querySelector(".tool-hero h1");
+ if(heroTitle)heroTitle.textContent=localizedTitle;
+ const crumb=document.querySelector(".breadcrumb");
+ if(crumb){
+  const trailing=[...crumb.childNodes].find(node=>node.nodeType===3);
+  if(trailing)trailing.textContent=" / "+localizedTitle;
+ }
+ // Secondary links mirror the real tools, not unfinished converters.
+ const available=[
+  ["../","home"],["../#workbench","homeCreateTitle"],["../sign/","homeSignTitle"],
+  ["../merge-pdf/","homeMergeTitle"],["../split-pdf/","homeSplitTitle"],
+  ["../edit-pdf/","homeEditTitle"],["../jpg-to-pdf/","homeJpgTitle"]
+ ];
+ function makeToolsNav(target,withHome){
+  if(!target)return;
+  const list=available.filter(([url])=>{
+   if(!withHome&&url==="../")return false;
+   return !url.includes("/"+id+"/");
+  });
+  target.replaceChildren();
+  for(const [url,key] of list){
+   const link=document.createElement("a");link.href=url;link.textContent=t(key);target.append(link);
+  }
+  if(withHome && !info.action?.includes("comingSoon")){
+   const active=document.createElement("span");active.className="current";
+   active.setAttribute("aria-current","page");active.textContent=localizedTitle;
+   target.append(active);
+  }
+ }
+ makeToolsNav(document.querySelector(".tool-nav"),true);
+ makeToolsNav(document.querySelector(".related > div"),false);
+ const sections=document.querySelector(".tool-sections");
+ if(sections)sections.setAttribute("aria-label",t("toolsTitle"));
  write(".skip","openWorkbench");
  writeFirst(".tools-toplink","toolsAll");
  writeFirst(".breadcrumb a","home");
@@ -145,10 +184,10 @@ function translateTool(){
  writeFirst(".tool-notice strong","comingSoon");
  writeFirst(".tool-notice p","toolPrepBody");
  writeFirst(".tool-notice a","tryTools");
- writeFirst(".tool-upload strong","chooseFilesPdf");
+ writeFirst(".tool-upload strong",id==="jpg-to-pdf"?"chooseFiles":"chooseFilesPdf");
  const fname=document.querySelector("#tool-filename");
  if(fname && !document.querySelector("#tool-files")?.files?.length)fname.textContent=t("noneSelected");
- writeFirst("#tool-submit",info.action);
+ writeFirst("#tool-submit",info.action==="comingSoon"?"comingSoon":pageTitles[id]||info.action);
  writeFirst("#tool-download","downloadResult");
  writeFirst(".tool-box small","localNote");
  writeFirst("label[for='edit-page']","editPage");
