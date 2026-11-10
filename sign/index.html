@@ -9,6 +9,13 @@
 <link rel="stylesheet" href="../sign-wizard.css">
 <link rel="stylesheet" href="../sign-multi.css">
 <link rel="stylesheet" href="../sign-watermark.css">
+<link rel="stylesheet" href="../i18n.css">
+<link rel="stylesheet" href="../sign-pagination.css">
+<script defer src="../i18n-core.js"></script>
+<script defer src="../i18n-tools.js"></script>
+<script defer src="../i18n-feedback.js"></script>
+<script defer src="../i18n.js"></script>
+<script defer src="../sign-i18n.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Dancing+Script:wght@600&family=Great+Vibes&family=Pacifico&display=swap" rel="stylesheet">
@@ -149,7 +156,7 @@ body{background:#f8f9fc;color:var(--ink)}
 <meta name="twitter:description" content="Signez un PDF gratuitement en ligne, directement dans votre navigateur et sans envoyer le document. Filigrane cliquable inclus ; suppression optionnelle à 1,99 €.">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://justpdfit.com/sign/#webpage","name":"Signer un PDF gratuitement, sans compte | JustPDFit","url":"https://justpdfit.com/sign/","description":"Signez un PDF gratuitement en ligne, directement dans votre navigateur et sans envoyer le document. Filigrane cliquable inclus ; suppression optionnelle à 1,99 €.","inLanguage":"fr","isPartOf":{"@id":"https://justpdfit.com/#website"},"publisher":{"@id":"https://kl-mehanna.com/#organization"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"JustPDFit","item":"https://justpdfit.com/"},{"@type":"ListItem","position":2,"name":"Signer un PDF","item":"https://justpdfit.com/sign/"}]}]}</script>
 </head>
-<body>
+<body class="sign-page">
 <header class="topbar">
  <div class="container topbar-inner">
   <a class="brand" href="../" aria-label="JustPDFit - Accueil"><img class="brand-icon" src="../justpdfit-icon.svg" width="46" height="46" alt=""><span class="brand-wordmark"><span class="brand-word">Just</span><span class="brand-pdf"><strong>PDF</strong></span><span class="brand-word">it!</span></span></a>
@@ -227,11 +234,15 @@ body{background:#f8f9fc;color:var(--ink)}
 <div id="pagePicker" class="page-picker">
  <p class="page-picker__title">Choisissez la page à signer</p>
  <p class="page-picker__hint">Parcourez votre document et sélectionnez la page où vous souhaitez placer votre signature.</p>
- <div class="page-picker__row">
-  <button id="previousPage" type="button" aria-label="Afficher la page précédente">← Précédente</button>
-  <select id="previewPageNo" aria-label="Page du document à signer"></select>
-  <button id="nextPage" type="button" aria-label="Afficher la page suivante">Suivante →</button>
-  <span id="pageCounter" class="page-picker__count" aria-live="polite">Page 1 sur 1</span>
+ <div class="page-picker__row jpi-page-control-row">
+  <div class="jpi-pager" aria-label="Naviguer entre les pages à signer">
+   <button id="previousPage" class="jpi-pager-button" type="button" aria-label="Page précédente" title="Page précédente" disabled>‹</button>
+   <label for="signPageJump" class="jpi-page-prefix">Page</label>
+   <input id="signPageJump" class="jpi-page-jump" type="number" inputmode="numeric" min="1" max="1" value="1" aria-label="Numéro de la page à signer">
+   <span id="pageCounter" class="jpi-page-total" aria-live="polite">/ 1</span>
+   <button id="nextPage" class="jpi-pager-button" type="button" aria-label="Page suivante" title="Page suivante" disabled>›</button>
+  </div>
+  <select id="previewPageNo" hidden aria-hidden="true" tabindex="-1" aria-label="Page du document à signer"></select>
  </div>
 </div><h3 id="previewPageTitle">Positionnez votre signature</h3><div class="pdfstage" id="pdfStage"><canvas id="pdfPage"></canvas><div id="placementLayer" aria-label="Emplacements des signatures sur cette page"></div></div></div></div>
 <aside class="wizard-position-tools">
@@ -252,7 +263,15 @@ body{background:#f8f9fc;color:var(--ink)}
 <div class="wizard-step-header"><span class="wizard-eyebrow">ÉTAPE 4 · VÉRIFICATION</span><h3 id="wizardTitle4">Votre PDF signé est prêt</h3><p>Vérifiez l'emplacement de votre signature avant de télécharger le document.</p></div>
 <div class="wizard-final-grid">
 <div class="wizard-final-preview-group">
- <div class="wizard-final-selector"><label for="finalPreviewPage">Vérifier la page signée</label><select id="finalPreviewPage" aria-label="Page signée à vérifier"></select></div>
+ <div class="wizard-final-selector"><label for="finalPageJump">Vérifier la page signée</label>
+ <div class="jpi-pager" aria-label="Parcourir les pages signées">
+  <button id="finalPreviousPage" class="jpi-pager-button" type="button" aria-label="Page signée précédente" title="Page signée précédente" disabled>‹</button>
+  <span class="jpi-page-prefix">Page</span>
+  <input id="finalPageJump" class="jpi-page-jump" type="number" inputmode="numeric" min="1" max="1" value="1" aria-label="Saisir le numéro d'une page signée">
+  <span id="finalPageCount" class="jpi-page-total" aria-live="polite">/ 1</span>
+  <button id="finalNextPage" class="jpi-pager-button" type="button" aria-label="Page signée suivante" title="Page signée suivante" disabled>›</button>
+ </div>
+ <select id="finalPreviewPage" hidden aria-hidden="true" tabindex="-1" aria-label="Page signée à vérifier"></select></div>
  <div class="wizard-final-preview"><canvas id="finalPreviewCanvas" width="420" height="580" role="img" aria-label="Aperçu du document avec les signatures placées"></canvas></div>
 </div>
 <div class="wizard-final-side"><div class="wizard-recap"><div><span>Fichier</span><strong id="finalFileName">—</strong></div><div><span>Pages signées</span><strong id="finalPageName">—</strong></div><div><span>Placements</span><strong id="finalPlacementCount">—</strong></div><div><span>Méthode</span><strong id="finalMethodName">—</strong></div><div><span>Couleur</span><strong id="finalInkName">—</strong></div><div><span>Filigrane</span><strong id="finalWatermarkLabel">JustPDFit.com · inclus</strong></div><div><span>Tarif</span><strong id="finalPriceLabel">Gratuit</strong></div></div>
