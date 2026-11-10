@@ -13,6 +13,15 @@ const init=()=>{
  let paidDocumentFingerprint=null, pendingPaymentSession=null, pendingPaymentFingerprint=null;
  let paymentVerifying=false,checkoutStarting=false;
  const paymentStatus=message=>$("signPaymentStatus").textContent=message;
+ const params=new URLSearchParams(location.search);
+ if(params.get("payment")==="success"||params.get("payment")==="cancelled"){
+  const notice=$("paymentReturnNotice");
+  if(notice){
+   notice.hidden=false;
+   if(params.get("payment")==="cancelled")notice.textContent="Paiement annulé. Aucun téléchargement sans filigrane n’a été débloqué. Revenez à l’onglet d’origine pour continuer avec la version gratuite.";
+  }
+ }
+
  function pricingIsPaid(){return $("signWatermarkPaid").checked;}
  function cleanUnlocked(){return !!(paidDocumentFingerprint&&paidDocumentFingerprint===documentFingerprint);}
  let documentFingerprint=null;
