@@ -61,7 +61,7 @@
       const pages = await doc.copyPages(source, source.getPageIndices());
       for (const page of pages) doc.addPage(page);
     }
-    return { bytes: await doc.save(), name: "fusion-justpdfit.pdf" };
+    return { bytes: await doc.save(), name: "justpdfit-merged.pdf" };
   }
   function parsePages(value, count) {
     const result = [];
@@ -69,7 +69,7 @@
       const match = raw.trim().match(/^(\d+)(?:-(\d+))?$/);
       if (!match) throw Error(t("errorRange"));
       const from = Number(match[1]), to = Number(match[2] || match[1]);
-      if (from < 1 || to > count || from > to) throw Error(t("errorRange") + " (" + count + " pages).");
+      if (from < 1 || to > count || from > to) throw Error(t("errorRange") + " (" + count + " " + t("pages") + ").");
       for (let i = from; i <= to; i++) result.push(i - 1);
     }
     if (!result.length) throw Error(t("errorRange"));
@@ -84,7 +84,7 @@
     const indices = parsePages(range, source.getPageCount());
     const doc = await PDFLib.PDFDocument.create();
     for (const page of await doc.copyPages(source, indices)) doc.addPage(page);
-    return { bytes: await doc.save(), name: "pages-extraites-justpdfit.pdf" };
+    return { bytes: await doc.save(), name: "justpdfit-extracted-pages.pdf" };
   }
   async function renderEdit(files) {
     if (files.length !== 1) throw Error(t("errorFiles"));
@@ -99,7 +99,7 @@
     while (font.widthOfTextAtSize(text, size) > page.getWidth() - 72 && size > 8) size -= 1;
     if (font.widthOfTextAtSize(text, size) > page.getWidth() - 72) throw Error(t("errorText"));
     page.drawText(text, { x: 36, y: Math.max(36, page.getHeight() - 60), size, font, color: PDFLib.rgb(0.12, 0.19, 0.33) });
-    return { bytes: await doc.save(), name: "annote-justpdfit.pdf" };
+    return { bytes: await doc.save(), name: "justpdfit-annotated.pdf" };
   }
   form.addEventListener("submit", async event => {
     event.preventDefault();
