@@ -1,0 +1,36 @@
+/* JustPDFit homepage — usable PDF tools first. Visual system follows the
+   shared coral, navy and pale-blue brand palette. */
+.seo-tools{margin-top:62px;margin-bottom:72px}
+.seo-tools__heading{margin-bottom:28px;max-width:790px}
+.seo-tools__heading h2{font-size:clamp(27px,3.1vw,36px);letter-spacing:-1.1px}
+.seo-tools__heading p{font-size:14px;line-height:1.7;max-width:700px}
+.seo-tool-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
+.seo-tool-card{position:relative;display:flex;flex-direction:column;gap:0;align-items:stretch;min-width:0;min-height:239px;padding:23px;border:1px solid #e5eaf4;border-radius:18px;background:#fff;box-shadow:0 12px 28px #192d500c;text-decoration:none;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.seo-tool-card:hover{transform:translateY(-3px);border-color:#f4a1ae;box-shadow:0 16px 32px #192d501a}
+.seo-tool-card:focus-visible{outline:3px solid #f47a94;outline-offset:3px}
+.seo-tool-card--sign{background:linear-gradient(145deg,#fff6f8 0%,#fff 62%);border-color:#f6c5cf}
+.seo-tool-card--create{background:linear-gradient(145deg,#f3f7ff 0%,#fff 62%);border-color:#cadcf8}
+.seo-tool-card__top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;min-height:48px;margin-bottom:17px}
+.seo-tool-icon{flex:none;width:45px;height:45px;border-radius:12px;display:grid;place-items:center;background:#ecf2ff;color:#345d9b;font-size:24px;font-weight:800;box-shadow:inset 0 0 0 1px #dfeafc}
+.seo-tool-card--sign .seo-tool-icon{background:#ffe5eb;color:#d53e5e;box-shadow:inset 0 0 0 1px #ffd0dd}
+.seo-tool-card--create .seo-tool-icon{background:#e4edff;color:#4269b3}
+.seo-tool-card--merge .seo-tool-icon{background:#e8f6f2;color:#15856d;box-shadow:inset 0 0 0 1px #d1ede4}
+.seo-tool-card--split .seo-tool-icon{background:#fff2e5;color:#c4732e;box-shadow:inset 0 0 0 1px #ffe3c6}
+.seo-tool-card--jpg .seo-tool-icon{background:#f3eaff;color:#8655b8;box-shadow:inset 0 0 0 1px #e8d7fc}
+.seo-tool-card--edit .seo-tool-icon{background:#eaf3ff;color:#326ba7}
+.seo-tool-status{flex:0 1 auto;display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:999px;background:#edf8f2;color:#1f8060;font-size:10.5px;font-weight:800;line-height:1.25;text-align:center;max-width:165px}
+.seo-tool-card--sign .seo-tool-status{background:#fff0f3;color:#bd445d}
+.seo-tool-card__copy{flex:1}
+.seo-tool-card h3{font-size:19px;line-height:1.32;font-weight:850;letter-spacing:-.45px;color:#203453;margin:0 0 10px}
+.seo-tool-card p{font-size:13px;line-height:1.65;color:#697a94;margin:0 0 18px;flex:none;min-height:0}
+.seo-tool-cta{display:inline-flex;align-items:center;justify-content:space-between;gap:9px;align-self:stretch;min-height:39px;font-size:12.5px;font-weight:850;color:#d7435e;border-top:1px solid #ebeff5;padding-top:12px}
+.seo-tool-card--create .seo-tool-cta{color:#356bb4}
+.seo-tool-card--merge .seo-tool-cta{color:#187f67}
+.seo-tool-card:hover .seo-tool-cta span:last-child{transform:translate(2px,-2px)}
+.seo-tool-cta span:last-child{font-size:17px;line-height:1;transition:transform .18s}
+html[dir="rtl"] .seo-tool-card__copy,html[dir="rtl"] .seo-tools__heading{text-align:right}
+html[dir="rtl"] .seo-tool-cta span:last-child{transform:scaleX(-1)}
+html[dir="rtl"] .seo-tool-card:hover .seo-tool-cta span:last-child{transform:scaleX(-1) translate(2px,-2px)}
+@media(max-width:980px){.seo-tool-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.seo-tool-card{min-height:220px}}
+@media(max-width:620px){.seo-tools{margin-top:46px;margin-bottom:56px}.seo-tool-grid{grid-template-columns:1fr;gap:12px}.seo-tool-card{min-height:185px;padding:19px}.seo-tool-card__top{margin-bottom:10px}.seo-tool-card p{margin-bottom:12px}.seo-tool-card h3{font-size:18px}.seo-tool-card__top{min-height:43px}.seo-tool-icon{width:43px;height:43px}.seo-tools__heading{margin-bottom:21px}}
+@media(prefers-reduced-motion:reduce){.seo-tool-card,.seo-tool-cta span:last-child{transition:none}}
