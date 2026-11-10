@@ -272,11 +272,25 @@ document.querySelectorAll(".sig-style").forEach(b=>b.addEventListener("click",()
  updateStylePreview();
  if(method==="type")renderTyped();
 }));
+function recolorDrawnSignature(){
+ // Recolor existing strokes in place, preserving transparency and anti-aliasing.
+ // Changing strokeStyle alone only affects FUTURE strokes, not the drawn signature.
+ ctx.strokeStyle=ink;
+ if(!sigData)return;
+ ctx.save();
+ ctx.globalCompositeOperation="source-in";
+ ctx.fillStyle=ink;
+ ctx.fillRect(0,0,sig.width,sig.height);
+ ctx.restore();
+ ctx.strokeStyle=ink;
+ // Update both the canvas preview and the PNG embedded in the downloaded PDF.
+ refreshSig();
+}
 document.querySelectorAll(".sig-color").forEach(b=>b.addEventListener("click",()=>{
  ink=b.dataset.ink;
  document.querySelectorAll(".sig-color").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
  if(method==="type")renderTyped();
- else if(method==="draw")ctx.strokeStyle=ink;
+ else if(method==="draw")recolorDrawnSignature();
 }));
 $("imageSigFile").addEventListener("change",async e=>{
  try{await loadSignatureImage(e.target.files?.[0]);$("soloStatus").textContent="";}
