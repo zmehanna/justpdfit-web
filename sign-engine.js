@@ -530,7 +530,7 @@ const init=()=>{
    const option=document.createElement("option");option.value=String(page);option.textContent="Page "+page;
    selector.append(option);
   }
-  selector.value=String(pages.includes(previous)?previous:pages[0]);
+  selector.value=String(previous>0&&pages.includes(previous)?previous:(signedPages()[0]||pages[0]));
   syncFinalPager();
   $("finalFileName").textContent=$("soloFile").files?.[0]?.name||"Document PDF";
   $("finalPageName").textContent=signedPages().join(", ");
