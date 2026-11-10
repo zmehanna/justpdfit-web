@@ -179,7 +179,7 @@ const init=()=>{
    $(id+"SigTab").setAttribute("aria-selected",String(id===next));
    $(id+"SigPanel").hidden=id!==next;
   }
-  $("sigPreviewLabel").textContent=next==="draw"?"Dessinez votre signature":"Aperçu de votre signature";
+  $("sigPreviewLabel").textContent=next==="draw"?st("drawPreview",null,"Dessinez votre signature"):st("signaturePreview",null,"Aperçu de votre signature");
   $("sigInstructions").textContent=next==="type"?"Saisissez votre nom et choisissez un style. Vous pourrez ensuite le placer sur plusieurs pages.":next==="draw"?"Dessinez au doigt, à la souris ou avec l'Apple Pencil. Votre dessin sera réutilisable sur plusieurs pages.":"Importez votre image de signature (PNG, JPG, WebP). Chaque page pourra avoir sa propre position.";
   sig.style.cursor=next==="draw"?"crosshair":"default";
   document.querySelector(".sig-colors").hidden=next==="image";
@@ -324,9 +324,9 @@ const init=()=>{
    await renderPage();
    if(generation!==pdfLoadGeneration)return;
    $("documentName").textContent=file.name;
-   $("documentPages").textContent=view.numPages+" page"+(view.numPages===1?"":"s")+" · "+(file.size/1024/1024).toFixed(2)+" Mo";
+   $("documentPages").textContent=st("pdfInfo",{n:view.numPages,size:(file.size/1024/1024).toFixed(2)},view.numPages+" pages · "+(file.size/1024/1024).toFixed(2)+" MB");
    $("documentInfo").hidden=false;
-   positionStatus("Touchez le PDF pour placer votre première signature.");
+   positionStatus(st("pdfFirstPlacement",null,"Touchez le PDF pour placer votre première signature."));
    status("");showWizardStep(2);
   }catch(error){
    if(generation!==pdfLoadGeneration)return;
@@ -355,7 +355,7 @@ const init=()=>{
   pageRenderedNumber=0;updatePlacementHint();syncWizard();
   try{
    await renderPage();
-   status("Page "+next+" sur "+pdfView.numPages+" affichée.");
+   status(st("pageShown",{page:next,total:pdfView.numPages},"Page "+next+" sur "+pdfView.numPages+" affichée."));
   }catch(error){status("Erreur d'affichage : "+error.message);}
  }
  async function renderPage(){
@@ -432,17 +432,17 @@ const init=()=>{
    li.dataset.active=String(item.id===activePlacementId);
    const label=document.createElement("span");label.className="placement-list-label";
    const icon=document.createElement("span");icon.className="placement-list-index";icon.textContent=String(ordered.indexOf(item)+1);
-   const title=document.createElement("span");title.textContent="Page "+item.page+" · position "+nr;
+   const title=document.createElement("span");title.textContent=st("placementRow",{page:item.page,n:nr},"Page "+item.page+" · position "+nr);
    label.append(icon,title);
    const actions=document.createElement("span");actions.className="placement-list-actions";
-   const edit=document.createElement("button");edit.type="button";edit.textContent="Modifier";edit.setAttribute("aria-label","Modifier la position "+nr+" sur la page "+item.page);
+   const edit=document.createElement("button");edit.type="button";edit.textContent=st("edit",null,"Modifier");edit.setAttribute("aria-label",st("editAria",{n:nr,page:item.page},"Modifier la position "+nr+" sur la page "+item.page));
    edit.addEventListener("click",async()=>{
     await selectPage(item.page);
     activePlacementId=item.id;addMode=false;
     renderPlacementOverlays();renderPlacementList();updatePlacementHint();
     $("pdfStage").scrollIntoView({behavior:"smooth",block:"nearest"});
    });
-   const remove=document.createElement("button");remove.type="button";remove.textContent="Supprimer";remove.setAttribute("aria-label","Supprimer la position "+nr+" sur la page "+item.page);
+   const remove=document.createElement("button");remove.type="button";remove.textContent=st("remove",null,"Supprimer");remove.setAttribute("aria-label",st("removeAria",{n:nr,page:item.page},"Supprimer la position "+nr+" sur la page "+item.page));
    remove.addEventListener("click",()=>{
     placements=placements.filter(p=>p.id!==item.id);
     if(activePlacementId===item.id)activePlacementId=placements.find(p=>p.page===currentPage())?.id||null;
@@ -451,14 +451,14 @@ const init=()=>{
    });
    actions.append(edit,remove);li.append(label,actions);list.append(li);
   }
-  $("placementCount").textContent=ordered.length+" position"+(ordered.length===1?"":"s");
+  $("placementCount").textContent=st("placementCount",{n:ordered.length},ordered.length+" position"+(ordered.length===1?"":"s"));
   $("placementsEmpty").hidden=ordered.length>0;
   $("addPlacement").dataset.armed=String(addMode);
  }
  function updatePlacementHint(){
   if(!pdfView)return;
-  if(addMode)positionStatus("Cliquez sur la page "+currentPage()+" pour ajouter une position. Chaque page peut avoir un emplacement différent.");
-  else positionStatus("✓ Placement sélectionné sur la page "+currentPage()+". Déplacez-le ou cliquez sur « Ajouter une autre position ».");
+  if(addMode)positionStatus(st("positionAdding",{page:currentPage()},"Cliquez sur la page "+currentPage()+" pour ajouter une position. Chaque page peut avoir un emplacement différent."));
+  else positionStatus(st("positionSelected",{page:currentPage()},"✓ Placement sélectionné sur la page "+currentPage()+". Déplacez-le ou cliquez sur « Ajouter une autre position »."));
   $("addPlacement").dataset.armed=String(addMode);
  }
  $("addPlacement").addEventListener("click",()=>{
@@ -486,7 +486,7 @@ const init=()=>{
   }else{
    placement=currentPlacement();
    if(!placement||placement.page!==currentPage()){
-    positionStatus("Pour créer une nouvelle position, cliquez sur « Ajouter une autre position ».");
+    positionStatus(st("positionNeedAdd",null,"Pour créer une nouvelle position, cliquez sur « Ajouter une autre position »."));
     return;
    }
    const next=boundPosition(point.x-placement.w/2,point.y-placement.h/2,placement.w,placement.h);
