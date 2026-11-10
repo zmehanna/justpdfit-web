@@ -183,7 +183,10 @@ function translateTool(){
 function translate(){
  document.documentElement.lang=current;
  document.documentElement.dir=ALLOWED.get(current)?.rtl?"rtl":"ltr";
- if(document.body?.classList.contains("tool-page")){
+ if(document.body?.classList.contains("sign-page")){
+  // Signing has its own translations; preserve its title and labels.
+  window.JustPDFItSignI18n?.translate?.();
+ }else if(document.body?.classList.contains("tool-page")){
   translateTool();
   const info=tools[document.body.dataset.tool];
   if(info){
