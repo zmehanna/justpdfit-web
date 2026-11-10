@@ -1,0 +1,40 @@
+/* Multi-page placement + signature ink/preview options. Keeps JustPDFit palette. */
+.sig-preview-options{display:flex;flex-wrap:wrap;gap:10px;margin:13px 0 14px}
+.sig-preview-option{display:flex;align-items:center;gap:8px;flex:1 1 175px;min-height:46px;background:#f7f9ff;border:1px solid #e1e8f4;border-radius:11px;padding:10px 12px;cursor:pointer;font-size:12px;font-weight:750;color:#334665}
+.sig-preview-option input{appearance:auto;accent-color:#ed465c;width:17px;height:17px;min-width:17px;margin:0;cursor:pointer}
+.sig-preview-option:has(input:checked){background:#fff1f4;border-color:#f3b2bd;color:#c9435b}
+.sig-preview-option:focus-within{outline:3px solid #8aaaf4;outline-offset:1px}
+.sig-preview-explain{font-size:11px;color:#73839b;line-height:1.5;margin:-2px 0 13px}
+#sigCanvas.preview-dark{background:#111827!important;border-color:#4c5e7e}
+.sig-color:disabled{opacity:.38;cursor:not-allowed}
+#placementLayer{position:absolute;inset:0;pointer-events:none}
+.placement-marker{position:absolute;display:block;border:2px dashed #ec526b;cursor:move;touch-action:none;pointer-events:auto;min-width:0;min-height:0;background:#ef53651a;border-radius:3px}
+.placement-marker img{display:block;width:100%;height:100%;object-fit:fill;pointer-events:none}
+.placement-marker[data-selected=true]{border:2px solid #fc536c;box-shadow:0 0 0 2px #fff9,0 0 0 4px #ec526b88}
+.placement-marker:focus-visible{outline:3px solid #2876de;outline-offset:2px}
+.placement-marker__number{position:absolute;top:-21px;left:-2px;min-width:19px;height:18px;background:#ee526b;color:#fff;border-radius:4px 4px 0 0;font-size:10px;font-weight:850;display:grid;place-items:center}
+.placements-manager{margin:18px 0 0;padding:16px;background:#fafbff;border:1px solid #e5ebf6;border-radius:14px}
+.placements-manager__header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.placements-manager__header h4{margin:0;color:#263954;font-size:14px}
+.placements-manager__header span{font-size:11px;font-weight:800;color:#e04c64;background:#fdebf0;padding:5px 9px;border-radius:99px}
+.placements-empty{font-size:12px;color:#75849b;line-height:1.6;margin:0 0 12px}
+.placements-list{margin:0 0 14px;padding:0;list-style:none;max-height:250px;overflow:auto;display:grid;gap:7px}
+.placements-list:empty{display:none}
+.placement-list-row{display:flex;align-items:center;gap:9px;justify-content:space-between;padding:9px 10px;background:#fff;border:1px solid #e7edf6;border-radius:10px;min-width:0}
+.placement-list-row[data-active=true]{border-color:#f28a9d;background:#fff8fa}
+.placement-list-label{display:flex;align-items:center;gap:8px;flex:1;min-width:0;font-size:12px;font-weight:750;color:#283a58}
+.placement-list-index{display:grid;place-items:center;background:#e9f0fe;border-radius:7px;color:#3c659b;min-width:25px;height:25px}
+.placement-list-actions{display:flex;align-items:center;gap:5px}
+.placement-list-actions button{border:0;background:#eef3fb;color:#405578;font-size:11px;font-weight:800;padding:8px;border-radius:8px;cursor:pointer}
+.placement-list-actions button:last-child{color:#ba4257;background:#ffeff2}
+.placement-list-actions button:focus-visible,.add-placement:focus-visible{outline:3px solid #7baaff;outline-offset:2px}
+.add-placement{width:100%;display:flex;align-items:center;justify-content:center;gap:7px;min-height:43px;background:#fff;color:#ce445c;border:1px dashed #f294a4;border-radius:10px;font:inherit;font-size:12px;font-weight:850;cursor:pointer}
+.add-placement:disabled{opacity:.4;cursor:not-allowed}
+.add-placement[data-armed=true]{border-style:solid;background:#fff1f3;box-shadow:0 0 0 2px #ed465c22}
+.wizard-final-selector{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 11px}
+.wizard-final-selector label{font-size:12px;font-weight:800;color:#334564}
+.wizard-final-selector select{min-width:120px;max-width:240px;background:#fff;border:1px solid #dfe6f1;border-radius:10px;padding:10px;font:inherit;font-size:12px;color:#30415e}
+.wizard-final-selector select:focus-visible{outline:3px solid #89abf0}
+.wizard-final-preview-group{min-width:0}
+.wizard-white-hint{font-size:12px;color:#63738e;line-height:1.5;margin-top:12px}
+@media(max-width:700px){.wizard-final-selector{flex-wrap:wrap}.sig-preview-options{flex-direction:column;gap:8px}.placement-list-row{flex-wrap:wrap}.placement-list-actions{margin-left:auto}}
