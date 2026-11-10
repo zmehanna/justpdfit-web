@@ -117,7 +117,7 @@
   verifyPage:"Vérifier la page signée",verifyPageAria:"Page signée à vérifier",finalCanvasAria:"Aperçu du document avec les signatures placées",
   file:"Fichier",signedPages:"Pages signées",placements:"Placements",method:"Méthode",color:"Couleur",price:"Tarif",
   downloadSigned:"↓ Télécharger mon PDF signé",whiteHint:"La signature blanche est prévue pour les zones sombres des PDF. Un fond blanc peut la rendre invisible.",
-  finalHint:"Traitement local, sans compte et sans filigrane. Il s'agit d'une signature visuelle, non qualifiée.",
+  finalHint:"Traitement local, sans compte. La signature gratuite comporte un filigrane JustPDFit cliquable. Il s'agit d'une signature visuelle, non qualifiée.",
   back:"← Retour",hintUpload:"Importez votre PDF pour continuer.",buttonCreate:"Créer ma signature →",
   buttonPosition:"Positionner ma signature →",buttonReview:"Vérifier mon PDF →",
   hintPdfReady:"Votre PDF est prêt. Passez à votre signature.",hintChoosePdf:"Choisissez un document PDF pour commencer.",
@@ -188,7 +188,7 @@
   verifyPage:"مراجعة الصفحة الموقّعة",verifyPageAria:"الصفحة الموقّعة للمراجعة",finalCanvasAria:"معاينة PDF مع التوقيعات",
   file:"الملف",signedPages:"الصفحات الموقّعة",placements:"المواضع",method:"الطريقة",color:"اللون",price:"السعر",
   downloadSigned:"↓ تنزيل ملف PDF الموقّع",whiteHint:"التوقيع الأبيض مناسب للخلفيات الداكنة وقد لا يظهر على خلفية بيضاء.",
-  finalHint:"معالجة محلية بدون حساب أو علامة مائية. هذا توقيع مرئي وليس توقيعاً رقمياً مؤهلاً.",
+  finalHint:"معالجة محلية دون حساب. التوقيع المجاني يتضمن علامة JustPDFit مائية قابلة للنقر. هذا توقيع مرئي وليس توقيعاً رقمياً مؤهلاً.",
   back:"← رجوع",hintUpload:"ارفع ملف PDF للمتابعة.",buttonCreate:"إنشاء توقيعي →",
   buttonPosition:"تحديد موضع التوقيع →",buttonReview:"مراجعة ملف PDF →",
   hintPdfReady:"ملف PDF جاهز. انتقل إلى إنشاء التوقيع.",hintChoosePdf:"اختر مستند PDF للبدء.",
@@ -215,6 +215,11 @@
   downloaded:"تم توقيع PDF: ‏{positions} موضع على {pages} صفحة. بدأ التنزيل.",
   defaultDocument:"مستند PDF"
  };
+ // Correctly identify the watermark and price rows in the seven-row recap.
+ packs.en.watermarkLabel="Watermark";
+ packs.fr.watermarkLabel="Filigrane";
+ packs.ar.watermarkLabel="العلامة المائية";
+ 
  const textSelectors=[
   [".topbar-actions > a","backTools"],[".sign-hero .eyebrow","heroKicker","tail"],
   [".sign-hero h1","heroTitle"],[".sign-hero p","heroIntro"],
