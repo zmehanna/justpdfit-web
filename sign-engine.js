@@ -36,14 +36,14 @@ const init=()=>{
   $("verifyCleanPayment").hidden=!paid||unlocked||!pendingPaymentSession;
   $("verifyCleanPayment").disabled=paymentVerifying||!enabled;
   $("downloadSigned").disabled=!enabled;
-  $("downloadSigned").textContent=paid?"↓ Télécharger mon PDF signé · Sans filigrane":"↓ Télécharger mon PDF signé · Gratuit";
-  $("finalWatermarkLabel").textContent=paid?"Sans filigrane":"JustPDFit.com · cliquable";
-  $("finalPriceLabel").textContent=paid?"1,99 €":"Gratuit";
-  if(!paid)paymentStatus("Le filigrane JustPDFit.com est cliquable et apparaît en bas de chaque page.");
-  else if(unlocked)paymentStatus("Paiement vérifié. Vous pouvez télécharger ce PDF sans filigrane.");
-  else if(!watermark?.backendReady)paymentStatus("Le paiement sécurisé sera activé dès la connexion du compte Stripe JustPDFit. Aucun débit n'est effectué.");
-  else if(pendingPaymentSession)paymentStatus("Terminez le paiement dans l'onglet Stripe, puis cliquez sur « Vérifier le paiement ».");
-  else paymentStatus("La version sans filigrane coûte 1,99 € par document, paiement unique via Stripe.");
+  $("downloadSigned").textContent=paid?st("paidDownloadLabel",null,"↓ Télécharger mon PDF signé · Sans filigrane"):st("freeDownloadLabel",null,"↓ Télécharger mon PDF signé · Gratuit");
+  $("finalWatermarkLabel").textContent=paid?st("watermarkDisplayPaid",null,"Sans filigrane"):st("watermarkDisplayFree",null,"JustPDFit.com · cliquable");
+  $("finalPriceLabel").textContent=paid?"1,99 €":st("free",null,"Gratuit");
+  if(!paid)paymentStatus(st("paymentFreeInfo",null,"Le filigrane JustPDFit.com est cliquable et apparaît en bas de chaque page."));
+  else if(unlocked)paymentStatus(st("paymentVerifiedInfo",null,"Paiement vérifié. Vous pouvez télécharger ce PDF sans filigrane."));
+  else if(!watermark?.backendReady)paymentStatus(st("paymentStripeNotReady",null,"Le paiement sécurisé sera activé dès la connexion du compte Stripe JustPDFit. Aucun débit n'est effectué."));
+  else if(pendingPaymentSession)paymentStatus(st("paymentStripePending",null,"Terminez le paiement dans l'onglet Stripe, puis cliquez sur « Vérifier le paiement »."));
+  else paymentStatus(st("paymentPaidPrompt",null,"La version sans filigrane coûte 1,99 € par document, paiement unique via Stripe."));
  }
 
  const methods=["type","draw","image"];
@@ -84,12 +84,12 @@ const init=()=>{
   clearCanvas();sigData=null;renderPlacementOverlays();syncWizard();
  }
  function updateStylePreview(){
-  const name=$("typedName").value.trim()||"Votre signature";
+  const name=$("typedName").value.trim()||st("sample",null,"Votre signature");
   document.querySelectorAll(".sig-style").forEach(button=>{
    button.textContent=name;
    button.setAttribute("aria-pressed",String(Number(button.dataset.font)===fontIndex));
   });
-  $("styleSelected").textContent="Style "+(fontIndex+1)+" / 4";
+  $("styleSelected").textContent=st("styleNumber",{n:fontIndex+1},"Style "+(fontIndex+1)+" / 4");
  }
  function renderTyped(){
   clearCanvas();
@@ -532,11 +532,11 @@ const init=()=>{
   }
   selector.value=String(previous>0&&pages.includes(previous)?previous:(signedPages()[0]||pages[0]));
   syncFinalPager();
-  $("finalFileName").textContent=$("soloFile").files?.[0]?.name||"Document PDF";
+  $("finalFileName").textContent=$("soloFile").files?.[0]?.name||st("defaultDocument",null,"Document PDF");
   $("finalPageName").textContent=signedPages().join(", ");
-  $("finalPlacementCount").textContent=placements.length+" position"+(placements.length===1?"":"s");
-  $("finalMethodName").textContent=method==="type"?"Signature saisie":method==="draw"?"Signature dessinée":"Image importée";
-  $("finalInkName").textContent=$("whiteSignature").checked?"Blanche":method==="image"?"Couleurs originales":ink==="#1f4ca5"?"Bleue":"Noire";
+  $("finalPlacementCount").textContent=st("placementCount",{n:placements.length},placements.length+" position"+(placements.length===1?"":"s"));
+  $("finalMethodName").textContent=method==="type"?st("methodTyped",null,"Signature saisie"):method==="draw"?st("methodDrawn",null,"Signature dessinée"):st("methodImported",null,"Image importée");
+  $("finalInkName").textContent=$("whiteSignature").checked?st("colorWhite",null,"Blanche"):method==="image"?st("colorOriginal",null,"Couleurs originales"):ink==="#1f4ca5"?st("colorBlue",null,"Bleue"):st("colorBlack",null,"Noire");
   $("finalWhiteHint").hidden=!$("whiteSignature").checked;
   syncDownloadPricing();
   renderFinalPreview().catch(error=>status("Aperçu impossible : "+error.message));
@@ -563,7 +563,7 @@ const init=()=>{
   if(!pages.includes(value)){
    syncFinalPager();
    $("finalPageJump").setAttribute("aria-invalid","true");
-   $("finalPageJump").title="Choisissez une page entre 1 et "+pages.length;
+   $("finalPageJump").title=st("pageInvalid",{n:pages.length},"Choisissez une page entre 1 et "+pages.length);
    return;
   }
   $("finalPageJump").removeAttribute("aria-invalid");
