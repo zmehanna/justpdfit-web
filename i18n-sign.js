@@ -3,6 +3,7 @@
  "use strict";
  const packs=window.JustPDFItSignPacks=window.JustPDFItSignPacks||{};
  packs.en={
+  pageWord:"Page",
   title:"Sign a PDF online | JustPDFit",meta:"Sign PDF documents locally for free. Remote signing for two people is coming soon.",
   backTools:"← All PDF tools",heroKicker:"JustPDFit · SIGNATURES",heroTitle:"Sign a PDF, simply.",
   heroIntro:"Sign on your device for free. For two people signing remotely, individual invitations and email verification are planned.",
@@ -74,6 +75,7 @@
   defaultDocument:"PDF document"
  };
  packs.fr={
+  pageWord:"Page",
   title:"Signer un PDF en ligne | JustPDFit",meta:"Signez gratuitement un PDF sur votre appareil. Signature à deux à distance prochainement.",
   backTools:"← Tous les outils PDF",heroKicker:"JustPDFit · SIGNATURES",heroTitle:"Signez un PDF, simplement.",
   heroIntro:"Une signature individuelle gratuite, directement sur votre appareil. Pour deux signataires à distance, invitations individuelles et vérification par email.",
@@ -145,6 +147,7 @@
   defaultDocument:"Document PDF"
  };
  packs.ar={
+  pageWord:"الصفحة",
   title:"توقيع ملف PDF عبر الإنترنت | JustPDFit",meta:"وقّع ملفات PDF مجاناً على جهازك. التوقيع عن بُعد لشخصين قريباً.",
   backTools:"← جميع أدوات PDF",heroKicker:"JustPDFit · التوقيعات",heroTitle:"وقّع ملف PDF بكل سهولة.",
   heroIntro:"توقيع فردي مجاني على جهازك مباشرة. ولتوقيع شخصين عن بُعد، سنوفر دعوات منفصلة والتحقق بالبريد الإلكتروني.",
@@ -333,9 +336,15 @@
    if(el)el.setAttribute(name,t(key));
   }
   document.querySelectorAll(".sig-style").forEach((el,i)=>el.setAttribute("aria-label",t("styleAria",{n:i+1})));
+  document.querySelectorAll(".sign-page .jpi-page-prefix").forEach(el=>el.textContent=t("pageWord"));
   document.title=t("title");
   const description=document.querySelector('meta[name="description"]');
   if(description)description.content=t("meta");
  }
  window.JustPDFItSignI18n={t,translate,packs};
+ // Defer scripts load before DOMContentLoaded. Run once on initial load,
+ // not only when the visitor manually changes the language.
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",translate);
+ else translate();
+ document.addEventListener("justpdfit-language",translate);
 })();
