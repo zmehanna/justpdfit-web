@@ -524,7 +524,7 @@ const init=()=>{
  });
 
  function prepareFinalPreview(){
-  const pages=signedPages(),selector=$("finalPreviewPage"),previous=Number(selector.value);
+  const pages=Array.from({length:pdfView?.numPages||0},(_,i)=>i+1),selector=$("finalPreviewPage"),previous=Number(selector.value);
   selector.replaceChildren();
   for(const page of pages){
    const option=document.createElement("option");option.value=String(page);option.textContent="Page "+page;
@@ -533,7 +533,7 @@ const init=()=>{
   selector.value=String(pages.includes(previous)?previous:pages[0]);
   syncFinalPager();
   $("finalFileName").textContent=$("soloFile").files?.[0]?.name||"Document PDF";
-  $("finalPageName").textContent=pages.join(", ");
+  $("finalPageName").textContent=signedPages().join(", ");
   $("finalPlacementCount").textContent=placements.length+" position"+(placements.length===1?"":"s");
   $("finalMethodName").textContent=method==="type"?"Signature saisie":method==="draw"?"Signature dessinée":"Image importée";
   $("finalInkName").textContent=$("whiteSignature").checked?"Blanche":method==="image"?"Couleurs originales":ink==="#1f4ca5"?"Bleue":"Noire";
@@ -542,7 +542,7 @@ const init=()=>{
   renderFinalPreview().catch(error=>status("Aperçu impossible : "+error.message));
  }
  function syncFinalPager(){
-  const pages=signedPages(),current=Number($("finalPreviewPage").value)||pages[0]||1;
+  const pages=Array.from({length:pdfView?.numPages||0},(_,i)=>i+1),current=Number($("finalPreviewPage").value)||pages[0]||1;
   const index=pages.indexOf(current);
   $("finalPageJump").value=String(current);
   $("finalPageJump").max=String(pdfView?.numPages||1);
@@ -551,7 +551,7 @@ const init=()=>{
   $("finalNextPage").disabled=index<0||index>=pages.length-1;
  }
  function navigateFinalPage(direction){
-  const pages=signedPages(),current=Number($("finalPreviewPage").value);
+  const pages=Array.from({length:pdfView?.numPages||0},(_,i)=>i+1),current=Number($("finalPreviewPage").value);
   const next=pages[pages.indexOf(current)+direction];
   if(next==null)return;
   $("finalPreviewPage").value=String(next);
@@ -559,11 +559,11 @@ const init=()=>{
  }
  function jumpFinalPage(){
   const value=Number($("finalPageJump").value);
-  const pages=signedPages();
+  const pages=Array.from({length:pdfView?.numPages||0},(_,i)=>i+1);
   if(!pages.includes(value)){
    syncFinalPager();
    $("finalPageJump").setAttribute("aria-invalid","true");
-   $("finalPageJump").title="Choisissez une page signée : "+pages.join(", ");
+   $("finalPageJump").title="Choisissez une page entre 1 et "+pages.length;
    return;
   }
   $("finalPageJump").removeAttribute("aria-invalid");
