@@ -125,3 +125,17 @@ L'émission de la session Live implique que le Worker a vérifié avec l'API Str
 Le Worker sandbox `justpdfit-payments-sandbox` n'a actuellement **aucun secret** configuré (`wrangler secret list` retourne `[]`), donc aucun paiement de test Stripe n'a pu être effectué. Pour valider intégralement sans frais réels : configurer une sandbox Stripe JustPDFit avec clé restreinte `rk_test_...`, identifiant du compte sandbox `STRIPE_EXPECTED_ACCOUNT_ID`, et webhook sandbox dédié dont le secret signé `whsec_...` est enregistré dans Cloudflare. Puis payer avec un moyen de paiement test Stripe et vérifier D1 + `/verify`.
 
 **Ne pas encore fusionner la configuration de paiement dans le site public** : `payment-config.js` reste `endpoint:null` sur `main`. Ne pas présenter ces tests comme la validation d'un paiement réussi.
+
+
+## Site Live active le 11 novembre 2026
+
+L'activation publique du paiement **solo-sans-filigrane (1,99 EUR par PDF)** a ete demandee par le proprietaire du site et effectuee le 11 novembre 2026. Les autres options de signature a deux ne sont pas activables.
+
+- Worker Live redeploye avec la version renforcee (`workers.dev`), secrets `STRIPE_RESTRICTED_KEY` et `STRIPE_WEBHOOK_SECRET` confirmes par leur nom uniquement.
+- `GET /health` Live : `configured`; webhook non signe : HTTP 400 (refuse).
+- `POST /checkout` Live : session `cs_live_...` creee, URL `checkout.stripe.com`; session non payee `/verify` retourne `paid:false`.
+- PR #4 fusionnee sur `main`; `payment-config.js` public pointe sur le Worker Live. La page `sign/index.html` charge `payment-config.js?v=20261111-live` pour eviter les anciennes versions en cache.
+- GitHub Pages deployment reussi; requetes externes reelles confirment le script versionne et le Worker Live sur https://justpdfit.com/sign/.
+- Le contenu du fichier public ne contient aucune cle Stripe.
+
+**Validation restante** : aucune transaction avec carte reelle / reussie n'a ete effectuee depuis le site dans ces tests. La livraison d'un evenement webhook signe par Stripe, l'ecriture de l'ordre en D1 apres paiement, et le PDF sans filigrane apres paiement doivent etre verifies au moyen d'un achat reel controle. L'utilisateur est averti que tout paiement accepte en Live debite reellement 1,99 EUR. En cas de probleme, rollback immediat en placant `endpoint:null` dans `payment-config.js` puis en redéployant GitHub Pages.
