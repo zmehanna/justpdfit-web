@@ -12,9 +12,14 @@ All paid duo-signature options (email OTP, Didit, optional watermark removal) re
 
 ## Account verification required before activation
 
-The official JustPDFit Live account ID (`acct_...`) has **not** been independently confirmed in this implementation. Obtain it from the JustPDFit Stripe Dashboard or authenticated Stripe connector in a session that can actually access it.
+The JustPDFit Live account ID was supplied in the owner's Stripe account-list screenshot on 2026-11-11 and is:
+`acct_1UaLHoEQp3CN3XtA`
 
-Set `STRIPE_EXPECTED_ACCOUNT_ID` only after matching the ID to the **JustPDFit** business identity. The Worker requests `GET /v1/account` with the configured API key and refuses checkout/verification if the returned ID does not match. It does not infer the account from the presence of any other Stripe account. Never guess the account ID.
+The *separate* FairTaxy Live account ID is `acct_1UWgA3L7h2qjW2we` and **must never be used**.
+
+In Live mode, the Worker **pins** the JustPDFit account ID and refuses to start even if `STRIPE_EXPECTED_ACCOUNT_ID` is set to FairTaxy. Before creating a Checkout Session, the Worker calls `GET /v1/account` using the restricted API key, compares the actual Stripe account to the configured JustPDFit account, and fails closed on any mismatch. The screenshot identifies the account but does **not** verify Cloudflare credentials or the live key; that verification still requires the Stripe API/Cloudflare backend.
+
+For an isolated *Stripe sandbox*, use that sandbox's own ID as the expected ID; sandbox mode does not use the Live ID pin.
 
 Prefer a **restricted Stripe API key** (`STRIPE_RESTRICTED_KEY`) scoped to Checkout Sessions read/write and Account read, with permissions verified by sandbox testing. `STRIPE_SECRET_KEY` is supported as a backward-compatible fallback. Keys and webhook secrets belong only in **Cloudflare Worker Secrets**, never GitHub Pages, source files, build logs, or browser JavaScript.
 
