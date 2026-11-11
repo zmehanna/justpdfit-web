@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { PDFDocument } from "pdf-lib";
 import { perform, fromBase64, LIMIT } from "../operations.js";
+import { analyzeSignatures } from "../signature-workflow.js";
 async function sample(n=1){
  const p=await PDFDocument.create();
  for(let i=0;i<n;i++)p.addPage([300+i,400+i]);
@@ -58,4 +59,26 @@ test("output does not echo PDF bytes in model-readable text",async()=>{
  const r=await perform("optimize",{pdf:await sample()});
  assert.equal(r.content[0].text.includes("base64"),true);
  assert.equal(r.content[0].text.includes(r.structuredContent.base64),false);
+});
+
+test("signature analyzer flags scanned or blank documents for manual placement",async()=>{
+ const input=await sample(4);
+ const result=await analyzeSignatures(input);
+ assert.equal(result.pages,4);
+ assert.equal(result.scanOrImageOnly,true);
+ assert.equal(result.requiresConfirmation,true);
+ assert.equal(result.canAutoPlace,false);
+ assert.deepEqual(result.candidates,[]);
+});
+test("signature analyzer proposes a region for searchable signature labels",async()=>{
+ const pdf=await PDFDocument.create();const page=pdf.addPage([595,842]);
+ const font=await pdf.embedFont("Helvetica");
+ page.drawText("Signature du locataire",{x:270,y:290,size:15,font});
+ const data=Buffer.from(await pdf.save()).toString("base64");
+ const result=await analyzeSignatures(data);
+ assert.equal(result.pages,1);
+ assert.equal(result.scanOrImageOnly,false);
+ assert.ok(result.candidates.length>0);
+ assert.equal(result.candidates[0].page,1);
+ assert.equal(result.candidates[0].requiresConfirmation,true);
 });
