@@ -104,3 +104,24 @@ Le VPS Wrangler confirme maintenant que les **deux noms de secrets** existent su
 - Les succes ci-dessus **ne prouvent pas** qu'un paiement Checkout a ete cree ni qu'un evenement webhook Stripe signe a ete livre. Realiser encore les validations de bout en bout avant d'activer la boutique publique. Le fichier public `payment-config.js` reste sur `endpoint: null`.
 
 L'erreur Cloudflare `10021` deja diagnostiquee a ete constatee sur plusieurs tentatives de mise a jour D1, mais le secret Live a ensuite ete enregistre par l'utilisateur. Ne pas en deduire que toutes les tentatives de redeploiement D1 fonctionneront.
+
+
+## Validation HTTP réelle du Checkout Live — 11 novembre 2026
+
+Tests non facturants effectués depuis le VPS sur le Worker public `https://justpdfit-payments-live.zmehanna.workers.dev` avec une empreinte SHA-256 fictive (aucun document privé transmis) :
+
+| Test | Résultat |
+| --- | --- |
+| `POST /checkout`, `kind=solo-clean` | **HTTP 200**, session `cs_live_...` créée |
+| URL Checkout retournée | Domaine **`checkout.stripe.com`** |
+| `POST /verify`, session non payée, empreinte correcte | `paid:false` |
+| `POST /verify`, même session, autre empreinte | `paid:false` |
+| `POST /checkout`, signature duo non livrable | **HTTP 422** |
+| `POST /checkout`, origine non autorisée | **HTTP 403** |
+| Webhook sans signature | **HTTP 400** |
+
+L'émission de la session Live implique que le Worker a vérifié avec l'API Stripe que la clé appartient au compte **JustPDFit `acct_1UaLHoEQp3CN3XtA`**. Les frais Checkout sont fixés côté serveur à `199` centimes d'EUR dans `payments/worker.js`. Aucun paiement réel n'a été effectué ni validé. La consultation manuelle de la page de paiement, la réception Stripe d'un paiement de test réussi, le webhook signé et le déblocage post-paiement restent **non validés**.
+
+Le Worker sandbox `justpdfit-payments-sandbox` n'a actuellement **aucun secret** configuré (`wrangler secret list` retourne `[]`), donc aucun paiement de test Stripe n'a pu être effectué. Pour valider intégralement sans frais réels : configurer une sandbox Stripe JustPDFit avec clé restreinte `rk_test_...`, identifiant du compte sandbox `STRIPE_EXPECTED_ACCOUNT_ID`, et webhook sandbox dédié dont le secret signé `whsec_...` est enregistré dans Cloudflare. Puis payer avec un moyen de paiement test Stripe et vérifier D1 + `/verify`.
+
+**Ne pas encore fusionner la configuration de paiement dans le site public** : `payment-config.js` reste `endpoint:null` sur `main`. Ne pas présenter ces tests comme la validation d'un paiement réussi.
