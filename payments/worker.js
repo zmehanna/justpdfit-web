@@ -12,6 +12,9 @@
  */
 const STRIPE_API = "https://api.stripe.com/v1";
 const STRIPE_VERSION = "2026-09-30.endive";
+// JustPDFit Live account, confirmed from the account list supplied by the owner.
+// Never process a Live JustPDFit payment using the FairTaxy account.
+const JUSTPDFIT_LIVE_ACCOUNT_ID = "acct_1UaLHoEQp3CN3XtA";
 const ORIGINS = new Set(["https://justpdfit.com", "https://www.justpdfit.com"]);
 const HASH = /^[0-9a-f]{64}$/i;
 const SESSION_ID = /^cs_(?:test_|live_)[A-Za-z0-9]+$/;
@@ -45,6 +48,7 @@ function ready(env) {
   const prefix = mode === "test" ? /^(rk|sk)_test_/ : mode === "live" ? /^(rk|sk)_live_/ : null;
   return !!(prefix && prefix.test(credential(env)) &&
     accountPattern.test(env.STRIPE_EXPECTED_ACCOUNT_ID || "") &&
+    (mode !== "live" || env.STRIPE_EXPECTED_ACCOUNT_ID === JUSTPDFIT_LIVE_ACCOUNT_ID) &&
     /^whsec_[A-Za-z0-9_-]{16,}$/.test(env.STRIPE_WEBHOOK_SECRET || "") &&
     env.PAYMENTS_DB && typeof env.PAYMENTS_DB.prepare === "function");
 }
@@ -62,6 +66,9 @@ async function stripe(env, path, options = {}) {
   return json;
 }
 async function checkAccount(env) {
+  if (env.PAYMENTS_MODE === "live" && env.STRIPE_EXPECTED_ACCOUNT_ID !== JUSTPDFIT_LIVE_ACCOUNT_ID) {
+    throw Error("wrong_live_stripe_account");
+  }
   const account = await stripe(env, "/account");
   if (account.id !== env.STRIPE_EXPECTED_ACCOUNT_ID) throw Error("stripe_account_mismatch");
 }
