@@ -1,0 +1,16 @@
+# Copy this file to payments/wrangler.toml for a dedicated SANDBOX Worker.
+# Do not deploy before provisioning a dedicated JustPDFit Stripe account,
+# D1 database, and webhook destination. Do not commit secrets or real keys.
+name = "justpdfit-payments-sandbox"
+main = "./worker.js"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+[vars]
+PAYMENTS_MODE = "test"
+
+[[d1_databases]]
+binding = "PAYMENTS_DB"
+database_name = "justpdfit-payments-sandbox"
+database_id = "REPLACE_WITH_NEW_D1_SANDBOX_DATABASE_ID"
+migrations_dir = "migrations"

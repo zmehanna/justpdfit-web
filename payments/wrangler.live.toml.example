@@ -1,0 +1,34 @@
+# Production configuration template: JustPDFit ONLY.
+#
+# IMPORTANT: this is a template. Do not deploy until the JustPDFit sandbox
+# Checkout + signed webhook + refund tests pass, the new D1 database has
+# been created and migrated, and the JustPDFit restricted key and webhook
+# signing secret have been added via Cloudflare secret storage.
+#
+# This Live Stripe account ID is non-secret and confirmed in the owner's
+# Stripe account-list screenshot. It is NOT the FairTaxy account ID.
+#
+# Copy to payments/wrangler.live.toml (do not commit secrets).
+name = "justpdfit-payments-live"
+main = "./worker.js"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+[vars]
+PAYMENTS_MODE = "live"
+STRIPE_EXPECTED_ACCOUNT_ID = "acct_1UaLHoEQp3CN3XtA"
+
+[[d1_databases]]
+binding = "PAYMENTS_DB"
+database_name = "justpdfit-payments-live"
+database_id = "REPLACE_WITH_NEW_JUSTPDFIT_PRODUCTION_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+# A dedicated <account-subdomain>.workers.dev host works independently of the
+# site's IONOS DNS / GitHub Pages hosting. Start there to avoid changing DNS.
+# Cloudflare Custom Domain can be added later if the DNS zone is managed there.
+# Do not point the live website at this backend until all checks pass.
+#
+# Worker secrets to set on this worker only:
+#   STRIPE_RESTRICTED_KEY  (JustPDFit Live restricted key)
+#   STRIPE_WEBHOOK_SECRET  (signing secret for its own Live webhook endpoint)

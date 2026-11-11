@@ -1,30 +1,33 @@
 /**
- * JustPDFit.com - Stripe Checkout backend for the solo watermark-free upgrade.
+ * JustPDFit Stripe Checkout Worker. This is a STAGED integration, not deployed.
+ * Only the solo watermark-free PDF (€1.99) can be charged. No PDF is uploaded.
  *
- * Cloudflare Worker secrets:
- *  STRIPE_SECRET_KEY          sk_test_... or sk_live_... (NEVER client-side)
- *  STRIPE_EXPECTED_ACCOUNT_ID acct_... (MUST belong to JustPDFit, not FairTaxy)
- * Cloudflare Worker variable:
- *  PAYMENTS_MODE              test or live, matching the key
- *
- * Other services (remote signature, OTP, Didit) deliberately cannot charge
- * until their document/order fulfillment systems are operational.
- *
- * The PDF and signature stay in the browser. Only a SHA-256 document
- * fingerprint is sent to the payment backend and Stripe metadata.
+ * REQUIRED SECRETS (Cloudflare, never commit values):
+ *   STRIPE_RESTRICTED_KEY (preferred rk_*; STRIPE_SECRET_KEY also accepted)
+ *   STRIPE_WEBHOOK_SECRET (whsec_*)
+ *   STRIPE_EXPECTED_ACCOUNT_ID (acct_* of JustPDFit ONLY)
+ * REQUIRED VAR/BINDINGS:
+ *   PAYMENTS_MODE = "test" | "live"
+ *   PAYMENTS_DB = dedicated D1 database migrated with migrations/0001_orders.sql
  */
 const STRIPE_API = "https://api.stripe.com/v1";
+const STRIPE_VERSION = "2026-09-30.endive";
+// JustPDFit Live account, confirmed from the account list supplied by the owner.
+// Never process a Live JustPDFit payment using the FairTaxy account.
+const JUSTPDFIT_LIVE_ACCOUNT_ID = "acct_1UaLHoEQp3CN3XtA";
 const ORIGINS = new Set(["https://justpdfit.com", "https://www.justpdfit.com"]);
-const DOCUMENT_HASH = /^[0-9a-f]{64}$/i;
-const SESSION_ID = /^cs_(?:test_|live_)[a-zA-Z0-9]+$/;
-const SOLO_AMOUNT_CENTS = 199;
+const HASH = /^[0-9a-f]{64}$/i;
+const SESSION_ID = /^cs_(?:test_|live_)[A-Za-z0-9]+$/;
+const PAID_KIND = "solo-clean";
+const PRICE_CENTS = 199;
+const ENCODER = new TextEncoder();
 
-function headers(origin) {
+function cors(origin) {
   const h = {
     "Content-Type": "application/json; charset=utf-8",
     "Cache-Control": "no-store",
     "Vary": "Origin",
-    "X-Content-Type-Options": "nosniff",
+    "X-Content-Type-Options": "nosniff"
   };
   if (ORIGINS.has(origin)) {
     h["Access-Control-Allow-Origin"] = origin;
@@ -33,136 +36,248 @@ function headers(origin) {
   }
   return h;
 }
-function reply(origin, payload, status = 200) {
-  return new Response(JSON.stringify(payload), { status, headers: headers(origin) });
+function respond(origin, data, status = 200) {
+  return new Response(JSON.stringify(data), { status, headers: cors(origin) });
 }
-
-function isConfigured(env) {
-  if (!env || !["test", "live"].includes(env.PAYMENTS_MODE)) return false;
-  const key = env.STRIPE_SECRET_KEY || "";
-  const expectedPrefix = env.PAYMENTS_MODE === "live" ? "sk_live_" : "sk_test_";
-  return key.startsWith(expectedPrefix) &&
-    /^acct_[A-Za-z0-9]+$/.test(env.STRIPE_EXPECTED_ACCOUNT_ID || "");
+const accountPattern = /^acct_[A-Za-z0-9]+$/;
+function credential(env) {
+  return env?.STRIPE_RESTRICTED_KEY || env?.STRIPE_SECRET_KEY || "";
 }
-
+function ready(env) {
+  const mode = env?.PAYMENTS_MODE;
+  const prefix = mode === "test" ? /^(rk|sk)_test_/ : mode === "live" ? /^(rk|sk)_live_/ : null;
+  return !!(prefix && prefix.test(credential(env)) &&
+    accountPattern.test(env.STRIPE_EXPECTED_ACCOUNT_ID || "") &&
+    (mode !== "live" || env.STRIPE_EXPECTED_ACCOUNT_ID === JUSTPDFIT_LIVE_ACCOUNT_ID) &&
+    /^whsec_[A-Za-z0-9_-]{16,}$/.test(env.STRIPE_WEBHOOK_SECRET || "") &&
+    env.PAYMENTS_DB && typeof env.PAYMENTS_DB.prepare === "function");
+}
 async function stripe(env, path, options = {}) {
-  const response = await fetch(STRIPE_API + path, {
+  const result = await fetch(STRIPE_API + path, {
     ...options,
     headers: {
-      Authorization: "Bearer " + env.STRIPE_SECRET_KEY,
-      ...options.headers,
-    },
+      Authorization: "Bearer " + credential(env),
+      "Stripe-Version": STRIPE_VERSION,
+      ...(options.headers || {})
+    }
   });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error("stripe_request_failed");
-  return data;
+  const json = await result.json().catch(() => ({}));
+  if (!result.ok) throw Error("stripe_api_error");
+  return json;
 }
-
-/** Stop immediately if credentials point to an unexpected Stripe account. */
-async function ensureJustPDFitAccount(env) {
+async function checkAccount(env) {
+  if (env.PAYMENTS_MODE === "live" && env.STRIPE_EXPECTED_ACCOUNT_ID !== JUSTPDFIT_LIVE_ACCOUNT_ID) {
+    throw Error("wrong_live_stripe_account");
+  }
   const account = await stripe(env, "/account");
-  if (account.id !== env.STRIPE_EXPECTED_ACCOUNT_ID) {
-    throw new Error("stripe_account_mismatch");
-  }
+  if (account.id !== env.STRIPE_EXPECTED_ACCOUNT_ID) throw Error("stripe_account_mismatch");
 }
-
+function correctSession(session, env) {
+  return !!(SESSION_ID.test(session?.id || "") &&
+    session.id.startsWith(env.PAYMENTS_MODE === "live" ? "cs_live_" : "cs_test_") &&
+    session.livemode === (env.PAYMENTS_MODE === "live") &&
+    session.mode === "payment" &&
+    session.amount_total === PRICE_CENTS &&
+    session.currency === "eur" &&
+    session.metadata?.kind === PAID_KIND &&
+    HASH.test(session.metadata?.fingerprint || ""));
+}
+function paid(session) {
+  return session.status === "complete" && session.payment_status === "paid";
+}
+async function saveOrder(env, session, state) {
+  // Stripe can deliver charge.refunded before checkout.session.completed.
+  // Remember those revocations so an out-of-order payment event cannot unlock.
+  const intent = typeof session.payment_intent === "string" ? session.payment_intent : "";
+  const revoked = intent ? await env.PAYMENTS_DB.prepare(
+    "SELECT payment_intent_id FROM revoked_payment_intents WHERE payment_intent_id = ?"
+  ).bind(intent).first() : null;
+  const effectiveState = revoked ? "revoked" : state;
+  const sql = [
+    "INSERT INTO payment_orders",
+    "(session_id, fingerprint, kind, amount_cents, currency, payment_status, payment_intent_id)",
+    "VALUES (?, ?, ?, ?, ?, ?, ?)",
+    "ON CONFLICT(session_id) DO UPDATE SET",
+    "payment_status = CASE",
+    "WHEN payment_orders.payment_status = 'revoked' THEN 'revoked'",
+    "WHEN excluded.payment_status = 'paid' THEN 'paid'",
+    "WHEN payment_orders.payment_status = 'paid' THEN 'paid'",
+    "ELSE excluded.payment_status END,",
+    "payment_intent_id = COALESCE(payment_orders.payment_intent_id, excluded.payment_intent_id),",
+    "updated_at = CURRENT_TIMESTAMP"
+  ].join(" ");
+  await env.PAYMENTS_DB.prepare(sql).bind(
+    session.id, session.metadata.fingerprint.toLowerCase(), PAID_KIND,
+    PRICE_CENTS, "eur", effectiveState, intent || null
+  ).run();
+}
+async function currentState(env, id) {
+  return env.PAYMENTS_DB.prepare(
+    "SELECT payment_status FROM payment_orders WHERE session_id = ?"
+  ).bind(id).first();
+}
+function randomLabel() {
+  const bytes = crypto.getRandomValues(new Uint8Array(8));
+  return "justpdfit_web_" + [...bytes].map(x => String.fromCharCode(97 + x % 26)).join("");
+}
 async function checkout(env, body) {
-  if (body.kind !== "solo-clean") {
-    return { error: "Ce service payant n'est pas encore disponible.", status: 422 };
-  }
-  await ensureJustPDFitAccount(env);
+  if (body.kind !== PAID_KIND) return { error: "Service payant non disponible.", status: 422 };
+  // Never charge when the D1 schema has not been migrated.
+  await env.PAYMENTS_DB.prepare("SELECT session_id FROM payment_orders LIMIT 1").first();
+  await env.PAYMENTS_DB.prepare("SELECT payment_intent_id FROM revoked_payment_intents LIMIT 1").first();
+  await checkAccount(env);
   const form = new URLSearchParams();
   form.set("mode", "payment");
   form.set("line_items[0][price_data][currency]", "eur");
-  form.set("line_items[0][price_data][unit_amount]", String(SOLO_AMOUNT_CENTS));
+  form.set("line_items[0][price_data][unit_amount]", String(PRICE_CENTS));
   form.set("line_items[0][price_data][product_data][name]", "JustPDFit - PDF signé sans filigrane");
   form.set("line_items[0][quantity]", "1");
-  form.set("metadata[kind]", "solo-clean");
+  form.set("metadata[kind]", PAID_KIND);
   form.set("metadata[fingerprint]", body.fingerprint.toLowerCase());
   form.set("client_reference_id", crypto.randomUUID());
+  form.set("integration_identifier", randomLabel());
   form.set("success_url", "https://justpdfit.com/sign/?payment=success&session_id={CHECKOUT_SESSION_ID}");
   form.set("cancel_url", "https://justpdfit.com/sign/?payment=cancelled");
-  const session = await stripe(env, "/checkout/sessions", {
+  const s = await stripe(env, "/checkout/sessions", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: form,
+    body: form
   });
-  if (!SESSION_ID.test(session.id || "") || !/^https:\/\/checkout\.stripe\.com\//.test(session.url || "")) {
-    throw new Error("stripe_checkout_invalid");
+  if (!SESSION_ID.test(s.id || "") ||
+      !s.id.startsWith(env.PAYMENTS_MODE === "live" ? "cs_live_" : "cs_test_") ||
+      !/^https:\/\/checkout\.stripe\.com\//.test(s.url || "")) {
+    throw Error("stripe_checkout_response_invalid");
   }
-  return { sessionId: session.id, checkoutUrl: session.url };
+  return { sessionId: s.id, checkoutUrl: s.url };
 }
-
 async function verify(env, body) {
-  if (!SESSION_ID.test(body.sessionId || "")) {
+  if (!SESSION_ID.test(body.sessionId || "") ||
+      !body.sessionId.startsWith(env.PAYMENTS_MODE === "live" ? "cs_live_" : "cs_test_")) {
     return { error: "Identifiant de paiement invalide.", status: 400 };
   }
-  // A test key must never verify a live checkout (and vice versa).
-  const sessionMode = body.sessionId.startsWith("cs_live_") ? "live" : "test";
-  if (sessionMode !== env.PAYMENTS_MODE) {
-    return { error: "Paiement issu d'un autre environnement.", status: 400 };
+  await checkAccount(env);
+  const existing = await currentState(env, body.sessionId);
+  if (existing?.payment_status === "revoked") return { paid: false };
+  const s = await stripe(env, "/checkout/sessions/" + encodeURIComponent(body.sessionId));
+  if (!correctSession(s, env) || s.metadata.fingerprint.toLowerCase() !== body.fingerprint.toLowerCase()) {
+    return { paid: false };
   }
-  await ensureJustPDFitAccount(env);
-  const session = await stripe(env, "/checkout/sessions/" + encodeURIComponent(body.sessionId));
-  const paid =
-    session.id === body.sessionId &&
-    session.mode === "payment" &&
-    session.status === "complete" &&
-    session.payment_status === "paid" &&
-    session.currency === "eur" &&
-    session.amount_total === SOLO_AMOUNT_CENTS &&
-    session.metadata?.kind === "solo-clean" &&
-    session.metadata?.fingerprint === body.fingerprint.toLowerCase();
-  return { paid: !!paid };
+  if (!paid(s)) return { paid: false };
+  await saveOrder(env, s, "paid"); // Server-verified fallback; webhook also fulfills independently.
+  return { paid: true };
 }
-
+function toBytes(hex) {
+  if (!/^[a-f0-9]{64}$/i.test(hex)) return null;
+  const out = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) out[i / 2] = parseInt(hex.slice(i, i + 2), 16);
+  return out;
+}
+async function verifyWebhookSignature(raw, signature, secret, nowSeconds = Date.now() / 1000) {
+  if (!signature || !secret || !secret.startsWith("whsec_")) return false;
+  const entries = signature.split(",").map(part => part.trim().split("="));
+  const timestamp = entries.find(([k]) => k === "t")?.[1];
+  const candidates = entries.filter(([k]) => k === "v1").map(([,v]) => v);
+  if (!/^\d+$/.test(timestamp || "") || Math.abs(nowSeconds - Number(timestamp)) > 300) return false;
+  const key = await crypto.subtle.importKey(
+    "raw", ENCODER.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["verify"]
+  );
+  const data = ENCODER.encode(timestamp + "." + raw);
+  for (const hex of candidates) {
+    const sig = toBytes(hex);
+    if (sig && await crypto.subtle.verify("HMAC", key, sig, data)) return true;
+  }
+  return false;
+}
+async function recordEvent(env, event) {
+  const type = event.type;
+  const s = event.data?.object;
+  if (["checkout.session.completed", "checkout.session.async_payment_succeeded",
+    "checkout.session.async_payment_failed"].includes(type) &&
+    correctSession(s, env)) {
+    const state = type === "checkout.session.async_payment_failed" ? "failed" :
+      paid(s) ? "paid" : "pending";
+    await saveOrder(env, s, state);
+  }
+  if (["charge.refunded", "charge.dispute.created"].includes(type)) {
+    const intent = s?.payment_intent;
+    if (typeof intent === "string" && intent.startsWith("pi_")) {
+      await env.PAYMENTS_DB.prepare(
+        "INSERT OR IGNORE INTO revoked_payment_intents (payment_intent_id, stripe_event_id) VALUES (?, ?)"
+      ).bind(intent, event.id).run();
+      await env.PAYMENTS_DB.prepare(
+        "UPDATE payment_orders SET payment_status = 'revoked', updated_at = CURRENT_TIMESTAMP WHERE payment_intent_id = ?"
+      ).bind(intent).run();
+    }
+  }
+  await env.PAYMENTS_DB.prepare(
+    "INSERT OR IGNORE INTO stripe_events (event_id, event_type) VALUES (?, ?)"
+  ).bind(event.id, type).run();
+}
+async function webhook(request, env) {
+  if (!ready(env)) return respond("", { error: "Webhook non configuré." }, 503);
+  const raw = await request.text();
+  if (raw.length > 200000) return respond("", { error: "Payload trop volumineux." }, 413);
+  const verified = await verifyWebhookSignature(
+    raw, request.headers.get("Stripe-Signature"), env.STRIPE_WEBHOOK_SECRET
+  );
+  if (!verified) return respond("", { error: "Signature Stripe invalide." }, 400);
+  let event;
+  try { event = JSON.parse(raw); } catch { return respond("", { error: "JSON invalide." }, 400); }
+  if (!/^evt_[A-Za-z0-9]+$/.test(event?.id || "") || typeof event.type !== "string" ||
+      event.livemode !== (env.PAYMENTS_MODE === "live") ||
+      (event.account && event.account !== env.STRIPE_EXPECTED_ACCOUNT_ID)) {
+    return respond("", { error: "Événement Stripe inattendu." }, 400);
+  }
+  try {
+    await recordEvent(env, event);
+    return respond("", { received: true });
+  } catch {
+    // Non-2xx => Stripe retries webhook delivery.
+    return respond("", { error: "Webhook non enregistré." }, 503);
+  }
+}
+export { verifyWebhookSignature };
 export default {
   async fetch(request, env) {
-    const origin = request.headers.get("Origin") || "";
-    if (!ORIGINS.has(origin)) return reply(origin, { error: "Origine non autorisée." }, 403);
     const url = new URL(request.url);
+    // Stripe webhooks never provide a browser Origin header.
+    if (request.method === "POST" && url.pathname === "/webhook") {
+      return webhook(request, env);
+    }
+    const origin = request.headers.get("Origin") || "";
+    if (!ORIGINS.has(origin)) return respond(origin, { error: "Origine non autorisée." }, 403);
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: {
-        ...headers(origin), "Access-Control-Max-Age": "7200",
+        ...cors(origin), "Access-Control-Max-Age": "7200"
       } });
     }
     if (request.method === "GET" && url.pathname === "/health") {
-      return reply(origin, {
-        service: "justpdfit-payments",
-        status: isConfigured(env) ? "configured" : "disabled",
-        mode: ["test", "live"].includes(env?.PAYMENTS_MODE) ? env.PAYMENTS_MODE : null,
-      });
+      return respond(origin, { service: "justpdfit-payments", status: ready(env) ? "configured" : "disabled",
+        mode: ["test","live"].includes(env?.PAYMENTS_MODE) ? env.PAYMENTS_MODE : null });
     }
     if (request.method !== "POST" || !["/checkout", "/verify"].includes(url.pathname)) {
-      return reply(origin, { error: "Route inconnue." }, 404);
+      return respond(origin, { error: "Route inconnue." }, 404);
     }
-    if (!isConfigured(env)) return reply(origin, { error: "Paiement non activé." }, 503);
+    if (!ready(env)) return respond(origin, { error: "Paiement non activé." }, 503);
     if (!/^application\/json(?:;|$)/i.test(request.headers.get("Content-Type") || "")) {
-      return reply(origin, { error: "Contenu JSON requis." }, 415);
+      return respond(origin, { error: "JSON requis." }, 415);
     }
-    if (Number(request.headers.get("Content-Length") || 0) > 2048) {
-      return reply(origin, { error: "Requête trop volumineuse." }, 413);
-    }
+    const length = Number(request.headers.get("Content-Length") || 0);
+    if (length > 2048) return respond(origin, { error: "Requête trop volumineuse." }, 413);
     let body;
     try {
       const raw = await request.text();
-      if (raw.length > 2048) return reply(origin, { error: "Requête trop volumineuse." }, 413);
+      if (raw.length > 2048) return respond(origin, { error: "Requête trop volumineuse." }, 413);
       body = JSON.parse(raw);
-    } catch {
-      return reply(origin, { error: "Requête JSON invalide." }, 400);
-    }
-    if (!body || typeof body !== "object" || !DOCUMENT_HASH.test(body.fingerprint || "")) {
-      return reply(origin, { error: "Empreinte de document invalide." }, 400);
+    } catch { return respond(origin, { error: "JSON invalide." }, 400); }
+    if (!body || typeof body !== "object" || !HASH.test(body.fingerprint || "")) {
+      return respond(origin, { error: "Empreinte de document invalide." }, 400);
     }
     try {
-      const result = url.pathname === "/checkout"
-        ? await checkout(env, body)
-        : await verify(env, body);
-      if ("error" in result) return reply(origin, { error: result.error }, result.status);
-      return reply(origin, result);
+      const result = url.pathname === "/checkout" ? await checkout(env, body) : await verify(env, body);
+      return "error" in result ? respond(origin, { error: result.error }, result.status) : respond(origin, result);
     } catch {
-      // Do not expose Stripe credentials, account IDs, or Stripe's raw API errors.
-      return reply(origin, { error: "Service de paiement temporairement indisponible." }, 502);
+      return respond(origin, { error: "Service de paiement temporairement indisponible." }, 502);
     }
   }
 };
