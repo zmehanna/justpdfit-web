@@ -90,10 +90,15 @@ function updateButtons(){$("editor-undo").disabled=!history.length;$("editor-red
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function add(kind){
  if(!source)return;
- if(kind==="image"||kind==="signature"){const input=document.createElement("input");input.type="file";input.accept="image/png,image/jpeg";input.onchange=()=>{const f=input.files?.[0];if(!f||f.size>8*1024*1024){status(tr("error"),true);return;}const reader=new FileReader();reader.onload=()=>make(kind,"",String(reader.result));reader.readAsDataURL(f);};input.click();return;}
- make(kind,kind==="date"?new Date().toLocaleDateString(language()==="en"?"en-US":language()==="ar"?"ar":"fr-FR"):kind==="text"?tr("text"):kind==="initials"?tr("initials"):kind==="check"?"✓":"");
+ if(kind==="signature"||kind==="initials"){
+  if(!window.JustPDFitSignatureCreator?.open){status(tr("error"),true);return;}
+  window.JustPDFitSignatureCreator.open({initials:kind==="initials",onApply:image=>make(kind,"",image)});
+  return;
+ }
+ if(kind==="image"){const input=document.createElement("input");input.type="file";input.accept="image/png,image/jpeg";input.onchange=()=>{const f=input.files?.[0];if(!f||f.size>8*1024*1024){status(tr("error"),true);return;}const reader=new FileReader();reader.onload=()=>make(kind,"",String(reader.result));reader.readAsDataURL(f);};input.click();return;}
+ make(kind,kind==="date"?new Date().toLocaleDateString(language()==="en"?"en-US":language()==="ar"?"ar":"fr-FR"):kind==="text"?tr("text"):kind==="check"?"✓":"");
 }
-function make(kind,text,image){snapshot();const obj={id:Date.now()+"-"+Math.random(),page:current,kind,text,image:image||null,x:.15,y:.2,w:kind==="highlight"?.26:kind==="check"?.045:.25,h:kind==="check"?.045:kind==="highlight"?.035:.052,size:16,color:"#172746"};objects.push(obj);selected=obj.id;renderObjects();renderProperties();updateButtons();syncWizard();}
+function make(kind,text,image){snapshot();const obj={id:Date.now()+"-"+Math.random(),page:current,kind,text,image:image||null,x:.15,y:.2,w:kind==="highlight"?.26:kind==="check"?.045:kind==="signature"?.34:kind==="initials"?.13:.25,h:kind==="check"?.045:kind==="highlight"?.035:kind==="signature"?.095:kind==="initials"?.06:.052,size:16,color:"#172746"};objects.push(obj);selected=obj.id;renderObjects();renderProperties();updateButtons();syncWizard();}
 function updateNavigation(){
  $("editor-pagecount").textContent=source?current+" / "+total:"0 / 0";$("editor-prev").disabled=!source||current<=1;$("editor-next").disabled=!source||current>=total;
  $("editor-thumbs").innerHTML=source?Array.from({length:Math.min(total,150)},(_,i)=>'<button type="button" data-page="'+(i+1)+'" '+(i+1===current?'aria-current="page"':'')+'>'+(i+1)+'</button>').join(""):"";
@@ -122,7 +127,7 @@ function renderProperties(){
  const panel=$("editor-properties"),o=objects.find(o=>o.id===selected);
  panel.innerHTML='<h3>'+tr("properties")+'</h3>';
  if(!o){const p=document.createElement("p");p.textContent=tr("selected");p.style.color="#8190a7";p.style.fontSize="13px";panel.append(p);return;}
- if(o.kind!=="image"&&o.kind!=="signature"&&o.kind!=="highlight"){const label=document.createElement("label");label.textContent=tr("name");panel.append(label);const area=document.createElement("textarea");area.value=o.text;area.onchange=()=>{snapshot();o.text=area.value;renderObjects();};panel.append(area);}
+ if(o.kind!=="image"&&o.kind!=="signature"&&o.kind!=="initials"&&o.kind!=="highlight"){const label=document.createElement("label");label.textContent=tr("name");panel.append(label);const area=document.createElement("textarea");area.value=o.text;area.onchange=()=>{snapshot();o.text=area.value;renderObjects();};panel.append(area);}
  if(!o.image)panel.insertAdjacentHTML("beforeend",propInput(tr("font"),"property-size",o.size,"number")+propInput(tr("color"),"property-color",o.color,"color"));
  panel.insertAdjacentHTML("beforeend",propInput(tr("width"),"property-width",Math.round(o.w*100),"number")+propInput(tr("height"),"property-height",Math.round(o.h*100),"number"));
  const select=document.createElement("select");select.id="property-page";for(let i=1;i<=total;i++){const option=document.createElement("option");option.value=i;option.textContent=tr("pages")+" "+i;if(i===current)option.disabled=true;select.append(option);}
