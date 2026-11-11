@@ -1,0 +1,40 @@
+/* Signature creator — matching Sign PDF modal and styling. */
+.jpi-sig-overlay{position:fixed;inset:0;z-index:100001;display:grid;place-items:center;padding:20px;background:#121c36aa;backdrop-filter:blur(5px)}
+.jpi-sig-dialog{box-sizing:border-box;width:min(100%,860px);max-height:calc(100dvh - 40px);overflow:auto;background:#fff;color:#203050;border-radius:22px;box-shadow:0 24px 80px #09172b66;outline:none;font-family:inherit}
+.jpi-sig-header{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:24px 27px 17px;border-bottom:1px solid #e8edf6}
+.jpi-sig-eyebrow{color:#e64a65;font-size:11px;font-weight:850;letter-spacing:.09em;margin-bottom:6px}
+.jpi-sig-header h2{font-size:26px;letter-spacing:-.7px;font-weight:850;margin:0 0 7px;color:#233451}
+.jpi-sig-header p{font-size:13px;line-height:1.6;color:#7686a0;margin:0}
+.jpi-sig-close{border:0;background:#f1f4fa;border-radius:50%;width:35px;height:35px;flex:none;color:#697a97;font-size:24px;cursor:pointer}
+.jpi-sig-body{padding:22px 27px}
+.jpi-sig-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+.jpi-sig-tab{border:1px solid #e0e8f4;border-radius:11px;background:#f8faff;color:#52647e;min-height:46px;font:inherit;font-size:14px;font-weight:800;cursor:pointer}
+.jpi-sig-tab[aria-selected=true]{border:2px solid #ed465c;background:#fff2f5;color:#df3d5b}
+.jpi-sig-type-panel[hidden],.jpi-sig-draw-panel[hidden],.jpi-sig-image-panel[hidden]{display:none!important}
+.jpi-sig-label{font-weight:800;color:#263956;font-size:13px;display:block;margin-bottom:8px}
+#jpi-sig-name{box-sizing:border-box;width:100%;border:1px solid #d9e2ee;border-radius:10px;padding:12px;font:inherit;font-size:15px;margin-bottom:16px;background:#fff;color:#233451}
+.jpi-sig-styles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+.jpi-sig-style{min-width:0;overflow:hidden;text-overflow:ellipsis;border:1px solid #e0e7f0;border-radius:10px;background:#f8faff;min-height:58px;color:#223351;padding:5px 9px;font-size:21px;cursor:pointer}
+.jpi-sig-style[aria-pressed=true]{border:2px solid #ed465c;background:#fff3f6}
+.jpi-sig-preview-heading{display:flex;justify-content:space-between;align-items:center;gap:15px;font-size:13px;font-weight:800;color:#30415e;margin:9px 0}
+.jpi-sig-inks{display:flex;gap:9px}
+.jpi-sig-ink{border:2px solid #fff;box-shadow:0 0 0 1px #cdd7e6;width:30px;height:30px;border-radius:50%;cursor:pointer}
+.jpi-sig-ink.is-selected{box-shadow:0 0 0 2px #ed465c}
+.jpi-sig-canvas-wrap{display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f9fbfe;border:1px dashed #c5d5ee;border-radius:13px;min-height:165px}
+.jpi-sig-canvas-wrap.is-dark{background:#131d32;border-color:#536580}
+.jpi-sig-canvas{display:block;width:100%;max-width:700px;height:auto;aspect-ratio:700/220;touch-action:none}
+.jpi-sig-options{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:14px}
+.jpi-sig-options label{display:flex;align-items:center;gap:7px;color:#364861;font-size:13px;font-weight:650;cursor:pointer}
+.jpi-sig-options input{accent-color:#ed465c}
+.jpi-sig-clear{border:1px solid #dce5f2;border-radius:9px;background:#f8faff;padding:9px 16px;margin-top:13px;cursor:pointer;color:#3a4b66;font:inherit;font-size:12px;font-weight:800}
+.jpi-sig-help{font-size:12px;color:#72829b;line-height:1.5;margin:0 0 14px}
+#jpi-sig-file{max-width:100%;margin:4px 0 9px;font:inherit;font-size:13px}
+.jpi-sig-privacy{font-size:12px;color:#71819a;margin:12px 0 0}
+.jpi-sig-error{color:#bf2449;font-size:13px;font-weight:700;min-height:0;margin:9px 0 0}
+.jpi-sig-error:empty{display:none}
+.jpi-sig-footer{padding:18px 27px;border-top:1px solid #e8edf6;display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+.jpi-sig-footer button{border-radius:11px;min-height:45px;padding:11px 22px;font:inherit;font-weight:800;cursor:pointer}
+.jpi-sig-secondary{border:1px solid #d8e1ef;background:#fff;color:#3e526f}
+.jpi-sig-primary{border:1px solid #ed465c;background:linear-gradient(100deg,#ed465c,#fc6472);color:#fff;box-shadow:0 10px 20px #ee4a6124}
+.jpi-sig-dialog button:focus-visible,.jpi-sig-dialog input:focus-visible{outline:3px solid #6c9efb;outline-offset:2px}
+@media(max-width:630px){.jpi-sig-overlay{padding:8px}.jpi-sig-dialog{max-height:calc(100dvh - 16px);border-radius:15px}.jpi-sig-header{padding:17px}.jpi-sig-body{padding:16px}.jpi-sig-footer{padding:14px}.jpi-sig-styles{grid-template-columns:repeat(2,1fr)}.jpi-sig-header h2{font-size:22px}.jpi-sig-footer button{flex:1}.jpi-sig-canvas-wrap{min-height:120px}}
