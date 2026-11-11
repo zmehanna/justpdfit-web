@@ -323,5 +323,33 @@ body{background:#f8f9fc;color:var(--ink)}
 <script defer src="../file-picker.js"></script>
 <script defer src="../payment-config.js?v=20261111-live"></script>
 <script defer src="../sign-watermark.js?v=20261111-stripe-locale"></script>
-<script defer src="../sign-engine.js?v=20261111-stripe-locale"></script>
+<script defer src="../sign-engine.js?v=20261111-cancel-fix-2"></script>
+<script>
+/* Payment return localization is independent of the PDF engine and its cache. */
+(function(){
+  if(new URLSearchParams(location.search).get("payment")!=="cancelled")return;
+  var labels={
+    en:["Payment cancelled","No payment was taken. Your watermark-free download has not been unlocked. You can continue signing for free.","Continue signing"],
+    fr:["Paiement annulé","Aucun paiement n’a été effectué. La version sans filigrane n’a pas été débloquée. Vous pouvez continuer gratuitement.","Continuer la signature"],
+    ar:["تم إلغاء الدفع","لم يتم تحصيل أي مبلغ. يمكنك متابعة التوقيع مجاناً، ولم يتم فتح النسخة دون علامة مائية.","متابعة التوقيع"],
+    es:["Pago cancelado","No se ha realizado ningún cobro. Puedes seguir firmando gratis.","Continuar firmando"],
+    de:["Zahlung abgebrochen","Es wurde kein Betrag abgebucht. Sie können kostenlos weitersignieren.","Weiter unterschreiben"],
+    it:["Pagamento annullato","Nessun importo è stato addebitato. Puoi continuare a firmare gratuitamente.","Continua a firmare"],
+    pt:["Pagamento cancelado","Nenhum valor foi cobrado. Pode continuar a assinar gratuitamente.","Continuar a assinar"]
+  };
+  function render(){
+    var panel=document.getElementById("paymentReturnNotice");
+    if(!panel)return;
+    var current=window.JustPDFItI18n&&window.JustPDFItI18n.getLanguage?window.JustPDFItI18n.getLanguage():document.documentElement.lang||navigator.language||"en";
+    var entries=labels[String(current).toLowerCase().split("-")[0]]||labels.en;
+    document.getElementById("paymentCancelTitle").textContent=entries[0];
+    document.getElementById("paymentCancelDescription").textContent=entries[1];
+    document.getElementById("paymentCancelAction").textContent=entries[2]+" →";
+    panel.hidden=false;
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render);
+  else render();
+  document.addEventListener("justpdfit-language",render);
+})();
+</script>
 </body></html>
