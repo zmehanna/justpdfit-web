@@ -628,7 +628,12 @@ const init=()=>{
   // Open synchronously as a consequence of the click, so browsers do not block Stripe.
   const tab=window.open("about:blank","_blank");
   if(tab){
-   try{tab.document.write("<!doctype html><html lang='fr'><title>Stripe</title><body style='font:16px Arial;padding:32px'>Ouverture du paiement sécurisé Stripe…</body></html>");tab.document.close();}catch{}
+   try{
+    const inFrench=window.JustPDFItI18n?.getLanguage?.()==="fr";
+    const openingText=inFrench?"Ouverture du paiement sécurisé Stripe…":"Opening secure Stripe checkout…";
+    tab.document.write("<!doctype html><html lang='"+(inFrench?"fr":"en")+"'><meta charset='utf-8'><title>Stripe</title><body style='font:16px Arial;padding:32px'>"+openingText+"</body></html>");
+    tab.document.close();
+   }catch{}
   }
   try{
    if(!tab)throw Error(st("paymentPopupBlocked",null,"Allow pop-ups to open Stripe, then try again."));
