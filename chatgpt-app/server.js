@@ -11,7 +11,10 @@ const widgetUri = "ui://justpdfit/editor-v6.html";
 const uiMeta = { ui:{resourceUri:widgetUri,visibility:["model","app"]}, "openai/widgetAccessible":true, "openai/outputTemplate":widgetUri, "openai/toolInvocation/invoking":"Processing PDF", "openai/toolInvocation/invoked":"PDF ready" };
 const fail = e => ({ isError:true,content:[{ type:"text",text:e instanceof Error ? e.message : "PDF processing failed" }] });
 function tool(app,name,title,description,schema,action) {
-  app.registerTool(name,{title,description,inputSchema:schema,_meta:uiMeta},async args=>{try{return await perform(action,args)}catch(e){return fail(e)}});
+  const isReadOnly = action === "inspect";
+  app.registerTool(name,{title,description,inputSchema:schema,
+    annotations:{readOnlyHint:isReadOnly,openWorldHint:false,destructiveHint:false},
+    _meta:uiMeta},async args=>{try{return await perform(action,args)}catch(e){return fail(e)}});
 }
 function registerApp(){
  const app=makeApp();
