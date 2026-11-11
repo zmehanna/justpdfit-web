@@ -136,6 +136,33 @@ test("€1.99 Checkout session uses server amount and checks account identity", 
   assert.equal(calls.length, 2);
 });
 
+test("Checkout follows the website locale and localizes its product title", async () => {
+  const cases = [
+    ["en", "en", "JustPDFit - Signed PDF without watermark"],
+    ["fr", "fr", "JustPDFit - PDF signé sans filigrane"],
+    ["es", "es", "JustPDFit - PDF firmado sin marca de agua"],
+    ["de", "de", "JustPDFit - Signiertes PDF ohne Wasserzeichen"],
+    ["pt", "pt", "JustPDFit - PDF assinado sem marca d'água"],
+    ["fil", "fil", "JustPDFit - Nilagdaang PDF na walang watermark"],
+    ["ar", "en", "JustPDFit - Signed PDF without watermark"],
+    ["hi", "en", "JustPDFit - Signed PDF without watermark"],
+    ["ur", "en", "JustPDFit - Signed PDF without watermark"],
+    ["fa", "en", "JustPDFit - Signed PDF without watermark"],
+    ["<script>", "en", "JustPDFit - Signed PDF without watermark"],
+    [undefined, "en", "JustPDFit - Signed PDF without watermark"]
+  ];
+  for (const [locale, expected, title] of cases) {
+    calls.length = 0;
+    const response = await req("/checkout", { fingerprint: HASH, kind: "solo-clean", locale });
+    assert.equal(response.status, 200, "checkout success for " + locale);
+    const stripeRequest = calls.find(call => call.url.endsWith("/checkout/sessions"));
+    assert.ok(stripeRequest, "Stripe Checkout called for " + locale);
+    assert.equal(stripeRequest.options.body.get("locale"), expected);
+    assert.equal(stripeRequest.options.body.get("line_items[0][price_data][product_data][name]"), title);
+    assert.equal(stripeRequest.options.body.get("line_items[0][price_data][unit_amount]"), "199");
+  }
+});
+
 test("wrong account aborts without creating Checkout session", async () => {
   calls.length = 0;
   currentAccount = "acct_NotJustPDFIt";

@@ -50,7 +50,7 @@ async function jsonRequest(path,data){
 window.JustPDFitWatermark={
  SITE,TEXT,PRICE,stamp,backendReady:!!backend,
  fingerprint:digestFingerprint,
- createCheckout:async fingerprint=>jsonRequest("/checkout",{fingerprint,kind:"solo-clean"}),
+ createCheckout:async fingerprint=>jsonRequest("/checkout",{fingerprint,kind:"solo-clean",locale:window.JustPDFItI18n?.getLanguage?.()||"en"}),
  verifyCheckout:async (sessionId,fingerprint)=>jsonRequest("/verify",{sessionId,fingerprint})
 };
 })();

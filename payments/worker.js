@@ -21,6 +21,37 @@ const SESSION_ID = /^cs_(?:test_|live_)[A-Za-z0-9]+$/;
 const PAID_KIND = "solo-clean";
 const PRICE_CENTS = 199;
 const ENCODER = new TextEncoder();
+// Only Stripe Checkout-supported locales are passed to Stripe. For languages
+// not supported by Stripe (such as Arabic, Hindi, Urdu, Persian, Bengali or
+// Swahili), display the payment form and product in English, not French.
+// Server-side allowlist: arbitrary client data cannot inject Stripe parameters.
+const CHECKOUT_PRODUCT_NAMES = Object.freeze({
+  en: "JustPDFit - Signed PDF without watermark",
+  fr: "JustPDFit - PDF signé sans filigrane",
+  es: "JustPDFit - PDF firmado sin marca de agua",
+  de: "JustPDFit - Signiertes PDF ohne Wasserzeichen",
+  it: "JustPDFit - PDF firmato senza filigrana",
+  pt: "JustPDFit - PDF assinado sem marca d'água",
+  nl: "JustPDFit - Ondertekende PDF zonder watermerk",
+  ru: "JustPDFit - Подписанный PDF без водяного знака",
+  pl: "JustPDFit - Podpisany PDF bez znaku wodnego",
+  tr: "JustPDFit - Filigransız imzalı PDF",
+  zh: "JustPDFit - 无水印已签名 PDF",
+  ja: "JustPDFit - 透かしなしの署名済みPDF",
+  ko: "JustPDFit - 워터마크 없는 서명된 PDF",
+  id: "JustPDFit - PDF bertanda tangan tanpa tanda air",
+  vi: "JustPDFit - PDF đã ký không có hình mờ",
+  th: "JustPDFit - PDF ที่ลงนามแล้วไม่มีลายน้ำ",
+  ms: "JustPDFit - PDF bertandatangan tanpa tera air",
+  fil: "JustPDFit - Nilagdaang PDF na walang watermark",
+  sv: "JustPDFit - Signerad PDF utan vattenstämpel",
+  el: "JustPDFit - Υπογεγραμμένο PDF χωρίς υδατογράφημα",
+  ro: "JustPDFit - PDF semnat fără filigran"
+});
+function checkoutLocale(value) {
+  return typeof value === "string" && Object.prototype.hasOwnProperty.call(CHECKOUT_PRODUCT_NAMES, value)
+    ? value : "en";
+}
 
 function cors(origin) {
   const h = {
@@ -127,10 +158,12 @@ async function checkout(env, body) {
   await env.PAYMENTS_DB.prepare("SELECT payment_intent_id FROM revoked_payment_intents LIMIT 1").first();
   await checkAccount(env);
   const form = new URLSearchParams();
+  const locale = checkoutLocale(body.locale);
   form.set("mode", "payment");
+  form.set("locale", locale);
   form.set("line_items[0][price_data][currency]", "eur");
   form.set("line_items[0][price_data][unit_amount]", String(PRICE_CENTS));
-  form.set("line_items[0][price_data][product_data][name]", "JustPDFit - PDF signé sans filigrane");
+  form.set("line_items[0][price_data][product_data][name]", CHECKOUT_PRODUCT_NAMES[locale]);
   form.set("line_items[0][quantity]", "1");
   form.set("metadata[kind]", PAID_KIND);
   form.set("metadata[fingerprint]", body.fingerprint.toLowerCase());
