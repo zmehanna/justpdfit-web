@@ -28,11 +28,11 @@ iframe{width:100%;height:360px;border:1px solid #b4bdca88;border-radius:10px;bac
 <label for="action">2. Choose an action</label>
 <select id="action"><option value="inspect_pdf">Inspect pages</option><option value="merge_pdfs">Merge PDFs</option><option value="extract_pages">Extract pages</option><option value="reorder_pages">Reorder pages</option><option value="rotate_pdf">Rotate pages</option><option value="annotate_pdf">Add text annotation</option><option value="sign_pdf_visual">Add visual signature</option><option value="optimize_pdf">Optimize PDF</option><option value="images_to_pdf">Images to PDF</option></select>
 <div id="options"></div>
-<div class="actions"><button type="button" class="secondary" id="demo">Try demo PDF</button><button id="run">Process document</button><button class="secondary" id="clear">Clear</button></div>
+<div class="actions"><button type="button" class="secondary" id="demo">Try demo PDF</button><button type="button" class="secondary" id="edit-demo">Apply sample edit</button><button id="run">Process document</button><button class="secondary" id="clear">Clear</button></div>
 <p class="status" id="status" role="status" aria-live="polite"></p>
 <p class="warn">Free results contain a small JustPDFit watermark. Visual signature is not a cryptographic digital signature. Paid removal is not available within this app.</p>
 </section>
-<section><strong>3. Preview and download</strong><div class="actions"><button id="download" disabled>Download PDF</button><a id="download-link" hidden download="justpdfit.pdf">Download link</a></div><div id="preview" class="hint">Choose a PDF above to preview it.</div></section>
+<section><strong>3. Preview and download</strong><div class="actions"><button id="download" disabled>Prepare secure download link</button><a id="download-link" hidden download="justpdfit.pdf" target="_blank" rel="noopener noreferrer">Open / download saved PDF</a></div><div id="preview" class="hint">Choose a PDF above to preview it.</div></section>
 </main>
 <script>
 const $=id=>document.getElementById(id);
@@ -60,7 +60,7 @@ window.addEventListener("message",e=>{
   }
 });
 const bridgeReady=request("ui/initialize",{
-  appInfo:{name:"justpdfit-editor",version:"0.4.0"},
+  appInfo:{name:"justpdfit-editor",version:"0.5.0"},
   appCapabilities:{},protocolVersion:"2026-01-26"
 }).then(()=>{
   bridgeConnected=true;notify("ui/notifications/initialized",{});
@@ -82,7 +82,8 @@ async function showResult(data){
   setPreview(outputBlob);
   $("download").disabled=false;
   const link=$("download-link");
-  link.href=previewURL;link.download=outputName;link.hidden=false;
+  link.removeAttribute("href");link.hidden=true;
+  $("download").textContent="Prepare secure download link";
   $("status").textContent="PDF ready · "+(data.pages||"?")+" page(s)";
 }
 
@@ -109,7 +110,7 @@ function setPreview(blob){
   $("preview").append(view);
 }
 $("file").onchange=()=>{libraryFiles=[];const f=$("file").files[0];if(f?.type==="application/pdf"||f?.name.toLowerCase().endsWith(".pdf"))setPreview(f)};
-$("clear").onclick=()=>{currentDemo=null;libraryFiles=[];outputBlob=null;$("file").value="";$("status").textContent="";$("download").disabled=true;$("download-link").hidden=true;$("preview").textContent="Choose a PDF above to preview it.";if(previewURL)URL.revokeObjectURL(previewURL)};
+$("clear").onclick=()=>{currentDemo=null;libraryFiles=[];outputBlob=null;$("file").value="";$("status").textContent="";$("download").disabled=true;$("download-link").hidden=true;$("download-link").removeAttribute("href");$("preview").textContent="Choose a PDF above to preview it.";if(previewURL)URL.revokeObjectURL(previewURL)};
 $("library").onclick=async()=>{
  if(typeof window.openai?.selectFiles!=="function"||typeof window.openai?.getFileDownloadUrl!=="function") {
    $("status").textContent="ChatGPT file picker is not available in this account. Choose a local file instead.";
@@ -135,18 +136,45 @@ $("library").onclick=async()=>{
  }catch(e){$("status").textContent="File selection failed: "+(e?.message||String(e))}
 };
 $("download").onclick=async()=>{
- if(!outputBlob)return;
- if(typeof window.openai?.uploadFile==="function" && typeof window.openai?.getFileDownloadUrl==="function"){
-   try{
-     const saved=await window.openai.uploadFile(new File([outputBlob],outputName,{type:"application/pdf"}));
-     if(saved?.fileId){
-       const response=await window.openai.getFileDownloadUrl({fileId:saved.fileId});
-       const href=typeof response==="string"?response:response?.downloadUrl||response?.url;
-       if(href){const link=$("download-link");link.href=href;link.download=outputName;link.hidden=false;link.click();$("status").textContent="Download link ready.";return}
-     }
-   }catch(err){$("status").textContent="ChatGPT file download fallback: "+(err.message||err)}
- }
- const link=$("download-link");link.href=previewURL;link.download=outputName;link.hidden=false;link.click();
+  if(!outputBlob)return;
+  const button=$("download");
+  const link=$("download-link");
+  button.disabled=true;
+  $("status").textContent="Preparing your ChatGPT download link…";
+  try {
+    if(typeof window.openai?.uploadFile!=="function" || typeof window.openai?.getFileDownloadUrl!=="function")
+      throw Error("ChatGPT file download extension is unavailable");
+    const uploaded=await window.openai.uploadFile(
+      new File([outputBlob],outputName,{type:"application/pdf"})
+    );
+    const fileId=uploaded?.fileId;
+    if(!fileId)throw Error("ChatGPT did not return a file ID");
+    const location=await window.openai.getFileDownloadUrl({fileId});
+    const href=typeof location==="string"?location:location?.downloadUrl;
+    if(!href || !/^https:\\/\\//.test(href))throw Error("No secure download URL returned");
+    link.href=href;
+    link.removeAttribute("download");
+    link.textContent="Open / download "+outputName;
+    link.hidden=false;
+    button.textContent="Refresh download link";
+    $("status").textContent="Your PDF is ready. Click the link to open or download it.";
+  }catch(err){
+    link.hidden=true;link.removeAttribute("href");
+    $("status").textContent="Secure download unavailable: "+(err?.message||String(err));
+  }finally{button.disabled=false}
+};
+$("edit-demo").onclick=async()=>{
+  $("edit-demo").disabled=true;
+  $("status").textContent="Adding TEST APPROVED to a synthetic PDF…";
+  try{
+    const response=await callPdfTool("create_demo_pdf",{text:"TEST APPROVED"});
+    if(response?.isError)throw Error(response.content?.[0]?.text||"Demo editing failed");
+    await showResult(response.structuredContent);
+    libraryFiles=[new File([outputBlob],outputName,{type:"application/pdf"})];
+    $("file").value="";
+    $("status").textContent="Edited demo PDF ready · 1 page. Click Prepare secure download link.";
+  }catch(err){$("status").textContent="Demo edit failed: "+(err?.message||String(err))}
+  finally{$("edit-demo").disabled=false}
 };
 $("demo").onclick=async()=>{
  $("demo").disabled=true;$("status").textContent="Creating a synthetic demo PDF…";
