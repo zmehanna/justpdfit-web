@@ -12,6 +12,15 @@ async function pdfFrom(result){
  assert.equal(result.structuredContent.mimeType,"application/pdf");
  return PDFDocument.load(Buffer.from(result.structuredContent.base64,"base64"));
 }
+test("demo creates a real PDF that can be annotated",async()=>{
+ const demo=await perform("demo",{});
+ const pdf=await pdfFrom(demo);
+ assert.equal(pdf.getPageCount(),1);
+ const annotated=await perform("annotate",{pdf:demo.structuredContent.base64,text:"APPROVED",page:1});
+ const result=await pdfFrom(annotated);
+ assert.equal(result.getPageCount(),1);
+ assert.equal(annotated.structuredContent.filename,"justpdfit-annotate.pdf");
+});
 test("inspect, extract and reorder PDF pages",async()=>{
  const pdf=await sample(3);
  const inspect=await perform("inspect",{pdf});
