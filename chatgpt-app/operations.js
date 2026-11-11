@@ -29,7 +29,7 @@ export async function perform(action, input) {
     page.drawText("JustPDFit demo - synthetic document", { x: 45, y: 770, font, size: 18, color: rgb(0.1, 0.27, 0.55) });
     page.drawText("Try annotating, rotating or downloading this sample.", { x: 45, y: 735, font, size: 12 });
     if (input.text) {
-      if (typeof input.text !== "string" || input.text.length > 100 || /[^\\x20-\\x7e]/.test(input.text)) throw Error("Demo annotation must be printable text (max 100 characters)");
+      if (typeof input.text !== "string" || input.text.length > 100 || [...input.text].some(ch=>ch.charCodeAt(0)<32 || ch.charCodeAt(0)>126)) throw Error("Demo annotation must be printable text (max 100 characters)");
       page.drawText(input.text,{x:45,y:680,font,size:16,color:rgb(0.05,0.45,0.25)});
     }
     return output(pdf, input.text ? "justpdfit-demo-edited.pdf" : "justpdfit-demo.pdf");
