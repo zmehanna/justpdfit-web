@@ -17,11 +17,19 @@ export async function mark(pdf) {
 export async function output(pdf, filename = "justpdfit.pdf") {
   await mark(pdf);
   const bytes = await pdf.save({ useObjectStreams: true });
-  if (bytes.length > LIMIT) throw Error("Output exceeds 12MB");
+  if (bytes.length > LIMIT) throw Error("Output exceeds 2MB");
   const base64 = Buffer.from(bytes).toString("base64");
   return { content: [{ type: "text", text: JSON.stringify({ filename, mimeType: "application/pdf", pages: pdf.getPageCount(), watermark: "JustPDFit.com", note: "PDF bytes available in structuredContent for the widget; never paste base64 into chat." }) }], structuredContent: { filename, mimeType:"application/pdf", base64, pages:pdf.getPageCount(), watermark:"JustPDFit.com" } };
 }
 export async function perform(action, input) {
+  if (action === "demo") {
+    const pdf = await PDFDocument.create();
+    const page = pdf.addPage([595, 842]);
+    const font = await pdf.embedFont(StandardFonts.Helvetica);
+    page.drawText("JustPDFit demo - synthetic document", { x: 45, y: 770, font, size: 18, color: rgb(0.1, 0.27, 0.55) });
+    page.drawText("Try annotating, rotating or downloading this sample.", { x: 45, y: 735, font, size: 12 });
+    return output(pdf, "justpdfit-demo.pdf");
+  }
   if (action === "merge") {
     if (!Array.isArray(input.pdfs) || input.pdfs.length < 2 || input.pdfs.length > 5) throw Error("Select 2 to 5 PDFs");
     const result = await PDFDocument.create();
