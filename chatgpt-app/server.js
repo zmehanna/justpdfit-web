@@ -14,6 +14,7 @@ function tool(app,name,title,description,schema,action) {
 }
 function registerApp(){
  const app=makeApp();
+tool(app,"create_demo_pdf","Create example PDF","Generate a small synthetic PDF for demonstration and testing; never uses personal files.",{},"demo");
 tool(app,"merge_pdfs","Merge PDF files","Combine 2 to 5 PDFs in sequence. Base64 inputs; document is processed by the JustPDFit server and watermarked. Do not send sensitive content without user consent.",{pdfs:z.array(z.string()).min(2).max(5)},"merge");
 tool(app,"extract_pages","Extract PDF pages","Extract selected 1-based page numbers in the specified order.",{pdf:z.string(),pages:z.array(z.number().int().positive()).min(1).max(300)},"split");
 tool(app,"reorder_pages","Reorder PDF pages","Create a new PDF with pages in the requested 1-based order.",{pdf:z.string(),pages:z.array(z.number().int().positive()).min(1).max(300)},"reorder");
