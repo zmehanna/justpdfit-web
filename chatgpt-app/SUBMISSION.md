@@ -73,3 +73,17 @@
 - Téléchargement : nouveau flux utilisant `window.openai.uploadFile` et `window.openai.getFileDownloadUrl`, avec création d'un lien HTTPS explicite, implémenté mais **pas encore validé jusqu'à un téléchargement navigateur**.
 - Essai TinyFish : dans la conversation ChatGPT le modèle a répondu sans appeler l'outil, ce qui n'est pas une preuve d'indisponibilité MCP. Les tests directs du connecteur prouvent que les opérations fonctionnent.
 - **Publication publique toujours bloquée** tant que le fichier final n'a pas été téléchargé et rouvert depuis l'interface utilisateur ChatGPT, et qu'un cycle de modification par clics dans le widget n'a pas été vérifié.
+
+## Signature assistant workflow — 11 November 2026, v0.6.0
+
+Added a user-approved signature flow to JustPDFit's private ChatGPT MCP app:
+
+1. ChatGPT can pass authorized PDF attachments via optional tool `file` parameters with `_meta["openai/fileParams"]=["file"]`; strict trusted HTTPS host, no redirects, size and timeout protections apply. Widget may alternatively use `window.openai.selectFiles()` or the local file chooser when file params are unavailable.
+2. `propose_signature_placement`: read-only analysis of up to the final 10 PDF pages using PDF.js text markers, returning page dimensions and candidate coordinates with confidence and explicit review warnings. Scanned/image-only PDFs yield no invented candidates and require manual placement; no OCR is currently implemented.
+3. `preview_signature_pdf`: visual preview of proposed signature on a temporary copy without finalization or downloading.
+4. `finalize_signature_pdf`: requires an explicit `confirmed: true`, a signer name, exact page, and coordinates. The widget requires a successful preview and an approval checkbox, invalidating consent if page, coordinates, or name change.
+5. The returned document retains existing pages and adds a visual name signature, with the JustPDFit watermark. A visual signature is **not** an identity-verified or cryptographically signed PDF.
+
+Render integration tests: 8 PDF tests passed (including searchable signature labels and scan fallback), the MCP tool listing and approval-gated signing checks passed with 13 tools, widget script validated, npm audit 0 known vulnerabilities.
+
+**Public submission gate:** Actual transfer of an already-attached PDF through ChatGPT's file adapter, manual/visual page-position preview in ChatGPT, widget confirmation, and browser download of the final signed document are still awaiting live end-to-end verification. Do not claim guaranteed automatic signature detection on scanned contracts.
