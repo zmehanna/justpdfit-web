@@ -212,3 +212,7 @@
   .editor-page .editor-bottom .editor-actions #editor-export,
   .editor-page .editor-bottom .editor-actions #editor-checkout{min-width:0;width:100%}
 }
+
+/* Keep the transparent free-editing and optional watermark pricing message readable. */
+.editor-page .edit-free-label{white-space:normal;max-width:320px;text-align:center;line-height:1.45;flex-shrink:1}
+@media(max-width:760px){.editor-page .edit-free-label{max-width:100%;text-align:left}}
