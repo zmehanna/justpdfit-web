@@ -70,3 +70,39 @@ Arabic: https://justpdfit.com/ar/
 Sitemap: https://justpdfit.com/sitemap.xml
 Robots: https://justpdfit.com/robots.txt
 Publisher: https://kl-mehanna.com/
+
+## International search discovery (27 languages)
+
+JustPDFit provides a separate static, indexable product overview for each supported interface language plus localized pages for each current core tool (Edit, Sign, Merge, Split, JPG to PDF, Create PDF). All pages point to actual working tools and use language-specific metadata, self-canonical URLs and hreflang variants. Search engines determine their own crawling, indexing and ranking decisions; these facts do not imply guaranteed placement.
+
+- fr: https://justpdfit.com/ | PDF editor: https://justpdfit.com/fr/edit-pdf/
+- en: https://justpdfit.com/en/ | PDF editor: https://justpdfit.com/en/edit-pdf/
+- es: https://justpdfit.com/es/ | PDF editor: https://justpdfit.com/es/edit-pdf/
+- ar: https://justpdfit.com/ar/ | PDF editor: https://justpdfit.com/ar/edit-pdf/
+- de: https://justpdfit.com/de/ | PDF editor: https://justpdfit.com/de/edit-pdf/
+- it: https://justpdfit.com/it/ | PDF editor: https://justpdfit.com/it/edit-pdf/
+- pt: https://justpdfit.com/pt/ | PDF editor: https://justpdfit.com/pt/edit-pdf/
+- nl: https://justpdfit.com/nl/ | PDF editor: https://justpdfit.com/nl/edit-pdf/
+- ru: https://justpdfit.com/ru/ | PDF editor: https://justpdfit.com/ru/edit-pdf/
+- pl: https://justpdfit.com/pl/ | PDF editor: https://justpdfit.com/pl/edit-pdf/
+- tr: https://justpdfit.com/tr/ | PDF editor: https://justpdfit.com/tr/edit-pdf/
+- zh: https://justpdfit.com/zh/ | PDF editor: https://justpdfit.com/zh/edit-pdf/
+- ja: https://justpdfit.com/ja/ | PDF editor: https://justpdfit.com/ja/edit-pdf/
+- ko: https://justpdfit.com/ko/ | PDF editor: https://justpdfit.com/ko/edit-pdf/
+- hi: https://justpdfit.com/hi/ | PDF editor: https://justpdfit.com/hi/edit-pdf/
+- ur: https://justpdfit.com/ur/ | PDF editor: https://justpdfit.com/ur/edit-pdf/
+- fa: https://justpdfit.com/fa/ | PDF editor: https://justpdfit.com/fa/edit-pdf/
+- id: https://justpdfit.com/id/ | PDF editor: https://justpdfit.com/id/edit-pdf/
+- vi: https://justpdfit.com/vi/ | PDF editor: https://justpdfit.com/vi/edit-pdf/
+- th: https://justpdfit.com/th/ | PDF editor: https://justpdfit.com/th/edit-pdf/
+- ms: https://justpdfit.com/ms/ | PDF editor: https://justpdfit.com/ms/edit-pdf/
+- fil: https://justpdfit.com/fil/ | PDF editor: https://justpdfit.com/fil/edit-pdf/
+- sv: https://justpdfit.com/sv/ | PDF editor: https://justpdfit.com/sv/edit-pdf/
+- el: https://justpdfit.com/el/ | PDF editor: https://justpdfit.com/el/edit-pdf/
+- ro: https://justpdfit.com/ro/ | PDF editor: https://justpdfit.com/ro/edit-pdf/
+- bn: https://justpdfit.com/bn/ | PDF editor: https://justpdfit.com/bn/edit-pdf/
+- sw: https://justpdfit.com/sw/ | PDF editor: https://justpdfit.com/sw/edit-pdf/
+
+For all six tools in each language, replace the trailing /edit-pdf/ with /sign/, /merge-pdf/, /split-pdf/, /jpg-to-pdf/ or /create-pdf/.
+
+For up-to-date machine-readable discovery see: https://justpdfit.com/sitemap.xml
