@@ -9,46 +9,38 @@ const cfg=window.JustPDFitPaymentConfig || {};
 const backend=typeof cfg.endpoint==="string"&&/^https:\/\/[a-z0-9.-]+\/?$/i.test(cfg.endpoint)
   ?cfg.endpoint.replace(/\/$/,""):null;
 
-// Small branded, diagonal and clickable attribution in the bottom-right corner
-// of free signed documents. Nothing is stamped on an unlocked paid document.
+// Tiny horizontal attribution flush to the lower-right edge, below normal
+// pagination/footer baselines. The paid option never calls stamp().
 function stamp(doc){
  if(!window.PDFLib)throw Error("PDF engine unavailable");
- const {PDFString,StandardFonts,rgb,degrees}=PDFLib;
+ const {PDFString,StandardFonts,rgb}=PDFLib;
  return Promise.all([
   doc.embedFont(StandardFonts.Helvetica),
   doc.embedFont(StandardFonts.HelveticaBold)
  ]).then(([regular,bold])=>{
-  const segments=[
+  const parts=[
    {text:"Just",font:regular,color:rgb(.12,.18,.32)},
    {text:"PDF",font:bold,color:rgb(.93,.07,.33)},
    {text:"it.com",font:regular,color:rgb(.12,.18,.32)}
   ];
-  const radians=Math.PI/6,cos=Math.cos(radians),sin=Math.sin(radians);
   for(const page of doc.getPages()){
    const {width,height}=page.getSize();
    if(width<100||height<65)continue;
-   const size=Math.max(6,Math.min(10,width/65));
-   const gap=size*.17;
-   const textWidth=segments.reduce((n,part)=>n+part.font.widthOfTextAtSize(part.text,size),0)+gap*2;
-   // Fit the entire rotated annotation inside the PDF crop area.
-   const margin=Math.max(7,Math.min(12,width*.018));
-   const x=Math.max(size*.65,width-margin-textWidth*cos);
-   const y=Math.max(8,Math.min(12,height*.02));
-   let advance=0;
-   for(const part of segments){
-    page.drawText(part.text,{
-     x:x+advance*cos,y:y+advance*sin,size,font:part.font,color:part.color,
-     rotate:degrees(30),opacity:.82
-    });
-    advance+=part.font.widthOfTextAtSize(part.text,size)+gap;
+   // Reserve the bottommost 8 PDF points (2.8 mm) for this tiny credit.
+   // Page numbers normally sit above this strip, so do not overlay them.
+   const size=Math.max(4.5,Math.min(6.5,width/100));
+   const gap=size*.12;
+   const totalWidth=parts.reduce((sum,p)=>sum+p.font.widthOfTextAtSize(p.text,size),0)+gap*2;
+   const x=Math.max(2,width-totalWidth-5),y=2.2;
+   let offset=0;
+   for(const part of parts){
+    page.drawText(part.text,{x:x+offset,y,size,font:part.font,color:part.color,opacity:.78});
+    offset+=part.font.widthOfTextAtSize(part.text,size)+gap;
    }
-   // PDF link annotations must use an axis-aligned rectangle. Allow for
-   // glyph ascent above the baseline and modest padding for touch targets.
-   const left=Math.max(0,x-size*sin-3),bottom=Math.max(0,y-4);
-   const right=Math.min(width,x+textWidth*cos+3);
-   const top=Math.min(height,y+textWidth*sin+size*cos+4);
    const action=doc.context.obj({
-    Type:"Annot",Subtype:"Link",Rect:[left,bottom,right,top],Border:[0,0,0],
+    Type:"Annot",Subtype:"Link",
+    Rect:[Math.max(0,x-2),0,Math.min(width,x+totalWidth+2),Math.min(height,10)],
+    Border:[0,0,0],
     A:{Type:"Action",S:"URI",URI:PDFString.of(SITE)}
    });
    page.node.addAnnot(doc.context.register(action));
