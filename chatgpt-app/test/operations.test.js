@@ -16,6 +16,9 @@ test("demo creates a real PDF that can be annotated",async()=>{
  const demo=await perform("demo",{});
  const pdf=await pdfFrom(demo);
  assert.equal(pdf.getPageCount(),1);
+ const editedDemo=await perform("demo",{text:"TEST APPROVED"});
+ assert.equal(editedDemo.structuredContent.filename,"justpdfit-demo-edited.pdf");
+ assert.equal((await pdfFrom(editedDemo)).getPageCount(),1);
  const annotated=await perform("annotate",{pdf:demo.structuredContent.base64,text:"APPROVED",page:1});
  const result=await pdfFrom(annotated);
  assert.equal(result.getPageCount(),1);
