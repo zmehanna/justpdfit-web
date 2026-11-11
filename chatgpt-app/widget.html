@@ -23,8 +23,8 @@ iframe{width:100%;height:360px;border:1px solid #b4bdca88;border-radius:10px;bac
 <section>
 <strong>1. Select your documents</strong>
 <label for="file">PDF documents or JPEG/PNG images</label>
-<input id="file" type="file" accept=".pdf,application/pdf,image/png,image/jpeg" multiple>
-<div class="hint">Files you process are sent to the JustPDFit MCP server. Max 12 MB per file. No account required.</div>
+<input id="file" type="file" accept=".pdf,application/pdf,image/png,image/jpeg" multiple><div class="actions"><button type="button" class="secondary" id="library">Choose from ChatGPT files</button></div>
+<div class="hint">Files you process are sent to the JustPDFit MCP server. Max 2 MB per file in this preview. No additional JustPDFit account required.</div>
 <label for="action">2. Choose an action</label>
 <select id="action"><option value="inspect_pdf">Inspect pages</option><option value="merge_pdfs">Merge PDFs</option><option value="extract_pages">Extract pages</option><option value="reorder_pages">Reorder pages</option><option value="rotate_pdf">Rotate pages</option><option value="annotate_pdf">Add text annotation</option><option value="sign_pdf_visual">Add visual signature</option><option value="optimize_pdf">Optimize PDF</option><option value="images_to_pdf">Images to PDF</option></select>
 <div id="options"></div>
@@ -36,7 +36,7 @@ iframe{width:100%;height:360px;border:1px solid #b4bdca88;border-radius:10px;bac
 </main>
 <script>
 const $=id=>document.getElementById(id);
-let outputBlob=null,outputName="justpdfit.pdf",previewURL=null;
+let outputBlob=null,outputName="justpdfit.pdf",previewURL=null,libraryFiles=[];
 const params={
 extract_pages:'<label>Pages (e.g. 1,3,5)</label><input id="pages" type="text" placeholder="1,3">',
 reorder_pages:'<label>New page order (e.g. 3,1,2)</label><input id="pages" type="text" placeholder="3,1,2">',
@@ -48,11 +48,35 @@ $("action").onchange=()=>{$("options").innerHTML=params[$("action").value]||""};
 $("action").onchange();
 function read64(file){return new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(String(fr.result).split(",")[1]);fr.onerror=reject;fr.readAsDataURL(file)})}
 function setPreview(blob){if(previewURL)URL.revokeObjectURL(previewURL);previewURL=URL.createObjectURL(blob);$("preview").innerHTML="";const iframe=document.createElement("iframe");iframe.title="PDF preview";iframe.src=previewURL;$("preview").append(iframe)}
-$("file").onchange=()=>{const f=$("file").files[0];if(f?.type==="application/pdf"||f?.name.toLowerCase().endsWith(".pdf"))setPreview(f)};
-$("clear").onclick=()=>{outputBlob=null;$("file").value="";$("status").textContent="";$("download").disabled=true;$("preview").textContent="Choose a PDF above to preview it.";if(previewURL)URL.revokeObjectURL(previewURL)};
+$("file").onchange=()=>{libraryFiles=[];const f=$("file").files[0];if(f?.type==="application/pdf"||f?.name.toLowerCase().endsWith(".pdf"))setPreview(f)};
+$("clear").onclick=()=>{libraryFiles=[];outputBlob=null;$("file").value="";$("status").textContent="";$("download").disabled=true;$("preview").textContent="Choose a PDF above to preview it.";if(previewURL)URL.revokeObjectURL(previewURL)};
+$("library").onclick=async()=>{
+ if(typeof window.openai?.selectFiles!=="function"||typeof window.openai?.getFileDownloadUrl!=="function") {
+   $("status").textContent="ChatGPT file picker is not available in this account. Choose a local file instead.";
+   return;
+ }
+ try{
+   const selected=await window.openai.selectFiles();
+   if(!selected?.length)return;
+   const files=[];
+   for(const f of selected.slice(0,10)){
+     const info=await window.openai.getFileDownloadUrl({fileId:f.fileId});
+     const url=typeof info==="string"?info:info?.downloadUrl||info?.url;
+     if(!url)throw Error("ChatGPT did not provide a file URL");
+     const res=await fetch(url);
+     if(!res.ok)throw Error("Unable to access selected file");
+     const blob=await res.blob();
+     files.push(new File([blob],f.fileName||"document.pdf",{type:f.mimeType||blob.type||"application/pdf"}));
+   }
+   libraryFiles=files;
+   $("file").value="";
+   $("status").textContent=files.length+" file(s) selected from ChatGPT.";
+   if(files[0]?.type==="application/pdf")setPreview(files[0]);
+ }catch(e){$("status").textContent="File selection failed: "+(e?.message||String(e))}
+};
 $("download").onclick=()=>{if(!outputBlob)return;const url=URL.createObjectURL(outputBlob);const a=document.createElement("a");a.href=url;a.download=outputName;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
 $("run").onclick=async()=>{
-const files=Array.from($("file").files);
+const files=libraryFiles.length ? libraryFiles : Array.from($("file").files);
 const action=$("action").value;
 if(!files.length){$("status").textContent="Please choose a file";return}
 if(typeof window.openai?.callTool!=="function"){$("status").textContent="Connect the JustPDFit MCP app in ChatGPT to process files.";return}
