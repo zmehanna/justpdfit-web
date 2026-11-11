@@ -1,8 +1,18 @@
-# JustPDFit for ChatGPT — developer preview
+# JustPDFit ChatGPT MCP app (developer prototype)
 
-This is a **working MCP server starter**, not a published ChatGPT Directory app. It currently offers two tools: plain-text PDF creation and PDF merging. Both return base64-encoded PDF bytes with a small watermark. The implementation is intentionally limited: it does not yet provide a ChatGPT widget, native attachment ingestion, signatures, editing, payments, or a downloadable file resource.
+This directory contains a Streamable HTTP MCP server and an embedded ChatGPT editor widget.
 
-## Run locally
+## Operations
+
+merge_pdfs, extract_pages, reorder_pages, rotate_pdf, annotate_pdf, sign_pdf_visual, optimize_pdf, inspect_pdf, images_to_pdf.
+
+**Limitations:** All PDF manipulation in this prototype runs on the external MCP server, not on the user's device. Free generated PDFs receive a small watermark. Visual signatures are **not** cryptographically signed and are not identity-verified. Annotation overlays text; it does not replace existing PDF text. Optimization is a PDF re-save and may not compress. Typed annotations currently accept printable ASCII only. No payment or watermark removal is enabled.
+
+The widget offers a user-facing HTML file picker, PDF preview and download, but it has **not** yet been validated with ChatGPT's actual widget bridge and does not automatically retrieve all attached conversation files. The API currently accepts base64 inputs and can exceed practical tool message limits for large PDFs. Improve file handling before production.
+
+## Local start
+
+Node 20 or later:
 
 ```sh
 cd chatgpt-app
@@ -10,15 +20,12 @@ npm install
 npm start
 ```
 
-GET /health returns a health check. POST /mcp serves stateless Streamable HTTP MCP. Deploy to an HTTPS endpoint before connecting in ChatGPT developer mode. Never claim a public listing or submission until the OpenAI developer dashboard confirms it.
+GET `/health` returns JSON. POST `/mcp` serves MCP.
 
-## Before submission
+## Hosting
 
-- Replace base64 tool inputs/outputs with supported ChatGPT file handling and downloadable artifacts.
-- Add an Apps SDK widget for PDF preview, page selection and download.
-- Add robust multilingual PDF fonts, proper line wrapping, file validation, privacy and abuse limits.
-- Implement remaining tools (split, compress, sign, annotate, watermark, convert) and test them end-to-end.
-- Define public privacy policy, support contact, developer verification, tool descriptions and directory assets.
-- Review current OpenAI app submission requirements, host the MCP server, test in ChatGPT developer mode, then submit through the app developer dashboard.
-- Keep the free watermark flow separate from paid watermark removal; verify current OpenAI payment rules before integrating checkout.
-- Do not deploy this prototype publicly without authentication, rate limiting, monitoring and an explicit data-retention policy.
+A Render blueprint is provided at repository root. It is a deployment template, **not** evidence that the application has been deployed. Select an authorized Render workspace and configure the public endpoint. Enable access controls, request limits, monitoring and log scrubbing before handling real documents.
+
+## Developer review
+
+See [SUBMISSION.md](SUBMISSION.md) for directory listing copy, security disclosures and readiness checklist. Do not submit until integration tests, privacy verification, and OpenAI developer-console review pass.
