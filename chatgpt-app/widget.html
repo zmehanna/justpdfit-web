@@ -151,7 +151,7 @@ $("download").onclick=async()=>{
     if(!fileId)throw Error("ChatGPT did not return a file ID");
     const location=await window.openai.getFileDownloadUrl({fileId});
     const href=typeof location==="string"?location:location?.downloadUrl;
-    if(!href || !/^https:\\/\\//.test(href))throw Error("No secure download URL returned");
+    if(!href || new URL(href).protocol!=="https:")throw Error("No secure download URL returned");
     link.href=href;
     link.removeAttribute("download");
     link.textContent="Open / download "+outputName;
