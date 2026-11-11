@@ -64,3 +64,12 @@
 - Local backend MCP smoke test did successfully generate and annotate a synthetic PDF and re-open the returned PDF bytes with pdf-lib; this is not equivalent to a completed browser download.
 - **Gate:** Do NOT publicly submit as fully tested until the ChatGPT sandbox download and annotation interactions are verified. The embedded PDF preview may be restricted by the browser's sandbox.
 - Private TinyFish validation runs: https://agent.tinyfish.ai/runs/ad326e18-280e-4fe2-a1d5-0a63e38f4693 and https://agent.tinyfish.ai/runs/28300cd6-5b42-4a08-9e2b-e17bc96d801c.
+
+## Validation complémentaire — 11 novembre 2026 (v0.5)
+- Correction déployée sur Render à partir du commit `f534bf5fbdd8fbff6c2408dc85142964023e842b`, statut **Live**.
+- Audit npm de production : 0 vulnérabilité connue. Tests de construction : 6/6 opérations PDF, tests HTTP MCP, et test JavaScript du widget réussis.
+- Vérification directe depuis la session ChatGPT avec le connecteur JustPDFit : `create_demo_pdf` et `annotate_pdf` exécutés réellement, résultat `justpdfit-annotate.pdf`, PDF valide d'une page, base64 différent de l'original.
+- Le composant interactif JustPDFit a été affiché par le connecteur pendant les appels.
+- Téléchargement : nouveau flux utilisant `window.openai.uploadFile` et `window.openai.getFileDownloadUrl`, avec création d'un lien HTTPS explicite, implémenté mais **pas encore validé jusqu'à un téléchargement navigateur**.
+- Essai TinyFish : dans la conversation ChatGPT le modèle a répondu sans appeler l'outil, ce qui n'est pas une preuve d'indisponibilité MCP. Les tests directs du connecteur prouvent que les opérations fonctionnent.
+- **Publication publique toujours bloquée** tant que le fichier final n'a pas été téléchargé et rouvert depuis l'interface utilisateur ChatGPT, et qu'un cycle de modification par clics dans le widget n'a pas été vérifié.
