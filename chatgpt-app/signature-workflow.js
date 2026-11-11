@@ -10,7 +10,8 @@ export async function analyzeSignatures(pdf64) {
  if(count<1||count>300)throw Error("PDF page count outside supported range");
  const candidates=[];
  let textPages=0;
- const pdfjs=await getDocument({data:new Uint8Array(bytes),useSystemFonts:true,disableFontFace:true,isEvalSupported:false}).promise;
+ const loadingTask=getDocument({data:new Uint8Array(bytes),useSystemFonts:true,disableFontFace:true,isEvalSupported:false});
+ const pdfjs=await loadingTask.promise;
  try{
    const indices=Array.from({length:Math.min(count,10)},(_,i)=>count-Math.min(count,10)+i);
    for(const i of indices){
@@ -38,7 +39,7 @@ export async function analyzeSignatures(pdf64) {
      }
      page.cleanup();
    }
- }finally{await pdfjs.destroy()}
+ }finally{await loadingTask.destroy()}
  const unique=[];
  for(const c of candidates.reverse()){
    if(!unique.some(v=>v.page===c.page&&Math.abs(v.x-c.x)<35&&Math.abs(v.y-c.y)<35))unique.push(c);
