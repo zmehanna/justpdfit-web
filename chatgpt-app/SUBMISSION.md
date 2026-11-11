@@ -45,3 +45,12 @@
 - [ ] Record review status and remediate feedback
 
 **Current status (2026-11-11):** Render HTTPS deployment is live (service srv-dbqa990u01pc73a94g1g, commit 0378f10900b9b1c62d38fe8433a3e3cc8c513094). /health is externally verified. ChatGPT developer-mode interactions, file uploads/downloads and tool invocations remain UNTESTED. The build surfaced a high-severity npm dependency advisory requiring triage. Privacy and terms HTML are draft, not yet legally approved. NOT submitted.
+
+## Verification log — 2026-11-11
+- MCP SDK pinned at 1.32.2, Zod 4.6.7.
+- Render production `npm audit --omit=dev` reports **0 vulnerabilities** at commit `ba060737457a644c8ad4e51aad98de74d9959117`.
+- Five PDF operation tests pass: inspect/extract/reorder, merge/rotate, overlay text/signature/optimize, invalid inputs, no base64 in human-readable result.
+- MCP HTTP smoke test passes: handshake, list of 9 tools, single PDF inspection, origin restriction, oversized request rejection, invalid batch rejection.
+- Live HTTPS `/health` validated for v0.3.0 after hardened deploy.
+- **Unverified:** ChatGPT developer-mode app connection, widget sandbox execution, library-picker support, attachment hand-off, PDF preview and download in the ChatGPT host. Official submission must wait.
+- App data still processes remotely. Existing justpdfit.com local-only guarantees do not apply to the MCP app. The terms/privacy URLs are separate.
