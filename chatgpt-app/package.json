@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test test/*.test.js",
-    "audit": "npm audit --audit-level=high"
+    "audit": "npm audit --audit-level=high",
+    "postinstall": "node audit-build.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",
