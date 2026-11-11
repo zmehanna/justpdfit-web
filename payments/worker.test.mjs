@@ -15,9 +15,14 @@ const events = new Map();
 const db = {
   prepare(sql) {
     return {
+      async first() {
+        if (sql.startsWith("SELECT session_id FROM payment_orders")) return null;
+        throw Error("Unexpected direct SELECT " + sql);
+      },
       bind(...args) {
         return {
           async first() {
+            if (sql.startsWith("SELECT session_id FROM payment_orders")) return null;
             if (!sql.startsWith("SELECT payment_status")) throw Error("Unknown SELECT " + sql);
             const state = dbData.get(args[0]);
             return state ? { payment_status: state.status } : null;
@@ -167,6 +172,15 @@ test("invalid, wrong mode, unconfigured and cross-origin requests fail closed", 
     { origin: "https://hostile.example" });
   assert.equal(cross.status, 403);
   assert.equal(cross.headers.get("Access-Control-Allow-Origin"), null);
+});
+
+test("missing D1 schema blocks checkout before Stripe is called", async () => {
+  calls.length = 0;
+  const emptyDb = { prepare() { return { first: async () => { throw Error("no such table: payment_orders"); } }; } };
+  const r = await req("/checkout", { fingerprint: HASH, kind: "solo-clean" },
+    { env: { ...env, PAYMENTS_DB: emptyDb } });
+  assert.equal(r.status, 502);
+  assert.equal(calls.length, 0);
 });
 
 test("browser preflight CORS permits only origin and the JSON endpoint", async () => {
