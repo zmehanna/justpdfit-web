@@ -37,7 +37,7 @@ npx wrangler deploy --config payments/wrangler.toml
 
 Use the secure input prompts for secret values, not shell arguments or pasted commands. Create the database first with Wrangler/Cloudflare Dashboard and keep its real ID out of the example. Create a **distinct production Worker, production D1 database, webhook destination and production restricted key** before switching `PAYMENTS_MODE = "live"`. Use explicit separate Worker configuration files; never promote test credentials to production.\n\nFor Live deployment, use **`payments/wrangler.live.toml.example`** as the starting template. It already sets the publicly known JustPDFit account ID (`acct_1UaLHoEQp3CN3XtA`) under `[vars]`; do **not** also set `STRIPE_EXPECTED_ACCOUNT_ID` as a secret on that same Worker. Set only the Stripe restricted key and signing secret as secrets. The Worker additionally hard-pins the JustPDFit Live account and rejects FairTaxy, regardless of the account ID variable. A sandbox account can have a different `acct_...` ID and must use its own sandbox-specific expected ID.
 
-The Worker refuses to create any Checkout Session if a required secret, webhook signing secret, account ID, mode or D1 binding is missing.
+The Worker refuses to create any Checkout Session if a required secret, webhook signing secret, account ID, mode or D1 binding is missing. It also verifies that the D1 schema from both `0001_orders.sql` and `0002_revocations.sql` exists before charging. The second migration records refunds/disputes even if the payment-completed webhook arrives later.
 
 ### Stripe webhooks (required)
 
@@ -52,6 +52,8 @@ Add the dedicated JustPDFit webhook endpoint `https://<your-worker-domain>/webho
 The handler verifies the raw-body `Stripe-Signature` HMAC-SHA256 with a timestamp tolerance, checks `livemode` and any account reference, and persists transaction outcomes in D1. D1 stores session IDs, payment intent IDs, document SHA-256 fingerprints, status and Stripe event IDs. It does not receive PDF files. Repeated signed events are idempotent.
 
 The `/verify` endpoint also independently requests the Checkout Session server-side (it does not trust the success URL), requires the correct paid amount / currency / kind / document fingerprint, writes the confirmed paid status and refuses orders already revoked in D1. Payment amounts come only from the server.
+
+The Live Worker template uses a dedicated `*.workers.dev` hostname and does not require changing the IONOS/GitHub Pages DNS records. A custom Cloudflare-domain route can be considered later if the zone is on Cloudflare.
 
 For the public site, after successful sandbox and real JustPDFit production tests, set in `payment-config.js`:
 ```js
