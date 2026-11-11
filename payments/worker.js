@@ -169,7 +169,7 @@ async function checkout(env, body) {
   form.set("metadata[fingerprint]", body.fingerprint.toLowerCase());
   form.set("client_reference_id", crypto.randomUUID());
   form.set("integration_identifier", randomLabel());
-  form.set("success_url", "https://justpdfit.com/sign/?payment=success&session_id={CHECKOUT_SESSION_ID}");
+  form.set("success_url", "https://justpdfit.com/payment-success/?session_id={CHECKOUT_SESSION_ID}");
   form.set("cancel_url", "https://justpdfit.com/sign/?payment=cancelled");
   const s = await stripe(env, "/checkout/sessions", {
     method: "POST",
