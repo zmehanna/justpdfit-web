@@ -18,7 +18,7 @@ const nodes=selectors.map(s=>section.querySelector(s)),fr=nodes.map(el=>el?.inne
 const en=[
 "FREE · PRIVATE · LOCAL PROCESSING",
 "Free PDF tools designed for privacy",
-"Create PDFs, merge documents, split PDFs, extract pages, convert JPG/PNG and add simple text directly in your browser. Your documents stay on your device when using supported local tools. No account required.",
+"Create PDFs, merge documents, split PDFs, extract pages, convert JPG/PNG and edit PDFs with text, signatures, dates and checkboxes directly in your browser. Your documents stay on your device when using supported local tools. No account required.",
 "🔒 Your documents stay on your device",
 "Supported local operations are processed in your browser. Original documents are not sent to a conversion server.",
 "✓ Free essential PDF tools",
