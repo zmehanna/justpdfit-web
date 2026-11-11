@@ -108,6 +108,8 @@ function randomLabel() {
 }
 async function checkout(env, body) {
   if (body.kind !== PAID_KIND) return { error: "Service payant non disponible.", status: 422 };
+  // Never charge when the D1 schema has not been migrated.
+  await env.PAYMENTS_DB.prepare("SELECT session_id FROM payment_orders LIMIT 1").first();
   await checkAccount(env);
   const form = new URLSearchParams();
   form.set("mode", "payment");
