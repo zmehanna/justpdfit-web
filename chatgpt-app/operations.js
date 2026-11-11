@@ -28,7 +28,11 @@ export async function perform(action, input) {
     const font = await pdf.embedFont(StandardFonts.Helvetica);
     page.drawText("JustPDFit demo - synthetic document", { x: 45, y: 770, font, size: 18, color: rgb(0.1, 0.27, 0.55) });
     page.drawText("Try annotating, rotating or downloading this sample.", { x: 45, y: 735, font, size: 12 });
-    return output(pdf, "justpdfit-demo.pdf");
+    if (input.text) {
+      if (typeof input.text !== "string" || input.text.length > 100 || /[^\\x20-\\x7e]/.test(input.text)) throw Error("Demo annotation must be printable text (max 100 characters)");
+      page.drawText(input.text,{x:45,y:680,font,size:16,color:rgb(0.05,0.45,0.25)});
+    }
+    return output(pdf, input.text ? "justpdfit-demo-edited.pdf" : "justpdfit-demo.pdf");
   }
   if (action === "merge") {
     if (!Array.isArray(input.pdfs) || input.pdfs.length < 2 || input.pdfs.length > 5) throw Error("Select 2 to 5 PDFs");
