@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: justpdfit-chatgpt-mcp
+    runtime: node
+    plan: starter
+    region: frankfurt
+    buildCommand: cd chatgpt-app && npm ci --omit=dev
+    startCommand: cd chatgpt-app && npm start
+    healthCheckPath: /health
+    autoDeployTrigger: off
+    envVars:
+      - key: NODE_ENV
+        value: production
