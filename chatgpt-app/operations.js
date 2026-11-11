@@ -1,12 +1,12 @@
 import { PDFDocument, StandardFonts, degrees, rgb } from "pdf-lib";
-export const LIMIT = 12 * 1024 * 1024;
+export const LIMIT = 2 * 1024 * 1024;
 export function fromBase64(input) {
   if (typeof input !== "string" || !/^[A-Za-z0-9+/]+={0,2}$/.test(input)) throw Error("Invalid base64 content");
   const bytes = Buffer.from(input, "base64");
-  if (!bytes.length || bytes.length > LIMIT || bytes.toString("base64").replace(/=+$/, "") !== input.replace(/=+$/, "")) throw Error("File exceeds 12MB or is invalid");
+  if (!bytes.length || bytes.length > LIMIT || bytes.toString("base64").replace(/=+$/, "") !== input.replace(/=+$/, "")) throw Error("File exceeds 2MB or is invalid");
   return bytes;
 }
-export async function load(input) { return PDFDocument.load(fromBase64(input), { ignoreEncryption: false }); }
+export async function load(input) { return PDFDocument.load(fromBase64(input), { ignoreEncryption: false, updateMetadata: false }); }
 export async function mark(pdf) {
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   for (const page of pdf.getPages()) {
@@ -19,7 +19,7 @@ export async function output(pdf, filename = "justpdfit.pdf") {
   const bytes = await pdf.save({ useObjectStreams: true });
   if (bytes.length > LIMIT) throw Error("Output exceeds 12MB");
   const base64 = Buffer.from(bytes).toString("base64");
-  return { content: [{ type: "text", text: JSON.stringify({ filename, mimeType: "application/pdf", base64, pages: pdf.getPageCount(), watermark: "JustPDFit.com" }) }], structuredContent: { filename, mimeType:"application/pdf", base64, pages:pdf.getPageCount(), watermark:"JustPDFit.com" } };
+  return { content: [{ type: "text", text: JSON.stringify({ filename, mimeType: "application/pdf", pages: pdf.getPageCount(), watermark: "JustPDFit.com", note: "PDF bytes available in structuredContent for the widget; never paste base64 into chat." }) }], structuredContent: { filename, mimeType:"application/pdf", base64, pages:pdf.getPageCount(), watermark:"JustPDFit.com" } };
 }
 export async function perform(action, input) {
   if (action === "merge") {
