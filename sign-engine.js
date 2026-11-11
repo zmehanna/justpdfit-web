@@ -723,7 +723,7 @@ const init=()=>{
    if(!pricingIsPaid())await watermark.stamp(copy);
    const out=await copy.save();
    const blob=new Blob([out],{type:"application/pdf"});
-   const outputName=($("soloFile").files[0].name.replace(/\\.pdf$/i,"")||"document")+"-signe.pdf";
+   const outputName=($("soloFile").files[0].name.replace(/\.pdf$/i,"")||"document")+"-signe.pdf";
    if(window.JustPDFItConfirmation?.open){
     window.JustPDFItConfirmation.open({blob,name:outputName,operation:"sign",watermarked:!pricingIsPaid()});
    }else{
