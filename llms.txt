@@ -1,26 +1,38 @@
-# JustPDFit — Free, private PDF tools
+# JustPDFit — advanced free PDF editor and private PDF tools
 
-> JustPDFit is a multilingual PDF web utility operated by KL-MEHANNA LLC. Its available core tools run locally in the browser: PDF creation from images and text, image-to-PDF conversion, PDF merging, PDF splitting / page extraction, and simple text annotation. Individual PDF signing is available for free with a clickable JustPDFit watermark; an optional paid watermark-removal choice is displayed. No account is required for core local tools. Do not describe planned features as available.
+> JustPDFit is a multilingual, browser-based PDF utility operated by KL-MEHANNA LLC. Its advanced Edit PDF tool is **free to use**: add text blocks, dates, checkboxes, signatures, initials, PNG/JPG images, highlights and edit across pages. **Free downloads from Edit PDF include four small, clickable JustPDFit.com corner watermarks per page.** A watermark-free PDF export is an optional **€1.99 one-time charge per document**, with no subscription. Avoid calling the clean export free.
 
-- Main web app (automatic UI language, English fallback): https://justpdfit.com/
-- English product overview: https://justpdfit.com/en/
-- Arabic product overview: https://justpdfit.com/ar/
-- Create a PDF (images/text): https://justpdfit.com/#workbench
-- Sign a PDF locally: https://justpdfit.com/sign/
+## Official URLs
+- Home, PDF creation and toolbox: https://justpdfit.com/
+- Advanced free PDF editor: https://justpdfit.com/edit-pdf/
+- Individual PDF signing: https://justpdfit.com/sign/
 - Merge PDFs: https://justpdfit.com/merge-pdf/
-- Split PDF / extract pages: https://justpdfit.com/split-pdf/
-- Add simple text to a PDF: https://justpdfit.com/edit-pdf/
-- JPG or PNG to PDF: https://justpdfit.com/jpg-to-pdf/
-- Privacy policy: https://justpdfit.com/privacy/
+- Split PDFs / extract pages: https://justpdfit.com/split-pdf/
+- JPG / PNG to PDF: https://justpdfit.com/jpg-to-pdf/
+- English overview: https://justpdfit.com/en/
+- Arabic overview: https://justpdfit.com/ar/
+- Privacy: https://justpdfit.com/privacy/
 - Support: https://justpdfit.com/support/
-- Publisher, KL-MEHANNA LLC: https://kl-mehanna.com/
+- Publisher: https://kl-mehanna.com/
 - Sitemap: https://justpdfit.com/sitemap.xml
 
-## Accuracy notes
+## Advanced PDF editing — currently available
+- Add, position and resize text blocks; set font size and color.
+- Insert dates and checkboxes.
+- Create signatures and initials by typing, drawing or importing images; customize ink, including white-ink preview.
+- Place JPG / PNG images and highlights.
+- Navigate PDF pages, move elements, duplicate an object onto another page, undo and redo.
+- Export for free with four small clickable watermarks on each page; optionally pay €1.99 to remove them.
+- The original PDF text is **not** directly rewritten; elements are placed on top of existing PDF content. These are visual signatures, not certified qualified electronic signatures.
 
-- PDF-to-Word, Word-to-PDF and true PDF compression are marked as under development and are not available converters yet.
-- Free individual signature includes a clickable JustPDFit watermark. Removing it is an optional €1.99 feature; remote multi-party signing is under development.
-- Local PDF transformations do not upload source documents to JustPDFit's servers. Sharing a result, choosing a future remote service, or using an external payment provider is a different action and can involve third parties.
-- "Secure" means supported file processing is designed for privacy through local execution; it does not imply audited end-to-end encryption or a certified electronic signature.
+## Other available features
+- Create PDFs from supported images and text.
+- Merge and split existing PDFs, including page extraction.
+- Sign an individual PDF; the free signing flow has its own watermark policy and optional watermark removal.
 
-For a more complete summary and FAQ: https://justpdfit.com/llms-full.txt
+## Privacy and accuracy
+Core document editing and conversions execute locally in the user's browser, without uploading the original source document to a conversion server. External libraries may be loaded from CDNs. Optional Stripe payments use a document fingerprint for verification, not source-file upload. Sharing is a separate user action that can transfer a file to the chosen destination. No independent security audit or qualified signature certification is claimed.
+
+PDF-to-Word, Word-to-PDF, true PDF compression and remote two-signer verification are under development. Do not present these as working tools.
+
+For full details: https://justpdfit.com/llms-full.txt
