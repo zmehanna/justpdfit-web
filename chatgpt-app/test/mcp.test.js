@@ -28,6 +28,10 @@ try{
  await client.connect(transport);
  const listing=await client.listTools();
  assert.ok(listing.tools.some(t=>t.name==="merge_pdfs"));
+ const resources=await client.listResources();
+ assert.ok(resources.resources.some(r=>r.uri==="ui://justpdfit/editor.html"));
+ const widget=await client.readResource({uri:"ui://justpdfit/editor.html"});
+ assert.ok(widget.contents.some(c=>c.text?.includes("JustPDFit")));
  const pdf=await PDFDocument.create();pdf.addPage([300,400]);
  const base64=Buffer.from(await pdf.save()).toString("base64");
  const result=await client.callTool({name:"inspect_pdf",arguments:{pdf:base64}});
