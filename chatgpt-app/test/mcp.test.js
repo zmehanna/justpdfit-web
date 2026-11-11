@@ -52,7 +52,7 @@ try{
  const result=await client.callTool({name:"inspect_pdf",arguments:{pdf:base64}});
  assert.equal(JSON.parse(result.content[0].text).pages,1);
  const placement=await client.callTool({name:"propose_signature_placement",arguments:{pdf:base64}});
- assert.equal(placement.structuredContent?.pages,1);
+ assert.equal(placement.structuredContent?.pages,1,JSON.stringify(placement).slice(0,1600));
  assert.equal(placement.structuredContent?.requiresConfirmation,true);
  const declined=await client.callTool({name:"finalize_signature_pdf",arguments:{pdf:base64,name:"Test Signer",page:1,x:50,y:50,confirmed:false}});
  assert.equal(declined.isError,true);
