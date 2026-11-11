@@ -1,94 +1,168 @@
 /**
- * Dedicated JustPDFit.com Stripe Checkout Worker (not deployed until a dedicated
- * JustPDFit Stripe account and secret key have been configured).
+ * JustPDFit.com - Stripe Checkout backend for the solo watermark-free upgrade.
  *
- * Public routes:
- * POST /checkout { kind:"solo-clean", fingerprint:"<sha256 hex>" }
- * POST /verify { sessionId:"cs_...", fingerprint:"<sha256 hex>" }
- * Requires STRIPE_SECRET_KEY in Worker secrets (never in GitHub Pages).
+ * Cloudflare Worker secrets:
+ *  STRIPE_SECRET_KEY          sk_test_... or sk_live_... (NEVER client-side)
+ *  STRIPE_EXPECTED_ACCOUNT_ID acct_... (MUST belong to JustPDFit, not FairTaxy)
+ * Cloudflare Worker variable:
+ *  PAYMENTS_MODE              test or live, matching the key
  *
- * No PDF bytes, images, signature strokes or document names are uploaded here.
- * Checkout uses the PDF SHA-256 fingerprint solely to bind a receipt to a document.
+ * Other services (remote signature, OTP, Didit) deliberately cannot charge
+ * until their document/order fulfillment systems are operational.
+ *
+ * The PDF and signature stay in the browser. Only a SHA-256 document
+ * fingerprint is sent to the payment backend and Stripe metadata.
  */
-const ORIGINS = new Set(["https://justpdfit.com","https://www.justpdfit.com"]);
-const STRIPE_API="https://api.stripe.com/v1";
-const sha256=/^[a-f0-9]{64}$/i;
+const STRIPE_API = "https://api.stripe.com/v1";
+const ORIGINS = new Set(["https://justpdfit.com", "https://www.justpdfit.com"]);
+const DOCUMENT_HASH = /^[0-9a-f]{64}$/i;
+const SESSION_ID = /^cs_(?:test_|live_)[a-zA-Z0-9]+$/;
+const SOLO_AMOUNT_CENTS = 199;
 
-function response(origin, body, code=200){
- return new Response(JSON.stringify(body),{
-  status:code,headers:{
-   "Content-Type":"application/json; charset=utf-8",
-   "Cache-Control":"no-store",
-   "Vary":"Origin",
-   "Access-Control-Allow-Origin":ORIGINS.has(origin)?origin:"https://justpdfit.com",
-   "Access-Control-Allow-Methods":"POST, OPTIONS",
-   "Access-Control-Allow-Headers":"Content-Type"
+function headers(origin) {
+  const h = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store",
+    "Vary": "Origin",
+    "X-Content-Type-Options": "nosniff",
+  };
+  if (ORIGINS.has(origin)) {
+    h["Access-Control-Allow-Origin"] = origin;
+    h["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS";
+    h["Access-Control-Allow-Headers"] = "Content-Type";
   }
- });
+  return h;
 }
-async function stripe(env,path,options={}){
- const result=await fetch(STRIPE_API+path,{
-  ...options,
-  headers:{"Authorization":"Bearer "+env.STRIPE_SECRET_KEY,...options.headers}
- });
- const data=await result.json().catch(()=>({}));
- if(!result.ok)throw Error("Stripe: "+(data.error?.message||"Service indisponible."));
- return data;
+function reply(origin, payload, status = 200) {
+  return new Response(JSON.stringify(payload), { status, headers: headers(origin) });
 }
+
+function isConfigured(env) {
+  if (!env || !["test", "live"].includes(env.PAYMENTS_MODE)) return false;
+  const key = env.STRIPE_SECRET_KEY || "";
+  const expectedPrefix = env.PAYMENTS_MODE === "live" ? "sk_live_" : "sk_test_";
+  return key.startsWith(expectedPrefix) &&
+    /^acct_[A-Za-z0-9]+$/.test(env.STRIPE_EXPECTED_ACCOUNT_ID || "");
+}
+
+async function stripe(env, path, options = {}) {
+  const response = await fetch(STRIPE_API + path, {
+    ...options,
+    headers: {
+      Authorization: "Bearer " + env.STRIPE_SECRET_KEY,
+      ...options.headers,
+    },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error("stripe_request_failed");
+  return data;
+}
+
+/** Stop immediately if credentials point to an unexpected Stripe account. */
+async function ensureJustPDFitAccount(env) {
+  const account = await stripe(env, "/account");
+  if (account.id !== env.STRIPE_EXPECTED_ACCOUNT_ID) {
+    throw new Error("stripe_account_mismatch");
+  }
+}
+
+async function checkout(env, body) {
+  if (body.kind !== "solo-clean") {
+    return { error: "Ce service payant n'est pas encore disponible.", status: 422 };
+  }
+  await ensureJustPDFitAccount(env);
+  const form = new URLSearchParams();
+  form.set("mode", "payment");
+  form.set("line_items[0][price_data][currency]", "eur");
+  form.set("line_items[0][price_data][unit_amount]", String(SOLO_AMOUNT_CENTS));
+  form.set("line_items[0][price_data][product_data][name]", "JustPDFit - PDF signé sans filigrane");
+  form.set("line_items[0][quantity]", "1");
+  form.set("metadata[kind]", "solo-clean");
+  form.set("metadata[fingerprint]", body.fingerprint.toLowerCase());
+  form.set("client_reference_id", crypto.randomUUID());
+  form.set("success_url", "https://justpdfit.com/sign/?payment=success&session_id={CHECKOUT_SESSION_ID}");
+  form.set("cancel_url", "https://justpdfit.com/sign/?payment=cancelled");
+  const session = await stripe(env, "/checkout/sessions", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: form,
+  });
+  if (!SESSION_ID.test(session.id || "") || !/^https:\/\/checkout\.stripe\.com\//.test(session.url || "")) {
+    throw new Error("stripe_checkout_invalid");
+  }
+  return { sessionId: session.id, checkoutUrl: session.url };
+}
+
+async function verify(env, body) {
+  if (!SESSION_ID.test(body.sessionId || "")) {
+    return { error: "Identifiant de paiement invalide.", status: 400 };
+  }
+  // A test key must never verify a live checkout (and vice versa).
+  const sessionMode = body.sessionId.startsWith("cs_live_") ? "live" : "test";
+  if (sessionMode !== env.PAYMENTS_MODE) {
+    return { error: "Paiement issu d'un autre environnement.", status: 400 };
+  }
+  await ensureJustPDFitAccount(env);
+  const session = await stripe(env, "/checkout/sessions/" + encodeURIComponent(body.sessionId));
+  const paid =
+    session.id === body.sessionId &&
+    session.mode === "payment" &&
+    session.status === "complete" &&
+    session.payment_status === "paid" &&
+    session.currency === "eur" &&
+    session.amount_total === SOLO_AMOUNT_CENTS &&
+    session.metadata?.kind === "solo-clean" &&
+    session.metadata?.fingerprint === body.fingerprint.toLowerCase();
+  return { paid: !!paid };
+}
+
 export default {
- async fetch(request,env){
-  const origin=request.headers.get("Origin")||"";
-  if(request.method==="OPTIONS"){
-   if(!ORIGINS.has(origin))return new Response(null,{status:403});
-   return new Response(null,{status:204,headers:{
-    "Access-Control-Allow-Origin":origin,
-    "Access-Control-Allow-Methods":"POST, OPTIONS",
-    "Access-Control-Allow-Headers":"Content-Type","Access-Control-Max-Age":"7200"
-   }});
+  async fetch(request, env) {
+    const origin = request.headers.get("Origin") || "";
+    if (!ORIGINS.has(origin)) return reply(origin, { error: "Origine non autorisée." }, 403);
+    const url = new URL(request.url);
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: {
+        ...headers(origin), "Access-Control-Max-Age": "7200",
+      } });
+    }
+    if (request.method === "GET" && url.pathname === "/health") {
+      return reply(origin, {
+        service: "justpdfit-payments",
+        status: isConfigured(env) ? "configured" : "disabled",
+        mode: ["test", "live"].includes(env?.PAYMENTS_MODE) ? env.PAYMENTS_MODE : null,
+      });
+    }
+    if (request.method !== "POST" || !["/checkout", "/verify"].includes(url.pathname)) {
+      return reply(origin, { error: "Route inconnue." }, 404);
+    }
+    if (!isConfigured(env)) return reply(origin, { error: "Paiement non activé." }, 503);
+    if (!/^application\/json(?:;|$)/i.test(request.headers.get("Content-Type") || "")) {
+      return reply(origin, { error: "Contenu JSON requis." }, 415);
+    }
+    if (Number(request.headers.get("Content-Length") || 0) > 2048) {
+      return reply(origin, { error: "Requête trop volumineuse." }, 413);
+    }
+    let body;
+    try {
+      const raw = await request.text();
+      if (raw.length > 2048) return reply(origin, { error: "Requête trop volumineuse." }, 413);
+      body = JSON.parse(raw);
+    } catch {
+      return reply(origin, { error: "Requête JSON invalide." }, 400);
+    }
+    if (!body || typeof body !== "object" || !DOCUMENT_HASH.test(body.fingerprint || "")) {
+      return reply(origin, { error: "Empreinte de document invalide." }, 400);
+    }
+    try {
+      const result = url.pathname === "/checkout"
+        ? await checkout(env, body)
+        : await verify(env, body);
+      if ("error" in result) return reply(origin, { error: result.error }, result.status);
+      return reply(origin, result);
+    } catch {
+      // Do not expose Stripe credentials, account IDs, or Stripe's raw API errors.
+      return reply(origin, { error: "Service de paiement temporairement indisponible." }, 502);
+    }
   }
-  if(!ORIGINS.has(origin))return response(origin,{error:"Origine non autorisée."},403);
-  const url=new URL(request.url);
-  if(request.method!=="POST"||!["/checkout","/verify"].includes(url.pathname))return response(origin,{error:"Route inconnue."},404);
-  if(!env.STRIPE_SECRET_KEY||!env.STRIPE_SECRET_KEY.startsWith("sk_"))return response(origin,{error:"Paiement non activé."},503);
-  let data;
-  try{data=await request.json();}catch{return response(origin,{error:"Requête JSON invalide."},400);}
-  if(!data||!sha256.test(data.fingerprint||""))return response(origin,{error:"Identifiant de document invalide."},400);
-  try{
-   if(url.pathname==="/checkout"){
-    if(data.kind!=="solo-clean")return response(origin,{error:"Option non disponible."},400);
-    const form=new URLSearchParams();
-    form.set("mode","payment");
-    form.set("payment_method_collection","always");
-    form.set("line_items[0][price_data][currency]","eur");
-    form.set("line_items[0][price_data][unit_amount]","199");
-    form.set("line_items[0][price_data][product_data][name]","JustPDFit - Signature PDF sans filigrane");
-    form.set("line_items[0][quantity]","1");
-    form.set("metadata[kind]","solo-clean");
-    form.set("metadata[fingerprint]",data.fingerprint.toLowerCase());
-    form.set("client_reference_id",crypto.randomUUID());
-    form.set("success_url","https://justpdfit.com/sign/?payment=success&session_id={CHECKOUT_SESSION_ID}");
-    form.set("cancel_url","https://justpdfit.com/sign/?payment=cancelled");
-    const session=await stripe(env,"/checkout/sessions",{
-     method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},
-     body:form
-    });
-    if(!session.id||!session.url)return response(origin,{error:"Session Stripe invalide."},502);
-    return response(origin,{sessionId:session.id,checkoutUrl:session.url});
-   }
-   const sessionId=String(data.sessionId||"");
-   if(!/^cs_(test_|live_)[a-zA-Z0-9]+$/.test(sessionId))return response(origin,{error:"Identifiant de paiement invalide."},400);
-   const session=await stripe(env,"/checkout/sessions/"+encodeURIComponent(sessionId));
-   const valid=session.mode==="payment" &&
-    session.status==="complete" &&
-    session.payment_status==="paid" &&
-    session.amount_total===199 &&
-    session.currency==="eur" &&
-    session.metadata?.kind==="solo-clean" &&
-    session.metadata?.fingerprint===data.fingerprint.toLowerCase();
-   return response(origin,{paid:!!valid});
-  }catch(error){
-   // Never disclose payment credentials or sensitive Stripe response internals.
-   return response(origin,{error:/Stripe/.test(error.message)?"Service de paiement momentanément indisponible.":"Impossible de vérifier le paiement."},502);
-  }
- }
 };
