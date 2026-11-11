@@ -19,3 +19,70 @@
 .editor-upload .jpi-file-picker__input{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;clip-path:inset(50%)!important;pointer-events:none!important}
 .editor-upload .jpi-file-picker__choose{background:linear-gradient(100deg,#ed465c,#fc6472);border-radius:11px}
 .editor-upload #editor-filename[hidden]{display:none!important}
+
+/* Sign PDF visual language: clear hero, step flow, and generous pricing cards. */
+.editor-page .tool-content{padding-top:28px}
+.editor-page .edit-premium-hero{background:linear-gradient(117deg,#132443 4%,#183057 52%,#302356 100%);padding:0;color:#fff}
+.edit-premium-hero__inner{min-height:240px;display:flex;align-items:center;justify-content:space-between;gap:26px;padding:40px 22px}
+.edit-premium-hero .eyebrow{color:#c9dafa;font-size:12px;font-weight:800;letter-spacing:.08em}
+.edit-premium-hero h1{color:white;font-size:clamp(34px,4.6vw,56px);font-weight:850;letter-spacing:-1.6px;margin:14px 0}
+.edit-premium-hero p{margin:0;color:#dbe5f4;font-size:16px;line-height:1.65;max-width:690px}
+.edit-premium-hero .hero-tags{margin-top:22px;display:flex;flex-wrap:wrap;gap:11px}
+.edit-premium-hero .hero-tags span{font-size:12px;color:#e9efff;border-radius:99px;background:#ffffff15;padding:7px 11px}
+.edit-premium-hero__icon{height:125px;width:125px;flex:none;border-radius:27px;background:#ffffff14;border:1px solid #ffffff33;display:grid;place-items:center;color:#fff;font-size:76px;transform:rotate(8deg);box-shadow:0 14px 35px #080e2929}
+.editor-page .editor-shell{border:0;overflow:visible;background:transparent;box-shadow:none}
+.editor-page .editor-top{border:1px solid #e8edf6;border-radius:18px 18px 0 0;background:#fff;padding:24px 25px}
+.editor-page .editor-top h2{font-size:25px;font-weight:850;letter-spacing:-.65px}
+.editor-page .editor-top p{font-size:13px;line-height:1.6;margin-top:7px}
+.editor-offers{border:1px solid #e8edf6;border-top:0;background:#fff;padding:20px 24px 24px}
+.editor-offers-heading h3{font-size:20px;color:#243451;margin:0 0 6px;font-weight:850}
+.editor-offers-heading p{font-size:13px;color:#7a89a2;line-height:1.55;margin:0 0 16px}
+.editor-offers-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.editor-offer{appearance:none;position:relative;display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:6px;background:#fff;border:1px solid #e3eaf4;border-radius:17px;min-height:156px;padding:19px 22px;color:#253653;cursor:pointer;transition:background .15s,border-color .15s,transform .15s}
+.editor-offer:hover{border-color:#f19aab;transform:translateY(-2px)}
+.editor-offer[aria-pressed=true]{background:linear-gradient(140deg,#fff,#fff4f6);border:2px solid #ed465c;padding:18px 21px;box-shadow:0 10px 23px #ed465c13}
+.editor-offer-badge{color:#ed465c;font-weight:800;font-size:17px}
+.editor-offer strong{font-size:17px;font-weight:850;color:#243451}
+.editor-offer-price{font-size:26px;color:#ec4865;font-weight:900;letter-spacing:-.5px}
+.editor-offer-description{font-size:12px;color:#72809b;line-height:1.55;padding-right:14px}
+.editor-offer-radio{position:absolute;right:17px;top:20px;width:17px;height:17px;border-radius:50%;border:2px solid #bdc9dd;background:#fff}
+.editor-offer[aria-pressed=true] .editor-offer-radio{border-color:#ed465c;box-shadow:inset 0 0 0 4px #fff;background:#ed465c}
+.editor-steps{padding:13px 24px;border:1px solid #e8edf6;border-top:0;background:#fff6f8;color:#b83e59;font-weight:800;font-size:12px;text-align:center;white-space:normal}
+.editor-page .editor-upload{background:#fff;border:1px solid #e8edf6;border-top:0;padding:19px 24px}
+.editor-upload-inner{width:100%;padding:15px;border:2px dashed #c2d3ef;border-radius:15px;background:#f5f8ff}
+.editor-upload-title{font-weight:800;font-size:14px;color:#223456;margin-bottom:10px}
+.editor-upload .editor-custom-picker{border:1px dashed #d3e1f7;background:#f9fbff;box-sizing:border-box;padding:9px}
+.editor-upload .editor-custom-picker .jpi-file-picker__name{font-size:13px}
+.editor-upload .editor-custom-picker .jpi-file-picker__choose{font-size:13px;box-shadow:0 7px 18px #ed465c22}
+.editor-upload .editor-custom-picker .jpi-file-picker__clear{font-size:0;flex:none}
+.editor-upload .editor-custom-picker .jpi-file-picker__clear::before{content:"×";font-size:21px}
+.editor-page .editor-body{background:#fff;border:1px solid #e8edf6;border-top:0;min-height:510px}
+.editor-page .editor-toolbar{padding:19px 15px}.editor-page .editor-tool{padding:12px;min-height:48px}
+.editor-page .editor-workspace{background:#eaf0f8}
+.editor-page .editor-properties{padding:19px 15px}
+.editor-page .editor-bottom{background:#fff;border:1px solid #e8edf6;border-top:0;border-radius:0 0 18px 18px;padding:18px 22px}
+.editor-page .editor-status{background:#fff;padding:12px 22px;border-radius:0 0 14px 14px}
+.edit-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:26px 0}
+.edit-info-panel{border:1px solid #e8edf6;border-radius:16px;background:#fff;padding:24px;box-shadow:0 8px 28px #14244a0a}
+.edit-info-panel h2{margin:0 0 12px;font-size:19px;color:#243451}
+.edit-info-panel p,.edit-info-panel ol{margin:0;font-size:13px;color:#657791;line-height:1.75}
+.edit-info-panel ol{padding-inline-start:22px}
+@media(max-width:760px){
+ .edit-premium-hero__inner{min-height:0;padding:34px 12px}
+ .edit-premium-hero__icon{display:none}
+ .editor-offers-grid{gap:10px}
+ .editor-offer{padding:16px;min-height:180px}
+ .editor-offer[aria-pressed=true]{padding:15px}
+ .editor-offer strong{font-size:15px}
+ .editor-offer-price{font-size:23px}
+ .editor-page .editor-top,.editor-offers,.editor-page .editor-upload{padding:16px}
+ .editor-steps{padding:13px 7px}
+ .edit-info-grid{grid-template-columns:1fr;gap:12px}
+}
+@media(max-width:480px){.editor-offers-grid{grid-template-columns:1fr}.editor-offer{min-height:0}.editor-page .editor-toolbar{padding:10px}.edit-premium-hero .hero-tags{gap:7px}.edit-premium-hero .hero-tags span{font-size:11px}}
+
+/* Match the shared Sign PDF content width and preserve native hidden semantics. */
+.editor-page .container{max-width:1160px}
+.editor-page .editor-custom-picker #editor-remove[hidden]{display:none!important}
+.editor-page .editor-custom-picker .jpi-file-picker__input{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;clip-path:inset(50%)!important;pointer-events:none!important}
+.editor-page .editor-custom-picker #editor-choose:focus-visible,.editor-offer:focus-visible{outline:3px solid #6c9efb;outline-offset:3px}
