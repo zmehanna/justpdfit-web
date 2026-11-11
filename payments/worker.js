@@ -86,6 +86,13 @@ function paid(session) {
   return session.status === "complete" && session.payment_status === "paid";
 }
 async function saveOrder(env, session, state) {
+  // Stripe can deliver charge.refunded before checkout.session.completed.
+  // Remember those revocations so an out-of-order payment event cannot unlock.
+  const intent = typeof session.payment_intent === "string" ? session.payment_intent : "";
+  const revoked = intent ? await env.PAYMENTS_DB.prepare(
+    "SELECT payment_intent_id FROM revoked_payment_intents WHERE payment_intent_id = ?"
+  ).bind(intent).first() : null;
+  const effectiveState = revoked ? "revoked" : state;
   const sql = [
     "INSERT INTO payment_orders",
     "(session_id, fingerprint, kind, amount_cents, currency, payment_status, payment_intent_id)",
@@ -101,7 +108,7 @@ async function saveOrder(env, session, state) {
   ].join(" ");
   await env.PAYMENTS_DB.prepare(sql).bind(
     session.id, session.metadata.fingerprint.toLowerCase(), PAID_KIND,
-    PRICE_CENTS, "eur", state, session.payment_intent || null
+    PRICE_CENTS, "eur", effectiveState, intent || null
   ).run();
 }
 async function currentState(env, id) {
@@ -117,6 +124,7 @@ async function checkout(env, body) {
   if (body.kind !== PAID_KIND) return { error: "Service payant non disponible.", status: 422 };
   // Never charge when the D1 schema has not been migrated.
   await env.PAYMENTS_DB.prepare("SELECT session_id FROM payment_orders LIMIT 1").first();
+  await env.PAYMENTS_DB.prepare("SELECT payment_intent_id FROM revoked_payment_intents LIMIT 1").first();
   await checkAccount(env);
   const form = new URLSearchParams();
   form.set("mode", "payment");
@@ -193,6 +201,9 @@ async function recordEvent(env, event) {
   if (["charge.refunded", "charge.dispute.created"].includes(type)) {
     const intent = s?.payment_intent;
     if (typeof intent === "string" && intent.startsWith("pi_")) {
+      await env.PAYMENTS_DB.prepare(
+        "INSERT OR IGNORE INTO revoked_payment_intents (payment_intent_id, stripe_event_id) VALUES (?, ?)"
+      ).bind(intent, event.id).run();
       await env.PAYMENTS_DB.prepare(
         "UPDATE payment_orders SET payment_status = 'revoked', updated_at = CURRENT_TIMESTAMP WHERE payment_intent_id = ?"
       ).bind(intent).run();
