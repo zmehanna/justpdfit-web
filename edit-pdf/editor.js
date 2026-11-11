@@ -24,10 +24,34 @@ function syncPageCopy(){
 
 let file=null,source=null,viewer=null,total=0,current=1,objects=[],selected=null,history=[],future=[],paidFingerprint=null,pending=null,documentFingerprint=null,renderToken=0,mode="free",scale=1,changed=false;
 ROOT.innerHTML='<div class="editor-shell"><div class="editor-top"><div><h2 id="editor-title"></h2><p id="editor-subtitle"></p></div><div><button class="editor-button" id="editor-undo" type="button"></button> <button class="editor-button" id="editor-redo" type="button"></button></div></div><div class="editor-offers"><div class="editor-offers-heading"><h3 id="editor-offers-title"></h3><p id="editor-offers-hint"></p></div><div class="editor-offers-grid"><button type="button" class="editor-offer editor-offer--free" data-mode="free" aria-pressed="true"><span class="editor-offer-badge">✓</span><strong id="editor-offer-free-title"></strong><span class="editor-offer-price" id="editor-offer-free-price"></span><span class="editor-offer-description" id="editor-offer-free-description"></span><span class="editor-offer-radio" aria-hidden="true"></span></button><button type="button" class="editor-offer editor-offer--paid" data-mode="paid" aria-pressed="false"><span class="editor-offer-badge">✦</span><strong id="editor-offer-paid-title"></strong><span class="editor-offer-price" id="editor-offer-paid-price"></span><span class="editor-offer-description" id="editor-offer-paid-description"></span><span class="editor-offer-radio" aria-hidden="true"></span></button></div></div><div id="editor-steps" class="editor-steps"></div><div class="editor-upload"><div class="editor-upload-inner"><div class="editor-upload-title" id="editor-upload-title"></div><div class="jpi-file-picker editor-custom-picker"><input id="editor-file" type="file" accept="application/pdf,.pdf" class="jpi-file-picker__input" tabindex="-1"><button type="button" class="jpi-file-picker__choose" id="editor-choose"></button><span class="jpi-file-picker__name" id="editor-file-empty"></span><button type="button" class="jpi-file-picker__clear" id="editor-remove" hidden aria-label="Remove file"></button></div><strong id="editor-filename" hidden></strong></div></div><div class="editor-body"><div class="editor-toolbar" id="editor-tools"></div><div class="editor-workspace"><div class="editor-pagination"><button type="button" class="editor-button" id="editor-prev">‹</button><span id="editor-pagecount"></span><button type="button" class="editor-button" id="editor-next">›</button></div><div id="editor-stage-container" style="width:100%;display:flex;justify-content:center"><div id="editor-empty" class="editor-no-file"></div><div id="editor-stage" class="editor-page-view" hidden><canvas id="editor-canvas"></canvas><div id="editor-overlay" class="editor-overlay"></div></div></div><div id="editor-thumbs" class="editor-thumbs"></div></div><div id="editor-properties" class="editor-properties"></div></div><div class="editor-bottom"><div><div class="editor-pricing" hidden><label><input type="radio" name="editor-price" value="free" checked> <span id="editor-free"></span></label><label><input type="radio" name="editor-price" value="paid"> <span id="editor-paid"></span></label></div><p id="editor-privacy"></p></div><div class="editor-actions"><button type="button" id="editor-checkout" class="editor-button" hidden></button><button type="button" id="editor-verify" class="editor-button" hidden></button><button type="button" id="editor-export" class="editor-button primary"></button></div></div><div id="editor-status" class="editor-status" role="status" aria-live="polite"></div></div>';
+/* Share Sign PDF's hierarchy: choice cards first, then a distinct guided workspace. */
+const shell=ROOT.querySelector(".editor-shell");
+const offers=shell.querySelector(".editor-offers");
+const heading=document.createElement("div");heading.className="edit-section-heading";
+heading.innerHTML='<div class="section-kicker" id="edit-workspace-kicker"></div><h2 id="edit-workspace-question"></h2><p id="edit-workspace-explainer"></p>';
+ROOT.insertBefore(heading,shell);ROOT.insertBefore(offers,shell);
+const wizard=document.createElement("div");wizard.className="edit-wizard";
+wizard.innerHTML='<div class="edit-wizard-steps" id="edit-wizard-steps" aria-label="Editing progress"></div><div class="edit-wizard-step-copy"><span class="edit-wizard-kicker" id="edit-wizard-kicker"></span><h3 id="edit-wizard-headline"></h3><p id="edit-wizard-help"></p></div>';
+shell.querySelector(".editor-top").after(wizard);
+const privacyNote=document.createElement("div");privacyNote.className="edit-upload-privacy";privacyNote.id="edit-upload-privacy";
+shell.querySelector(".editor-upload").after(privacyNote);
+function syncWizard(){
+ const labels=language()==="fr"?["Importer le PDF","Ajouter des éléments","Vérifier le document","Télécharger"]:language()==="ar"?["رفع PDF","إضافة عناصر","مراجعة الملف","تنزيل"]:["Upload PDF","Add elements","Review document","Download"];
+ const stage=!source?1:objects.length?3:2;
+ const nav=$("edit-wizard-steps");
+ nav.innerHTML="";
+ labels.forEach((label,i)=>{const el=document.createElement("span");el.className="edit-wizard-step"+(i+1===stage?" is-current":"")+(i+1<stage?" is-complete":"");if(i+1===stage)el.setAttribute("aria-current","step");const n=document.createElement("b");n.textContent=i+1<stage?"✓":String(i+1);const s=document.createElement("span");s.textContent=label;el.append(n,s);nav.append(el);});
+ const text=language()==="fr"?{kicker:["ÉTAPE 1 · VOTRE DOCUMENT","ÉTAPE 2 · MODIFIER","ÉTAPE 3 · VÉRIFICATION"],title:["Importez votre PDF à modifier","Ajoutez vos éléments sur le PDF","Vérifiez les modifications avant l'export"],help:["Choisissez un fichier PDF sur votre appareil. Toutes les pages seront disponibles automatiquement.","Utilisez les outils à gauche et déplacez les éléments sur la page.","Naviguez entre les pages, puis téléchargez votre document en bas de l'éditeur."],privacy:"🔒 Votre document reste sur votre appareil. Aucun fichier n'est envoyé à nos serveurs."}:language()==="ar"?{kicker:["الخطوة ١ · المستند","الخطوة ٢ · التعديل","الخطوة ٣ · المراجعة"],title:["ارفع ملف PDF","أضف العناصر إلى الصفحات","راجع التغييرات قبل التصدير"],help:["اختر الملف من جهازك.","اسحب العناصر إلى المكان المناسب.","راجع الصفحات ثم نزّل المستند."],privacy:"🔒 يبقى المستند على جهازك."}:{kicker:["STEP 1 · YOUR DOCUMENT","STEP 2 · EDIT YOUR PDF","STEP 3 · REVIEW"],title:["Upload the PDF to edit","Add elements to your PDF","Review your edits before exporting"],help:["Choose a PDF from your device. All pages are available automatically.","Use the tools on the left and drag elements into position.","Check the pages, then export your PDF using the button below."],privacy:"🔒 Your file is never uploaded to a server. It stays in your browser."};
+ $("edit-wizard-kicker").textContent=text.kicker[stage-1];$("edit-wizard-headline").textContent=text.title[stage-1];$("edit-wizard-help").textContent=text.help[stage-1];$("edit-upload-privacy").textContent=text.privacy;
+ $("editor-body").hidden=!source;$("editor-bottom").hidden=!source;$("editor-status").hidden=!source;
+}
+
 const toolTypes=[["text","T"],["date","▦"],["check","☑"],["initials","✎"],["signature","〰"],["image","▧"],["highlight","▰"]];
 const status=(message,isError=false)=>{$("editor-status").textContent=message;$("editor-status").classList.toggle("error",isError);};
 function updateLabels(){
  syncPageCopy();
+ const label=language()==="fr"?["VOTRE ESPACE D'ÉDITION","Comment souhaitez-vous modifier votre PDF ?","Choisissez votre option avant de commencer."]:language()==="ar"?["مساحة تعديل PDF","كيف تريد تعديل ملف PDF؟","اختر طريقة التصدير قبل البدء."]:["YOUR PDF EDITING WORKSPACE","How would you like to edit your PDF?","Choose an option to get started."];
+ $("edit-workspace-kicker").textContent=label[0];$("edit-workspace-question").textContent=label[1];$("edit-workspace-explainer").textContent=label[2];
  $("editor-title").textContent=tr("title");$("editor-subtitle").textContent=tr("subtitle");
  $("editor-empty").textContent=tr("empty");$("editor-undo").textContent="↶ "+tr("undo");$("editor-redo").textContent="↷ "+tr("redo");
  $("editor-prev").setAttribute("aria-label",tr("prev"));$("editor-next").setAttribute("aria-label",tr("next"));
@@ -35,10 +59,10 @@ function updateLabels(){
  $("editor-export").textContent=tr("export");$("editor-checkout").textContent=tr("checkout");$("editor-verify").textContent=tr("verify");
  $("editor-tools").innerHTML='<h3>'+tr("tools")+'</h3>'+toolTypes.map(([kind,icon])=>'<button type="button" class="editor-tool" data-add="'+kind+'"><span>'+icon+'</span>'+tr(kind)+'</button>').join("");
  $("editor-tools").querySelectorAll("[data-add]").forEach(btn=>btn.onclick=()=>add(btn.dataset.add));
- updateNavigation();renderProperties();updatePaymentButtons();
+ updateNavigation();renderProperties();updatePaymentButtons();syncWizard();
 }
 function snapshot(){history.push(JSON.stringify(objects));if(history.length>60)history.shift();future.length=0;changed=true;}
-function undo(){if(!history.length)return;future.push(JSON.stringify(objects));objects=JSON.parse(history.pop());selected=null;renderObjects();renderProperties();updateButtons();}
+function undo(){if(!history.length)return;future.push(JSON.stringify(objects));objects=JSON.parse(history.pop());selected=null;renderObjects();renderProperties();updateButtons();syncWizard();}
 function redo(){if(!future.length)return;history.push(JSON.stringify(objects));objects=JSON.parse(future.pop());selected=null;renderObjects();renderProperties();updateButtons();}
 function updateButtons(){$("editor-undo").disabled=!history.length;$("editor-redo").disabled=!future.length;$("editor-export").disabled=!source;}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -47,7 +71,7 @@ function add(kind){
  if(kind==="image"||kind==="signature"){const input=document.createElement("input");input.type="file";input.accept="image/png,image/jpeg";input.onchange=()=>{const f=input.files?.[0];if(!f||f.size>8*1024*1024){status(tr("error"),true);return;}const reader=new FileReader();reader.onload=()=>make(kind,"",String(reader.result));reader.readAsDataURL(f);};input.click();return;}
  make(kind,kind==="date"?new Date().toLocaleDateString(language()==="en"?"en-US":language()==="ar"?"ar":"fr-FR"):kind==="text"?tr("text"):kind==="initials"?tr("initials"):kind==="check"?"✓":"");
 }
-function make(kind,text,image){snapshot();const obj={id:Date.now()+"-"+Math.random(),page:current,kind,text,image:image||null,x:.15,y:.2,w:kind==="highlight"?.26:kind==="check"?.045:.25,h:kind==="check"?.045:kind==="highlight"?.035:.052,size:16,color:"#172746"};objects.push(obj);selected=obj.id;renderObjects();renderProperties();updateButtons();}
+function make(kind,text,image){snapshot();const obj={id:Date.now()+"-"+Math.random(),page:current,kind,text,image:image||null,x:.15,y:.2,w:kind==="highlight"?.26:kind==="check"?.045:.25,h:kind==="check"?.045:kind==="highlight"?.035:.052,size:16,color:"#172746"};objects.push(obj);selected=obj.id;renderObjects();renderProperties();updateButtons();syncWizard();}
 function updateNavigation(){
  $("editor-pagecount").textContent=source?current+" / "+total:"0 / 0";$("editor-prev").disabled=!source||current<=1;$("editor-next").disabled=!source||current>=total;
  $("editor-thumbs").innerHTML=source?Array.from({length:Math.min(total,150)},(_,i)=>'<button type="button" data-page="'+(i+1)+'" '+(i+1===current?'aria-current="page"':'')+'>'+(i+1)+'</button>').join(""):"";
@@ -87,13 +111,13 @@ function renderProperties(){
  const input=$(id);if(input)input.onchange=()=>{snapshot();o[key]=transform(input.value);renderObjects();updateButtons();};
  }
 }
-function removeSelected(){const idx=objects.findIndex(o=>o.id===selected);if(idx<0)return;snapshot();objects.splice(idx,1);selected=null;renderObjects();renderProperties();updateButtons();}
+function removeSelected(){const idx=objects.findIndex(o=>o.id===selected);if(idx<0)return;snapshot();objects.splice(idx,1);selected=null;renderObjects();renderProperties();updateButtons();syncWizard();}
 async function loadPdf(f){
  if(!f)return;try{
  if(f.size>80*1024*1024)throw Error("PDF exceeds 80 MB");file=f;const bytes=new Uint8Array(await f.arrayBuffer());source=bytes;
  viewer=await pdfjsLib.getDocument({data:bytes.slice()}).promise;total=viewer.numPages;objects=[];history=[];future=[];selected=null;current=1;paidFingerprint=null;pending=null;changed=false;
  documentFingerprint=await window.JustPDFitWatermark.fingerprint(source);$("editor-filename").textContent=f.name;
- await gotoPage(1);status(tr("status"));updatePaymentButtons();
+ await gotoPage(1);status(tr("status"));updatePaymentButtons();syncWizard();
  }catch(error){source=null;viewer=null;total=0;status(tr("error")+" "+error.message,true);updateNavigation();}
 }
 function updatePaymentButtons(){
@@ -144,7 +168,7 @@ async function verify(){
  try{const result=await window.JustPDFitWatermark.verifyCheckout(pending.sessionId,documentFingerprint);if(result.paid!==true)throw Error(tr("unpaid"));paidFingerprint=documentFingerprint;pending=null;updatePaymentButtons();status(tr("ready"));}
  catch(e){status(e.message||tr("unpaid"),true);}
 }
-$("editor-file").onchange=e=>{const selectedFile=e.target.files?.[0];$("editor-remove").hidden=!selectedFile;$("editor-file-empty").textContent=selectedFile?.name||more("none");if(selectedFile)loadPdf(selectedFile);else{$("editor-filename").textContent="";source=null;viewer=null;total=0;file=null;objects=[];selected=null;$("editor-stage").hidden=true;$("editor-empty").hidden=false;updateNavigation();renderProperties();}};
+$("editor-file").onchange=e=>{const selectedFile=e.target.files?.[0];$("editor-remove").hidden=!selectedFile;$("editor-file-empty").textContent=selectedFile?.name||more("none");if(selectedFile)loadPdf(selectedFile);else{$("editor-filename").textContent="";source=null;viewer=null;total=0;file=null;objects=[];selected=null;$("editor-stage").hidden=true;$("editor-empty").hidden=false;updateNavigation();renderProperties();syncWizard();}};
 $("editor-choose").onclick=()=> $("editor-file").click();
 $("editor-remove").onclick=()=>{$("editor-file").value="";$("editor-file").dispatchEvent(new Event("change",{bubbles:true}));};
 for(const b of ROOT.querySelectorAll(".editor-offer"))b.addEventListener("click",()=>{mode=b.dataset.mode;for(const radio of ROOT.querySelectorAll('[name="editor-price"]'))radio.checked=radio.value===mode;for(const card of ROOT.querySelectorAll(".editor-offer"))card.setAttribute("aria-pressed",String(card===b));updatePaymentButtons();});
@@ -156,5 +180,5 @@ $("editor-export").onclick=async()=>{try{if(mode==="paid"&&paidFingerprint!==doc
 $("editor-checkout").onclick=checkout;$("editor-verify").onclick=verify;
 window.addEventListener("resize",()=>{if(source)gotoPage(current).catch(()=>{});});
 document.addEventListener("justpdfit-language",updateLabels);
-updateLabels();updateButtons();status(tr("status"));
+updateLabels();updateButtons();syncWizard();status(tr("status"));
 })();
