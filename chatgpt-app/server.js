@@ -5,8 +5,9 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import { perform } from "./operations.js";
-const makeApp = () => new McpServer({ name:"JustPDFit", version:"0.5.0" });
-const widgetUri = "ui://justpdfit/editor-v5.html";
+import { analyzeSignatures, readChatFile } from "./signature-workflow.js";
+const makeApp = () => new McpServer({ name:"JustPDFit", version:"0.6.0" });
+const widgetUri = "ui://justpdfit/editor-v6.html";
 const uiMeta = { ui:{resourceUri:widgetUri,visibility:["model","app"]}, "openai/widgetAccessible":true, "openai/outputTemplate":widgetUri, "openai/toolInvocation/invoking":"Processing PDF", "openai/toolInvocation/invoked":"PDF ready" };
 const fail = e => ({ isError:true,content:[{ type:"text",text:e instanceof Error ? e.message : "PDF processing failed" }] });
 function tool(app,name,title,description,schema,action) {
@@ -20,6 +21,45 @@ tool(app,"extract_pages","Extract PDF pages","Extract selected 1-based page numb
 tool(app,"reorder_pages","Reorder PDF pages","Create a new PDF with pages in the requested 1-based order.",{pdf:z.string(),pages:z.array(z.number().int().positive()).min(1).max(300)},"reorder");
 tool(app,"rotate_pdf","Rotate PDF pages","Rotate all PDF pages by 90, 180 or 270 degrees.",{pdf:z.string(),angle:z.union([z.literal(90),z.literal(180),z.literal(270)])},"rotate");
 tool(app,"annotate_pdf","Add PDF text annotation","Overlay a short ASCII text annotation on the chosen page (not editing original text). Coordinates use PDF points from bottom left.",{pdf:z.string(),page:z.number().int().positive().default(1),text:z.string().max(400),x:z.number().nonnegative().default(36),y:z.number().nonnegative().default(55),size:z.number().min(8).max(30).default(12)},"annotate");
+const chatFile=z.object({
+  download_url:z.string().url(),file_id:z.string().min(1),
+  mime_type:z.string().optional(),file_name:z.string().optional()
+}).strict();
+const signatureInput={
+  file:chatFile.optional(),pdf:z.string().optional()
+};
+app.registerTool("propose_signature_placement",{
+ title:"Find signature locations",
+ description:"Analyze an attached PDF or base64 PDF for possible signature placements. Read-only. For scanned documents without searchable text, require manual placement; never invent a detected location. The user must approve page and position before any signature is applied.",
+ inputSchema:signatureInput,
+ annotations:{readOnlyHint:true,destructiveHint:false,openWorldHint:false},
+ _meta:{...uiMeta,"openai/fileParams":["file"]}
+},async args=>{
+ try{
+  const pdf=args.pdf||(args.file?await readChatFile(args.file):null);
+  if(!pdf)throw Error("Select a PDF attachment or open JustPDFit and choose a PDF first.");
+  const result=await analyzeSignatures(pdf);
+  return {structuredContent:result,content:[{type:"text",text:JSON.stringify(result)}]};
+ }catch(e){return fail(e)}
+});
+app.registerTool("finalize_signature_pdf",{
+ title:"Confirm and sign PDF visually",
+ description:"Apply a visual name signature ONLY after the user has explicitly approved the exact page and position. Requires confirmed=true and the signer name. Never use this tool speculatively or based solely on a proposed position. This is not a certificate-backed digital signature.",
+ inputSchema:{
+  ...signatureInput,name:z.string().min(1).max(90),page:z.number().int().positive(),
+  x:z.number().nonnegative(),y:z.number().nonnegative(),confirmed:z.literal(true)
+ },
+ annotations:{readOnlyHint:false,destructiveHint:false,openWorldHint:false},
+ _meta:{...uiMeta,"openai/fileParams":["file"]}
+},async args=>{
+ try{
+  if(args.confirmed!==true)throw Error("User approval is required");
+  const pdf=args.pdf||(args.file?await readChatFile(args.file):null);
+  if(!pdf)throw Error("The PDF must be attached again to finalize the signature");
+  const result=await perform("sign",{pdf,name:args.name,page:args.page,x:args.x,y:args.y});
+  return result;
+ }catch(e){return fail(e)}
+});
 tool(app,"sign_pdf_visual","Add visible PDF signature","Add a typed or PNG drawn signature on a chosen page. This is a visual mark, NOT a digital certificate or identity verification.",{pdf:z.string(),page:z.number().int().positive().default(1),name:z.string().optional(),png:z.string().optional(),x:z.number().nonnegative().default(36),y:z.number().nonnegative().default(55),width:z.number().positive().max(500).optional()},"sign");
 tool(app,"optimize_pdf","Re-save PDF using object streams","Re-encode the PDF with object streams. File size reduction is not guaranteed.",{pdf:z.string()},"optimize");
 tool(app,"inspect_pdf","Inspect PDF page sizes","Read page count and dimensions, without modifying the uploaded document.",{pdf:z.string()},"inspect");
