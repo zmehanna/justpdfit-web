@@ -188,3 +188,27 @@
 .editor-page .editor-bottom .editor-actions .primary{min-width:205px}
 @media(max-width:760px){.edit-free-benefits{padding:17px;margin-bottom:18px}.edit-free-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.edit-free-heading{flex-wrap:wrap}.editor-page .edit-export-choices{margin:9px 15px 0;padding:15px}.editor-page .edit-export-continue{margin-right:15px}}
 @media(max-width:450px){.edit-free-feature-grid{grid-template-columns:1fr 1fr;gap:12px 7px;padding:12px}.edit-free-feature{font-size:11px}.edit-free-heading h3{font-size:19px}.editor-page .edit-export-choices .editor-offer{grid-template-columns:24px minmax(0,1fr) auto;gap:4px 7px;padding:12px 10px}.editor-page .edit-export-choices .editor-offer[aria-pressed=true]{padding:11px 9px}.editor-page .edit-export-choices .editor-offer-price{font-size:18px}.editor-page .edit-export-choices .editor-offer strong{font-size:13px}.editor-page .edit-export-choices .editor-offer-description{font-size:11px}}
+
+/* Consistent action hierarchy for free and paid PDF exports. */
+.editor-page .editor-bottom .editor-actions #editor-export,
+.editor-page .editor-bottom .editor-actions #editor-checkout{
+  display:inline-flex;align-items:center;justify-content:center;text-align:center;
+  min-width:225px;min-height:48px;padding:12px 20px;
+  border:1px solid #ed465c;border-radius:11px;
+  background:linear-gradient(100deg,#ed465c,#fc6472);
+  color:#fff;font-size:13px;font-weight:850;line-height:1.35;
+  box-shadow:0 10px 20px #ee4a6124;
+}
+.editor-page .editor-bottom .editor-actions #editor-export:hover:not(:disabled),
+.editor-page .editor-bottom .editor-actions #editor-checkout:hover:not(:disabled){
+  filter:brightness(.97);box-shadow:0 12px 24px #ee4a6140;
+}
+.editor-page .editor-bottom .editor-actions #editor-export[hidden],
+.editor-page .editor-bottom .editor-actions #editor-checkout[hidden]{
+  display:none!important;
+}
+.editor-page .editor-bottom .editor-actions #editor-checkout:disabled{opacity:.55;box-shadow:none}
+@media(max-width:630px){
+  .editor-page .editor-bottom .editor-actions #editor-export,
+  .editor-page .editor-bottom .editor-actions #editor-checkout{min-width:0;width:100%}
+}
