@@ -80,3 +80,9 @@
  .edit-info-grid{grid-template-columns:1fr;gap:12px}
 }
 @media(max-width:480px){.editor-offers-grid{grid-template-columns:1fr}.editor-offer{min-height:0}.editor-page .editor-toolbar{padding:10px}.edit-premium-hero .hero-tags{gap:7px}.edit-premium-hero .hero-tags span{font-size:11px}}
+
+/* Match the shared Sign PDF content width and preserve native hidden semantics. */
+.editor-page .container{max-width:1160px}
+.editor-page .editor-custom-picker #editor-remove[hidden]{display:none!important}
+.editor-page .editor-custom-picker .jpi-file-picker__input{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;clip-path:inset(50%)!important;pointer-events:none!important}
+.editor-page .editor-custom-picker #editor-choose:focus-visible,.editor-offer:focus-visible{outline:3px solid #6c9efb;outline-offset:3px}
