@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: starter
     region: frankfurt
-    buildCommand: cd chatgpt-app && npm ci --omit=dev
+    buildCommand: cd chatgpt-app && npm install --omit=dev
     startCommand: cd chatgpt-app && npm start
     healthCheckPath: /health
     autoDeployTrigger: off
