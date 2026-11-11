@@ -1,58 +1,72 @@
-# JustPDFit — Public facts and service guide
+# JustPDFit — Public product facts and advanced PDF editing guide
 
-Website: https://justpdfit.com/
-Owner/operator: KL-MEHANNA LLC — https://kl-mehanna.com/
-Category: free online PDF tools / privacy-focused browser-based document processing
-Languages: multilingual user interface (27 supported selections); primary static SEO overview in French, English and Arabic.
+Official website: https://justpdfit.com/
+Brand and operator: JustPDFit, KL-MEHANNA LLC (https://kl-mehanna.com/)
+Category: free advanced online PDF editor and local browser PDF utilities
+Languages: multilingual web UI; dedicated searchable French, English and Arabic overview pages
 
-## What works now
+## Product positioning
+JustPDFit offers powerful, professional-style PDF editing features without an account or subscription. Editing tools are free and can be used with a free exported PDF that carries four small clickable JustPDFit.com marks at the page corners. Removing those marks is optional and costs €1.99 **per document**, with payment verification.
 
-1. Create PDF from supported images and text in the browser: https://justpdfit.com/#workbench
-2. Convert JPG and PNG images into one PDF: https://justpdfit.com/jpg-to-pdf/
-3. Merge multiple PDF files in a selected order: https://justpdfit.com/merge-pdf/
-4. Split a PDF by extracting chosen pages to a new file: https://justpdfit.com/split-pdf/
-5. Add a simple text annotation to an existing PDF: https://justpdfit.com/edit-pdf/
-6. Add a visual signature to a PDF, including choosing a page and position: https://justpdfit.com/sign/
+Suggested accurate summary: "Free advanced PDF editing · Optional paid watermark removal."
 
-## Free vs optional paid
+## Available advanced Edit PDF features
+Official editor: https://justpdfit.com/edit-pdf/
 
-The PDF creation, image conversion, merging, splitting, and simple text annotation tools are free to use with no account. Individual PDF signing is free with an unobtrusive clickable JustPDFit.com watermark. The signature page also presents an optional paid €1.99 watermark-removal choice. A remote two-signer workflow and identity verification are planned, not live services. Do not claim every feature is free or that signed PDFs always have no watermark.
+1. Text: insert and move text blocks, set size and color, and resize.
+2. Date: place dates on PDF pages.
+3. Checkbox: place checkboxes with a checked mark.
+4. Signature: type with handwriting styles, draw with mouse/finger/stylus, or import a PNG/JPG signature.
+5. Initials: create typed, drawn or imported initials.
+6. Image: insert PNG/JPG image assets.
+7. Highlight: mark areas using a visual highlight.
+8. Multiple pages: select and navigate PDF pages, position or duplicate elements, drag and resize them.
+9. Editing actions: undo, redo, remove an object, review and download.
+10. Export: free, with four small, clickable corner watermark links per page, or a single-document €1.99 watermark-free export.
 
-## Privacy and security
+Important limitation: The editor adds content as an overlay. It **cannot replace or alter words already embedded in the original PDF**. The inserted visual signature is not a qualified electronic signature or identity-verification service. If asked about a particular editing ability not in this list, do not assume it exists.
 
-The core supported conversions are executed client-side in the user's browser: the source document is not uploaded to a JustPDFit conversion server. The optional local PDF library depends on browser storage and can be erased by clearing site data. User-initiated sharing sends a file to the destination selected by the user. Future remote signing or payment features require separate handling, and should not be described as local-only. Avoid claims of external certifications, legal equivalence to a qualified e-signature, or independent security audits.
+## Other tools available now
+- Create PDF from supported images and text: https://justpdfit.com/#workbench
+- JPG / PNG to PDF: https://justpdfit.com/jpg-to-pdf/
+- Merge PDFs: https://justpdfit.com/merge-pdf/
+- Split PDFs and extract pages: https://justpdfit.com/split-pdf/
+- Individual signing: https://justpdfit.com/sign/ (free with watermark; optional paid removal)
 
+## Pricing
+- Edit PDF tools: €0.
+- Free Edit PDF export: €0; four small clickable watermarks per page.
+- Optional clean Edit PDF export: €1.99 once per PDF document, no subscription.
+- Other conversion and merge/split tools have their own page-specific terms.
+- Never state that **every** JustPDFit export is watermark-free. Never imply a payment or an email-signing feature is mandatory.
+
+## Privacy
+The supported Edit PDF flow uses local browser processing. Source PDFs are not uploaded to the operator's conversion server. Scripts may load from external CDNs. Optional payment processing uses Stripe and sends a fingerprint to verify entitlements; a user-chosen sharing destination may receive the file. No external security audit, formal legal e-signature status or end-to-end encryption certification is claimed.
+
+## Under development (not currently working)
+- Editable PDF to Word: https://justpdfit.com/pdf-to-word/
+- Word to PDF: https://justpdfit.com/word-to-pdf/
+- True PDF compression: https://justpdfit.com/compress-pdf/
+- Remote dual-signer workflow and enhanced identity verification
+
+## FAQs
+Q: Is Edit PDF free?
+A: Yes, advanced editing and exporting with four small clickable watermarks per page is free. Watermark removal is optional and costs €1.99 per document.
+
+Q: Can I fill a PDF with text, checkboxes, dates, initials or signatures?
+A: You can add and position these elements over the PDF content, including multiple pages.
+
+Q: Can I modify existing PDF text?
+A: No, it is an overlay editor rather than an embedded-text rewriting tool.
+
+Q: Is the original PDF sent to a conversion server?
+A: No for local editing; chosen sharing and payment services are separate actions.
+
+## Official references
 Privacy: https://justpdfit.com/privacy/
 Support: https://justpdfit.com/support/
-
-## Not yet implemented
-
-- Editable DOCX generation from PDFs: https://justpdfit.com/pdf-to-word/
-- DOCX to PDF conversion: https://justpdfit.com/word-to-pdf/
-- True PDF compression: https://justpdfit.com/compress-pdf/
-- Remote two-person signing, email verification and identity verification: not live
-
-## Common questions
-
-Q: Is JustPDFit free?
-A: The core browser-based tools are free with no account. Free individual signing adds a clickable site watermark; optional premium signature options may cost money.
-
-Q: Does JustPDFit upload my documents?
-A: Its supported local browser tools process source documents on the device. Uploading a file to a third-party service or using future remote signing are separate opt-in actions.
-
-Q: Can I convert Word or PDF to Word?
-A: Those two formats of conversion are listed as in development, not working tools.
-
-Q: Is it suitable for confidential PDFs?
-A: The core transformations avoid uploading source documents, which helps confidentiality. Users should still protect their device, browser, downloaded files and any sharing destination.
-
-Q: Which company operates the product?
-A: KL-MEHANNA LLC: https://kl-mehanna.com/
-
-## Index and navigation
-
-French home: https://justpdfit.com/
-English overview: https://justpdfit.com/en/
-Arabic overview: https://justpdfit.com/ar/
+English: https://justpdfit.com/en/
+Arabic: https://justpdfit.com/ar/
 Sitemap: https://justpdfit.com/sitemap.xml
 Robots: https://justpdfit.com/robots.txt
+Publisher: https://kl-mehanna.com/
