@@ -32,6 +32,22 @@ iframe{width:100%;height:360px;border:1px solid #b4bdca88;border-radius:10px;bac
 <p class="status" id="status" role="status" aria-live="polite"></p>
 <p class="warn">Free results contain a small JustPDFit watermark. Visual signature is not a cryptographic digital signature. Paid removal is not available within this app.</p>
 </section>
+<section id="signature-section">
+<strong>Sign a PDF · Review before applying</strong>
+<div class="hint">Select a PDF above, detect possible signature locations, then approve an exact page and position. Existing signatures must remain visible.</div>
+<label for="signer">Signer name</label>
+<input id="signer" type="text" maxlength="90" autocomplete="name" value="" placeholder="Ziad Mehanna">
+<div class="actions"><button type="button" id="detect-signature">1. Find signature areas</button></div>
+<div id="signature-analysis" class="status">No placement analysis yet.</div>
+<div class="actions">
+<label for="signature-page">Page (1-based)<input id="signature-page" type="number" min="1" value="1"></label>
+<label for="signature-x">Horizontal position (PDF points)<input id="signature-x" type="number" min="0" value="80"></label>
+<label for="signature-y">Vertical position from bottom (PDF points)<input id="signature-y" type="number" min="0" value="100"></label>
+</div>
+<label><input id="signature-approve" type="checkbox"> I have reviewed the PDF and approve placing this visual signature at the position shown.</label>
+<div class="actions"><button type="button" id="confirm-signature" disabled>2. Confirm and sign</button></div>
+<p class="warn">A name in a cursive font is only a visual signature. Not identity verification or a cryptographic signature.</p>
+</section>
 <section><strong>3. Preview and download</strong><div class="actions"><button id="download" disabled>Prepare secure download link</button><a id="download-link" hidden download="justpdfit.pdf" target="_blank" rel="noopener noreferrer">Open / download saved PDF</a></div><div id="preview" class="hint">Choose a PDF above to preview it.</div></section>
 </main>
 <script>
@@ -60,7 +76,7 @@ window.addEventListener("message",e=>{
   }
 });
 const bridgeReady=request("ui/initialize",{
-  appInfo:{name:"justpdfit-editor",version:"0.5.0"},
+  appInfo:{name:"justpdfit-editor",version:"0.6.0"},
   appCapabilities:{},protocolVersion:"2026-01-26"
 }).then(()=>{
   bridgeConnected=true;notify("ui/notifications/initialized",{});
@@ -110,7 +126,7 @@ function setPreview(blob){
   $("preview").append(view);
 }
 $("file").onchange=()=>{libraryFiles=[];const f=$("file").files[0];if(f?.type==="application/pdf"||f?.name.toLowerCase().endsWith(".pdf"))setPreview(f)};
-$("clear").onclick=()=>{currentDemo=null;libraryFiles=[];outputBlob=null;$("file").value="";$("status").textContent="";$("download").disabled=true;$("download-link").hidden=true;$("download-link").removeAttribute("href");$("preview").textContent="Choose a PDF above to preview it.";if(previewURL)URL.revokeObjectURL(previewURL)};
+$("clear").onclick=()=>{currentDemo=null;libraryFiles=[];outputBlob=null;resetSignatureReview();$("file").value="";$("status").textContent="";$("download").disabled=true;$("download-link").hidden=true;$("download-link").removeAttribute("href");$("preview").textContent="Choose a PDF above to preview it.";if(previewURL)URL.revokeObjectURL(previewURL)};
 $("library").onclick=async()=>{
  if(typeof window.openai?.selectFiles!=="function"||typeof window.openai?.getFileDownloadUrl!=="function") {
    $("status").textContent="ChatGPT file picker is not available in this account. Choose a local file instead.";
@@ -130,6 +146,7 @@ $("library").onclick=async()=>{
      files.push(new File([blob],f.fileName||"document.pdf",{type:f.mimeType||blob.type||"application/pdf"}));
    }
    libraryFiles=files;
+   resetSignatureReview();
    $("file").value="";
    $("status").textContent=files.length+" file(s) selected from ChatGPT.";
    if(files[0]?.type==="application/pdf")setPreview(files[0]);
@@ -188,6 +205,72 @@ $("demo").onclick=async()=>{
    $("file").value="";
  }catch(err){$("status").textContent="Demo error: "+(err.message||err)}
  finally{$("demo").disabled=false}
+};
+let signatureReview=null;
+function resetSignatureReview(){
+ signatureReview=null;
+ $("signature-approve").checked=false;
+ $("confirm-signature").disabled=true;
+ $("signature-analysis").textContent="Analyze the selected PDF before signing.";
+}
+$("file").addEventListener("change",resetSignatureReview);
+$("signature-page").addEventListener("change",()=>{$("signature-approve").checked=false;$("confirm-signature").disabled=true});
+$("signature-x").addEventListener("change",()=>{$("signature-approve").checked=false;$("confirm-signature").disabled=true});
+$("signature-y").addEventListener("change",()=>{$("signature-approve").checked=false;$("confirm-signature").disabled=true});
+$("signature-approve").onchange=()=>{
+ $("confirm-signature").disabled=!signatureReview || !$("signature-approve").checked;
+};
+$("detect-signature").onclick=async()=>{
+ const files=libraryFiles.length?libraryFiles:Array.from($("file").files);
+ if(files.length!==1){$("signature-analysis").textContent="Choose one PDF file first.";return}
+ $("detect-signature").disabled=true;
+ resetSignatureReview();
+ $("signature-analysis").textContent="Analyzing signature positions…";
+ try{
+   const pdf=await read64(files[0]);
+   const response=await callPdfTool("propose_signature_placement",{pdf});
+   if(response.isError)throw Error(response.content?.[0]?.text||"Analysis failed");
+   const data=response.structuredContent||JSON.parse(response.content?.[0]?.text||"{}");
+   signatureReview={pdf,analysis:data};
+   $("signature-page").max=data.pages;
+   const suggested=data.candidates?.[0];
+   if(suggested){
+     $("signature-page").value=suggested.page;
+     $("signature-x").value=suggested.x;
+     $("signature-y").value=suggested.y;
+   }else{
+     $("signature-page").value=data.pages;
+     $("signature-x").value=60;
+     $("signature-y").value=100;
+   }
+   $("signature-analysis").textContent=data.message+"\n"+(suggested?
+     "Suggested page "+suggested.page+" · x="+suggested.x+", y="+suggested.y+" (review before approving).":
+     "No reliable automatic position. Inspect the last page and enter an unobstructed x/y position.");
+   if(typeof window.openai?.requestDisplayMode==="function")window.openai.requestDisplayMode({mode:"fullscreen"}).catch(()=>{});
+ }catch(e){$("signature-analysis").textContent="Analysis failed: "+(e?.message||e)}
+ finally{$("detect-signature").disabled=false}
+};
+$("confirm-signature").onclick=async()=>{
+ if(!signatureReview || !$("signature-approve").checked)return;
+ const name=$("signer").value.trim(), page=Number($("signature-page").value);
+ const x=Number($("signature-x").value),y=Number($("signature-y").value);
+ if(!name || !Number.isInteger(page) || !Number.isFinite(x) || !Number.isFinite(y)){
+   $("signature-analysis").textContent="Enter the signer name and valid page/coordinates.";return;
+ }
+ const dim=signatureReview.analysis.dimensions?.[page-1];
+ if(!dim||x<0||y<0||x>dim.width-20||y>dim.height-20){
+   $("signature-analysis").textContent="Signature position is outside this page.";return;
+ }
+ $("confirm-signature").disabled=true;
+ try{
+  const result=await callPdfTool("finalize_signature_pdf",{
+   pdf:signatureReview.pdf,name,page,x,y,confirmed:true
+  });
+  if(result.isError)throw Error(result.content?.[0]?.text||"Signing failed");
+  await showResult(result.structuredContent);
+  $("signature-analysis").textContent="Visual signature applied. Download the signed PDF below.";
+  resetSignatureReview();
+ }catch(err){$("signature-analysis").textContent="Signing failed: "+(err?.message||err)}
 };
 $("run").onclick=async()=>{
 const files=libraryFiles.length ? libraryFiles : Array.from($("file").files);
