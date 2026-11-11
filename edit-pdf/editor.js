@@ -29,7 +29,28 @@ const shell=ROOT.querySelector(".editor-shell");
 const offers=shell.querySelector(".editor-offers");
 const heading=document.createElement("div");heading.className="edit-section-heading";
 heading.innerHTML='<div class="section-kicker" id="edit-workspace-kicker"></div><h2 id="edit-workspace-question"></h2><p id="edit-workspace-explainer"></p>';
-ROOT.insertBefore(heading,shell);ROOT.insertBefore(offers,shell);
+ROOT.insertBefore(heading,shell);
+const benefits=document.createElement("section");
+benefits.className="edit-free-benefits";
+benefits.innerHTML='<div class="edit-free-heading"><div><h3 id="edit-free-heading"></h3><p id="edit-free-subheading"></p></div><span class="edit-free-label" id="edit-free-label"></span></div><div class="edit-free-feature-grid" id="edit-free-feature-grid"></div>';
+ROOT.insertBefore(benefits,shell);
+shell.querySelector(".editor-body").after(offers);
+offers.classList.add("edit-export-choices");
+const exportContinue=document.createElement("button");exportContinue.type="button";exportContinue.className="editor-button edit-export-continue";exportContinue.id="edit-continue-export";
+shell.querySelector(".editor-body").after(exportContinue);
+exportContinue.addEventListener("click",()=>{offers.scrollIntoView({behavior:"smooth",block:"center"});offers.querySelector(".editor-offer")?.focus({preventScroll:true});});
+function syncOptionB(){
+ const l=language();
+ const labels=l==="fr"?{heading:"Modifiez votre PDF gratuitement",subheading:"Tous les outils sont inclus, sans inscription ni abonnement.",tag:"100 % édition gratuite",features:["Texte et dates","Cases à cocher","Initiales et signatures","Images et annotations","PDF multipages","Modifications illimitées"],exportHeading:"Votre PDF est prêt ? Choisissez votre export",exportHint:"Les outils restent gratuits. Vous ne payez que si vous souhaitez supprimer les filigranes.",free:"Télécharger gratuitement",paid:"Télécharger sans filigrane",continue:"Continuer vers l'export",freeDetails:"4 filigranes JustPDFit.com discrets et cliquables par page.",paidDetails:"PDF propre, sans filigrane. Paiement unique de 1,99 € par document.",prompt:"Modifiez d'abord votre document, puis choisissez son export."}:l==="ar"?{heading:"عدّل ملف PDF مجاناً",subheading:"جميع الأدوات مجانية دون اشتراك.",tag:"تعديل مجاني",features:["النص والتاريخ","مربعات الاختيار","التوقيع والأحرف","الصور والتعليقات","صفحات متعددة","تعديل غير محدود"],exportHeading:"اختر طريقة تنزيل ملف PDF",exportHint:"الدفع فقط لإزالة العلامات المائية.",free:"تنزيل مجاني",paid:"تنزيل دون علامة مائية",continue:"متابعة إلى التنزيل",freeDetails:"أربع علامات JustPDFit.com قابلة للنقر على كل صفحة.",paidDetails:"دون علامات مائية، 1.99 € لكل مستند مرة واحدة.",prompt:"عدّل المستند أولاً ثم اختر طريقة تنزيله."}:{heading:"Edit your PDF for free",subheading:"Every editing tool is included. No account or subscription.",tag:"100% free editing",features:["Text & dates","Checkboxes","Initials & signatures","Images & annotations","Multiple pages","Unlimited edits"],exportHeading:"Ready to download? Choose your export",exportHint:"Editing is always free. Only removing the watermarks costs €1.99.",free:"Download for free",paid:"Download without watermarks",continue:"Continue to export",freeDetails:"4 discreet clickable JustPDFit.com corner watermarks per page.",paidDetails:"Clean PDF without watermarks. €1.99 one-time payment per document.",prompt:"Edit first. Choose your export when you're done."};
+ $("edit-free-heading").textContent=labels.heading;$("edit-free-subheading").textContent=labels.subheading;$("edit-free-label").textContent=labels.tag;
+ $("edit-free-feature-grid").replaceChildren(...labels.features.map(item=>{const node=document.createElement("div");node.className="edit-free-feature";const mark=document.createElement("span");mark.textContent="✓";mark.setAttribute("aria-hidden","true");const label=document.createElement("span");label.textContent=item;node.append(mark,label);return node;}));
+ $("editor-offers-title").textContent=labels.exportHeading;$("editor-offers-hint").textContent=labels.exportHint;
+ $("editor-offer-free-title").textContent=labels.free;$("editor-offer-paid-title").textContent=labels.paid;
+ $("editor-offer-free-description").textContent=labels.freeDetails;$("editor-offer-paid-description").textContent=labels.paidDetails;
+ $("edit-continue-export").textContent=labels.continue;
+ $("edit-workspace-question").textContent=labels.heading;$("edit-workspace-explainer").textContent=labels.prompt;
+ offers.hidden=!source;exportContinue.hidden=!source;
+}
 const wizard=document.createElement("div");wizard.className="edit-wizard";
 wizard.innerHTML='<div class="edit-wizard-steps" id="edit-wizard-steps" aria-label="Editing progress"></div><div class="edit-wizard-step-copy"><span class="edit-wizard-kicker" id="edit-wizard-kicker"></span><h3 id="edit-wizard-headline"></h3><p id="edit-wizard-help"></p></div>';
 shell.querySelector(".editor-top").after(wizard);
@@ -44,6 +65,7 @@ function syncWizard(){
  const text=language()==="fr"?{kicker:["ÉTAPE 1 · VOTRE DOCUMENT","ÉTAPE 2 · MODIFIER","ÉTAPE 3 · VÉRIFICATION"],title:["Importez votre PDF à modifier","Ajoutez vos éléments sur le PDF","Vérifiez les modifications avant l'export"],help:["Choisissez un fichier PDF sur votre appareil. Toutes les pages seront disponibles automatiquement.","Utilisez les outils à gauche et déplacez les éléments sur la page.","Naviguez entre les pages, puis téléchargez votre document en bas de l'éditeur."],privacy:"🔒 Votre document reste sur votre appareil. Aucun fichier n'est envoyé à nos serveurs."}:language()==="ar"?{kicker:["الخطوة ١ · المستند","الخطوة ٢ · التعديل","الخطوة ٣ · المراجعة","الخطوة ٤ · تم"],title:["ارفع ملف PDF","أضف العناصر إلى الصفحات","راجع التغييرات قبل التصدير","ملف PDF جاهز"],help:["اختر الملف من جهازك.","اسحب العناصر إلى المكان المناسب.","راجع الصفحات ثم نزّل المستند.","نزّل الملف أو شاركه من نافذة التأكيد."],privacy:"🔒 يبقى المستند على جهازك."}:{kicker:["STEP 1 · YOUR DOCUMENT","STEP 2 · EDIT YOUR PDF","STEP 3 · REVIEW","STEP 4 · COMPLETE"],title:["Upload the PDF to edit","Add elements to your PDF","Review your edits before exporting","Your PDF is ready"],help:["Choose a PDF from your device. All pages are available automatically.","Use the tools on the left and drag elements into position.","Check the pages, then export your PDF using the button below.","Download or share your PDF from the confirmation window."],privacy:"🔒 Your file is never uploaded to a server. It stays in your browser."};
  $("edit-wizard-kicker").textContent=text.kicker[stage-1];$("edit-wizard-headline").textContent=text.title[stage-1];$("edit-wizard-help").textContent=text.help[stage-1];$("edit-upload-privacy").textContent=text.privacy;
  shell.querySelector(".editor-body").hidden=!source;shell.querySelector(".editor-bottom").hidden=!source;shell.querySelector(".editor-status").hidden=!source;
+ if(typeof syncOptionB==="function")syncOptionB();
 }
 
 const toolTypes=[["text","T"],["date","▦"],["check","☑"],["initials","✎"],["signature","〰"],["image","▧"],["highlight","▰"]];
@@ -59,7 +81,7 @@ function updateLabels(){
  $("editor-export").textContent=tr("export");$("editor-checkout").textContent=tr("checkout");$("editor-verify").textContent=tr("verify");
  $("editor-tools").innerHTML='<h3>'+tr("tools")+'</h3>'+toolTypes.map(([kind,icon])=>'<button type="button" class="editor-tool" data-add="'+kind+'"><span>'+icon+'</span>'+tr(kind)+'</button>').join("");
  $("editor-tools").querySelectorAll("[data-add]").forEach(btn=>btn.onclick=()=>add(btn.dataset.add));
- updateNavigation();renderProperties();updatePaymentButtons();syncWizard();
+ updateNavigation();renderProperties();updatePaymentButtons();syncWizard();syncOptionB();
 }
 function snapshot(){history.push(JSON.stringify(objects));exported=false;if(history.length>60)history.shift();future.length=0;changed=true;}
 function undo(){if(!history.length)return;future.push(JSON.stringify(objects));objects=JSON.parse(history.pop());selected=null;renderObjects();renderProperties();updateButtons();syncWizard();}
@@ -171,7 +193,7 @@ async function verify(){
 $("editor-file").onchange=e=>{const selectedFile=e.target.files?.[0];$("editor-remove").hidden=!selectedFile;$("editor-file-empty").textContent=selectedFile?.name||more("none");if(selectedFile)loadPdf(selectedFile);else{$("editor-filename").textContent="";source=null;viewer=null;total=0;file=null;exported=false;objects=[];selected=null;$("editor-stage").hidden=true;$("editor-empty").hidden=false;updateNavigation();renderProperties();syncWizard();}};
 $("editor-choose").onclick=()=> $("editor-file").click();
 $("editor-remove").onclick=()=>{$("editor-file").value="";$("editor-file").dispatchEvent(new Event("change",{bubbles:true}));};
-for(const b of ROOT.querySelectorAll(".editor-offer"))b.addEventListener("click",()=>{mode=b.dataset.mode;for(const radio of ROOT.querySelectorAll('[name="editor-price"]'))radio.checked=radio.value===mode;for(const card of ROOT.querySelectorAll(".editor-offer"))card.setAttribute("aria-pressed",String(card===b));updatePaymentButtons();});
+for(const b of ROOT.querySelectorAll(".editor-offer"))b.addEventListener("click",()=>{mode=b.dataset.mode;for(const radio of ROOT.querySelectorAll('[name="editor-price"]'))radio.checked=radio.value===mode;for(const card of ROOT.querySelectorAll(".editor-offer"))card.setAttribute("aria-pressed",String(card===b));updatePaymentButtons();if(source)document.querySelector(".editor-actions")?.scrollIntoView({behavior:"smooth",block:"nearest"});});
 
 $("editor-prev").onclick=()=>gotoPage(current-1);$("editor-next").onclick=()=>gotoPage(current+1);
 $("editor-undo").onclick=undo;$("editor-redo").onclick=redo;
