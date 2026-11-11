@@ -44,7 +44,7 @@ iframe{width:100%;height:360px;border:1px solid #b4bdca88;border-radius:10px;bac
 <label for="signature-x">Horizontal position (PDF points)<input id="signature-x" type="number" min="0" value="80"></label>
 <label for="signature-y">Vertical position from bottom (PDF points)<input id="signature-y" type="number" min="0" value="100"></label>
 </div>
-<label><input id="signature-approve" type="checkbox"> I have reviewed the PDF and approve placing this visual signature at the position shown.</label>
+<label><input id="signature-approve" type="checkbox" disabled> I have reviewed the PDF and approve placing this visual signature at the position shown.</label>
 <div class="actions"><button type="button" id="preview-signature" disabled>2. Preview placement</button><button type="button" id="confirm-signature" disabled>3. Confirm and sign</button></div>
 <p class="warn">A name in a cursive font is only a visual signature. Not identity verification or a cryptographic signature.</p>
 </section>
@@ -217,16 +217,23 @@ let signatureReview=null;
 function resetSignatureReview(){
  signatureReview=null;
  $("signature-approve").checked=false;
+ $("signature-approve").disabled=true;
  $("confirm-signature").disabled=true;
  $("preview-signature").disabled=true;
  $("signature-analysis").textContent="Analyze the selected PDF before signing.";
 }
 $("file").addEventListener("change",resetSignatureReview);
-$("signature-page").addEventListener("change",()=>{$("signature-approve").checked=false;$("confirm-signature").disabled=true;$("preview-signature").disabled=!signatureReview});
-$("signature-x").addEventListener("change",()=>{$("signature-approve").checked=false;$("confirm-signature").disabled=true});
-$("signature-y").addEventListener("change",()=>{$("signature-approve").checked=false;$("confirm-signature").disabled=true});
+function invalidateSignaturePreview(){
+ if(signatureReview)signatureReview.preview=null;
+ $("signature-approve").checked=false;
+ $("signature-approve").disabled=true;
+ $("confirm-signature").disabled=true;
+ $("preview-signature").disabled=!signatureReview;
+}
+for(const id of ["signer","signature-page","signature-x","signature-y"])
+ $(""+id).addEventListener("input",invalidateSignaturePreview);
 $("signature-approve").onchange=()=>{
- $("confirm-signature").disabled=!signatureReview || !$("signature-approve").checked;
+ $("confirm-signature").disabled=!signatureReview?.preview || !$("signature-approve").checked;
 };
 $("detect-signature").onclick=async()=>{
  const files=libraryFiles.length?libraryFiles:Array.from($("file").files);
@@ -239,7 +246,7 @@ $("detect-signature").onclick=async()=>{
    const response=await callPdfTool("propose_signature_placement",{pdf});
    if(response.isError)throw Error(response.content?.[0]?.text||"Analysis failed");
    const data=response.structuredContent||JSON.parse(response.content?.[0]?.text||"{}");
-   signatureReview={pdf,analysis:data};
+   signatureReview={pdf,analysis:data,preview:null};
    if(data.requestedSignerName)$("signer").value=data.requestedSignerName;
    $("preview-signature").disabled=false;
    $("signature-page").max=data.pages;
@@ -280,14 +287,19 @@ $("preview-signature").onclick=async()=>{
   if(view)view.data=previewURL+"#page="+page;
   $("download").disabled=true;
   $("download-link").hidden=true;
+  signatureReview.preview={name,page,x,y};
+  $("signature-approve").disabled=false;
   $("signature-analysis").textContent="Preview of page "+page+" prepared. Check it carefully, then check the approval box to finalize.";
  }catch(e){$("signature-analysis").textContent="Preview failed: "+(e?.message||e)}
  finally{$("preview-signature").disabled=false}
 };
 $("confirm-signature").onclick=async()=>{
- if(!signatureReview || !$("signature-approve").checked)return;
+ if(!signatureReview?.preview || !$("signature-approve").checked)return;
  const name=$("signer").value.trim(), page=Number($("signature-page").value);
  const x=Number($("signature-x").value),y=Number($("signature-y").value);
+ if(JSON.stringify(signatureReview.preview)!==JSON.stringify({name,page,x,y})){
+   $("signature-analysis").textContent="Placement changed. Preview again before signing.";return;
+ }
  if(!name || !Number.isInteger(page) || !Number.isFinite(x) || !Number.isFinite(y)){
    $("signature-analysis").textContent="Enter the signer name and valid page/coordinates.";return;
  }
