@@ -29,10 +29,13 @@ try{
  const listing=await client.listTools();
  assert.ok(listing.tools.some(t=>t.name==="merge_pdfs"));
  assert.ok(listing.tools.some(t=>t.name==="create_demo_pdf"));
- assert.equal(listing.tools.length,10);
+ assert.equal(listing.tools.length,12);
+ assert.ok(listing.tools.some(t=>t.name==="propose_signature_placement"));
+ assert.ok(listing.tools.some(t=>t.name==="finalize_signature_pdf"));
+ assert.deepEqual(listing.tools.find(t=>t.name==="propose_signature_placement")._meta["openai/fileParams"],["file"]);
  const resources=await client.listResources();
- assert.ok(resources.resources.some(r=>r.uri==="ui://justpdfit/editor-v5.html"));
- const widget=await client.readResource({uri:"ui://justpdfit/editor-v5.html"});
+ assert.ok(resources.resources.some(r=>r.uri==="ui://justpdfit/editor-v6.html"));
+ const widget=await client.readResource({uri:"ui://justpdfit/editor-v6.html"});
  assert.ok(widget.contents.some(c=>c.text?.includes("JustPDFit")));
  const editedDemo=await client.callTool({name:"create_demo_pdf",arguments:{text:"TEST APPROVED"}});
  assert.equal(editedDemo.structuredContent?.filename,"justpdfit-demo-edited.pdf");
@@ -48,8 +51,16 @@ try{
  const base64=Buffer.from(await pdf.save()).toString("base64");
  const result=await client.callTool({name:"inspect_pdf",arguments:{pdf:base64}});
  assert.equal(JSON.parse(result.content[0].text).pages,1);
+ const placement=await client.callTool({name:"propose_signature_placement",arguments:{pdf:base64}});
+ assert.equal(placement.structuredContent?.pages,1);
+ assert.equal(placement.structuredContent?.requiresConfirmation,true);
+ const declined=await client.callTool({name:"finalize_signature_pdf",arguments:{pdf:base64,name:"Test Signer",page:1,x:50,y:50,confirmed:false}});
+ assert.equal(declined.isError,true);
+ const accepted=await client.callTool({name:"finalize_signature_pdf",arguments:{pdf:base64,name:"Test Signer",page:1,x:50,y:50,confirmed:true}});
+ assert.ok(accepted.structuredContent?.base64);
+ assert.equal((await PDFDocument.load(Buffer.from(accepted.structuredContent.base64,"base64"))).getPageCount(),1);
  await client.close();
- console.log("MCP HTTP smoke tests PASS; 10 tools exposed, demo generated and annotated");
+ console.log("MCP HTTP smoke tests PASS; 12 tools exposed, placement suggested and signing confirmed, demo generated and annotated");
 } finally{
  proc.kill("SIGTERM");
  await sleep(250);
