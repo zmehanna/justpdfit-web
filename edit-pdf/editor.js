@@ -113,7 +113,7 @@ async function exportPdf(clean){
  }
  if(!clean)await addWatermarks(doc);
  const bytes=await doc.save(),blob=new Blob([bytes],{type:"application/pdf"});
- const name=(file?.name||"document.pdf").replace(/\\.pdf$/i,"")+"-justpdfit.pdf";
+ const name=(file?.name||"document.pdf").replace(/\.pdf$/i,"")+"-justpdfit.pdf";
  if(window.JustPDFItConfirmation?.open)window.JustPDFItConfirmation.open({blob,name,operation:"edit",watermarked:!clean});
  else{const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
  status(tr("ready"));
