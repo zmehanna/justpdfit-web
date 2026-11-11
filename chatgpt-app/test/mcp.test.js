@@ -29,7 +29,8 @@ try{
  const listing=await client.listTools();
  assert.ok(listing.tools.some(t=>t.name==="merge_pdfs"));
  assert.ok(listing.tools.some(t=>t.name==="create_demo_pdf"));
- assert.equal(listing.tools.length,12);
+ assert.equal(listing.tools.length,13);
+ assert.ok(listing.tools.some(t=>t.name==="preview_signature_pdf"));
  assert.ok(listing.tools.some(t=>t.name==="propose_signature_placement"));
  assert.ok(listing.tools.some(t=>t.name==="finalize_signature_pdf"));
  assert.deepEqual(listing.tools.find(t=>t.name==="propose_signature_placement")._meta["openai/fileParams"],["file"]);
@@ -54,13 +55,16 @@ try{
  const placement=await client.callTool({name:"propose_signature_placement",arguments:{pdf:base64}});
  assert.equal(placement.structuredContent?.pages,1,JSON.stringify(placement).slice(0,1600));
  assert.equal(placement.structuredContent?.requiresConfirmation,true);
+ const preview=await client.callTool({name:"preview_signature_pdf",arguments:{pdf:base64,name:"Test Signer",page:1,x:50,y:50}});
+ assert.equal(preview.structuredContent?.previewOnly,true);
+ assert.ok(preview.structuredContent?.base64);
  const declined=await client.callTool({name:"finalize_signature_pdf",arguments:{pdf:base64,name:"Test Signer",page:1,x:50,y:50,confirmed:false}});
  assert.equal(declined.isError,true);
  const accepted=await client.callTool({name:"finalize_signature_pdf",arguments:{pdf:base64,name:"Test Signer",page:1,x:50,y:50,confirmed:true}});
  assert.ok(accepted.structuredContent?.base64);
  assert.equal((await PDFDocument.load(Buffer.from(accepted.structuredContent.base64,"base64"))).getPageCount(),1);
  await client.close();
- console.log("MCP HTTP smoke tests PASS; 12 tools exposed, placement suggested and signing confirmed, demo generated and annotated");
+ console.log("MCP HTTP smoke tests PASS; 13 tools exposed, placement suggested and signing confirmed, demo generated and annotated");
 } finally{
  proc.kill("SIGTERM");
  await sleep(250);
