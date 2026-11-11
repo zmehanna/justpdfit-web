@@ -31,9 +31,12 @@ try{
  assert.ok(listing.tools.some(t=>t.name==="create_demo_pdf"));
  assert.equal(listing.tools.length,10);
  const resources=await client.listResources();
- assert.ok(resources.resources.some(r=>r.uri==="ui://justpdfit/editor-v4.html"));
- const widget=await client.readResource({uri:"ui://justpdfit/editor-v4.html"});
+ assert.ok(resources.resources.some(r=>r.uri==="ui://justpdfit/editor-v5.html"));
+ const widget=await client.readResource({uri:"ui://justpdfit/editor-v5.html"});
  assert.ok(widget.contents.some(c=>c.text?.includes("JustPDFit")));
+ const editedDemo=await client.callTool({name:"create_demo_pdf",arguments:{text:"TEST APPROVED"}});
+ assert.equal(editedDemo.structuredContent?.filename,"justpdfit-demo-edited.pdf");
+ assert.equal((await PDFDocument.load(Buffer.from(editedDemo.structuredContent.base64,"base64"))).getPageCount(),1);
  const demo=await client.callTool({name:"create_demo_pdf",arguments:{}});
  assert.ok(demo.structuredContent?.base64);
  const sample=Buffer.from(demo.structuredContent.base64,"base64");
