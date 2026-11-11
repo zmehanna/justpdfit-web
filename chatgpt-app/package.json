@@ -1,13 +1,15 @@
 {
   "name": "justpdfit-chatgpt-app",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test test/*.test.js",
+    "audit": "npm audit --audit-level=high"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.0",
+    "@modelcontextprotocol/sdk": "1.32.2",
     "pdf-lib": "^1.17.1",
     "zod": "^3.25.0"
   }
