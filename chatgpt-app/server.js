@@ -5,8 +5,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import { perform } from "./operations.js";
-const makeApp = () => new McpServer({ name:"JustPDFit", version:"0.4.0" });
-const widgetUri = "ui://justpdfit/editor-v4.html";
+const makeApp = () => new McpServer({ name:"JustPDFit", version:"0.5.0" });
+const widgetUri = "ui://justpdfit/editor-v5.html";
 const uiMeta = { ui:{resourceUri:widgetUri,visibility:["model","app"]}, "openai/widgetAccessible":true, "openai/outputTemplate":widgetUri, "openai/toolInvocation/invoking":"Processing PDF", "openai/toolInvocation/invoked":"PDF ready" };
 const fail = e => ({ isError:true,content:[{ type:"text",text:e instanceof Error ? e.message : "PDF processing failed" }] });
 function tool(app,name,title,description,schema,action) {
@@ -14,7 +14,7 @@ function tool(app,name,title,description,schema,action) {
 }
 function registerApp(){
  const app=makeApp();
-tool(app,"create_demo_pdf","Create example PDF","Generate a small synthetic PDF for demonstration and testing; never uses personal files.",{},"demo");
+tool(app,"create_demo_pdf","Create or edit example PDF","Generate a small synthetic PDF, optionally with a visible ASCII text annotation, for testing. Does not use personal files.",{text:z.string().max(100).optional()},"demo");
 tool(app,"merge_pdfs","Merge PDF files","Combine 2 to 5 PDFs in sequence. Base64 inputs; document is processed by the JustPDFit server and watermarked. Do not send sensitive content without user consent.",{pdfs:z.array(z.string()).min(2).max(5)},"merge");
 tool(app,"extract_pages","Extract PDF pages","Extract selected 1-based page numbers in the specified order.",{pdf:z.string(),pages:z.array(z.number().int().positive()).min(1).max(300)},"split");
 tool(app,"reorder_pages","Reorder PDF pages","Create a new PDF with pages in the requested 1-based order.",{pdf:z.string(),pages:z.array(z.number().int().positive()).min(1).max(300)},"reorder");
@@ -58,7 +58,7 @@ const server = http.createServer(async(req,res)=>{
  res.setHeader("x-content-type-options","nosniff");
  res.setHeader("referrer-policy","no-referrer");
  if(req.url === "/health" && req.method==="GET"){
-   res.writeHead(200,{"content-type":"application/json"}); return res.end(JSON.stringify({ok:true,version:"0.3.0"}));
+   res.writeHead(200,{"content-type":"application/json"}); return res.end(JSON.stringify({ok:true,version:"0.5.0"}));
  }
  if(req.url !== "/mcp") return json(res,404,"Not found");
  if(req.method !== "POST") {res.setHeader("allow","POST");return json(res,405,"Method not allowed")}
