@@ -12,7 +12,7 @@
 name = "justpdfit-payments-live"
 main = "./worker.js"
 compatibility_date = "2026-11-01"
-workers_dev = false
+workers_dev = true
 
 [vars]
 PAYMENTS_MODE = "live"
@@ -24,9 +24,10 @@ database_name = "justpdfit-payments-live"
 database_id = "REPLACE_WITH_NEW_JUSTPDFIT_PRODUCTION_D1_DATABASE_ID"
 migrations_dir = "migrations"
 
-# Configure a dedicated HTTPS Custom Domain/Route for this Worker in the
-# Cloudflare Dashboard after the DNS zone has been verified. Do not point
-# a live website at this backend until the endpoint and webhooks are tested.
+# A dedicated <account-subdomain>.workers.dev host works independently of the
+# site's IONOS DNS / GitHub Pages hosting. Start there to avoid changing DNS.
+# Cloudflare Custom Domain can be added later if the DNS zone is managed there.
+# Do not point the live website at this backend until all checks pass.
 #
 # Worker secrets to set on this worker only:
 #   STRIPE_RESTRICTED_KEY  (JustPDFit Live restricted key)
