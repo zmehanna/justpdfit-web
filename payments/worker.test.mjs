@@ -174,6 +174,26 @@ test("invalid, wrong mode, unconfigured and cross-origin requests fail closed", 
   assert.equal(cross.headers.get("Access-Control-Allow-Origin"), null);
 });
 
+test("production refuses a FairTaxy account ID even if a live Stripe key is configured", async () => {
+  const badLiveEnv = {
+    ...env,
+    STRIPE_RESTRICTED_KEY: "rk_live_test_only_mock_credential",
+    PAYMENTS_MODE: "live",
+    STRIPE_EXPECTED_ACCOUNT_ID: "acct_1UWgA3L7h2qjW2we"
+  };
+  const validJustPDFitEnv = {
+    ...badLiveEnv,
+    STRIPE_EXPECTED_ACCOUNT_ID: "acct_1UaLHoEQp3CN3XtA"
+  };
+  calls.length = 0;
+  const refused = await req("/checkout", { fingerprint: HASH, kind: "solo-clean" },
+    { env: badLiveEnv });
+  assert.equal(refused.status, 503);
+  assert.equal(calls.length, 0);
+  const health = await req("/health", null, { method: "GET", env: validJustPDFitEnv });
+  assert.equal((await health.json()).status, "configured");
+});
+
 test("missing D1 schema blocks checkout before Stripe is called", async () => {
   calls.length = 0;
   const emptyDb = { prepare() { return { first: async () => { throw Error("no such table: payment_orders"); } }; } };
