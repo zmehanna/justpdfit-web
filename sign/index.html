@@ -2,6 +2,15 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+/* Compatibility with already-deployed Stripe Checkout success_url. */
+if(new URLSearchParams(location.search).get("payment")==="success"){
+ const id=new URLSearchParams(location.search).get("session_id");
+ if(/^cs_(?:live_|test_)[A-Za-z0-9]+$/.test(id||"")){
+  location.replace("../payment-success/?session_id="+encodeURIComponent(id));
+ }
+}
+</script>
 <meta name="theme-color" content="#111d40"><meta name="description" content="Signez un PDF gratuitement en ligne, directement dans votre navigateur et sans envoyer le document. Filigrane cliquable inclus ; suppression optionnelle à 1,99 €.">
 <title>Signer un PDF gratuitement, sans compte | JustPDFit</title>
 <link rel="icon" href="../justpdfit-icon.svg"><link rel="stylesheet" href="../styles.css">
