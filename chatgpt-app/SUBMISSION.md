@@ -25,10 +25,10 @@
 
 **Pricing:** Free outputs include a small watermark. Do not claim that paid removal works inside ChatGPT; it is not implemented. Any web checkout must be reviewed against current platform commerce policies.
 
-**Support URL:** Confirm the live support page URL before submission.
-**Privacy URL:** Confirm the live privacy policy URL before submission.
-**Terms URL:** Confirm the live terms URL before submission.
-**MCP URL:** Fill after deployment (e.g. https://<hostname>/mcp).
+**Support URL:** https://justpdfit.com/support/ (verified reachable 2026-11-11).
+**Privacy URL:** https://justpdfit.com/chatgpt-privacy.html (draft added; live accessibility and legal review pending).
+**Terms URL:** https://justpdfit.com/chatgpt-terms.html (draft added; live accessibility and legal review pending).
+**MCP URL:** https://justpdfit-chatgpt-mcp.onrender.com/mcp (Render live; /health verified externally with ok:true and version 0.2.0; actual MCP tool invocation NOT yet verified).
 **Icon/hero assets:** Still required per applicable listing specifications.
 **Countries:** Select worldwide availability where policy permits.
 **Language support:** UI currently English; tool names/descriptions currently English. FR/AR listing translations above are not a substitute for localized in-app UI.
@@ -44,4 +44,4 @@
 - [ ] Submit through the official developer console and retain submission receipt
 - [ ] Record review status and remediate feedback
 
-**Current status:** Prototype source committed; NOT deployed, tested end-to-end in ChatGPT, or submitted.
+**Current status (2026-11-11):** Render HTTPS deployment is live (service srv-dbqa990u01pc73a94g1g, commit 0378f10900b9b1c62d38fe8433a3e3cc8c513094). /health is externally verified. ChatGPT developer-mode interactions, file uploads/downloads and tool invocations remain UNTESTED. The build surfaced a high-severity npm dependency advisory requiring triage. Privacy and terms HTML are draft, not yet legally approved. NOT submitted.
