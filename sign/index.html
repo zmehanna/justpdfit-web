@@ -148,6 +148,18 @@ body{background:#f8f9fc;color:var(--ink)}
 .mode .price{margin-top:0}
 .sidebar{grid-template-columns:1fr}
 }
+
+/* High-visibility checkout cancellation panel, deliberately above the hero. */
+.checkout-cancel-panel{width:min(1160px,calc(100% - 40px));margin:24px auto 22px;padding:21px 24px;display:flex;gap:17px;align-items:center;justify-content:space-between;border-radius:18px;border:2px solid #f49aad;background:#fff1f5;box-shadow:0 9px 24px #9b164020;color:#75152f;position:relative;z-index:2}
+.checkout-cancel-content{display:flex;align-items:flex-start;gap:15px;min-width:0}
+.checkout-cancel-icon{background:#fce0e7;border-radius:50%;width:48px;height:48px;flex:none;display:grid;place-items:center;font-size:25px;font-weight:900;color:#c7214f}
+.checkout-cancel-copy strong{display:block;color:#a91c45;font-size:20px;line-height:1.35;margin-bottom:5px}
+.checkout-cancel-copy p{margin:0;font-size:14px;line-height:1.65;color:#653048}
+.checkout-cancel-actions{display:flex;gap:10px;align-items:center;flex:none}
+.checkout-cancel-actions a{display:inline-flex;justify-content:center;align-items:center;text-align:center;border-radius:11px;padding:12px 16px;min-height:44px;text-decoration:none;font-weight:800;font-size:13px;background:#e91956;color:white}
+.checkout-cancel-actions a:focus-visible{outline:3px solid #263d87;outline-offset:3px}
+@media(max-width:760px){.checkout-cancel-panel{flex-direction:column;align-items:stretch;padding:17px;margin:16px auto}.checkout-cancel-actions a{width:100%}.checkout-cancel-copy strong{font-size:18px}}
+
 </style>
 <link rel="stylesheet" href="../site-shell.css">
 <script defer src="../site-shell.js"></script>
@@ -173,7 +185,7 @@ body{background:#f8f9fc;color:var(--ink)}
  </div>
 </header>
 <main>
-<div id="paymentReturnNotice" class="payment-return-notice" hidden role="status">Paiement terminé dans cet onglet. Revenez à l’onglet JustPDFit d’origine, où votre document est ouvert, puis cliquez sur « Vérifier le paiement » pour télécharger sans filigrane.</div>
+<section id="paymentReturnNotice" class="checkout-cancel-panel" hidden role="alert" aria-live="assertive"><div class="checkout-cancel-content"><span class="checkout-cancel-icon" aria-hidden="true">!</span><div class="checkout-cancel-copy"><strong id="paymentCancelTitle">Payment cancelled</strong><p id="paymentCancelDescription">No payment was taken. Your watermark-free download has not been unlocked. You can return to your original tab and continue signing for free.</p></div></div><div class="checkout-cancel-actions"><a id="paymentCancelAction" href="#soloTitle">Continue signing ↗</a></div></section>
 <section class="sign-hero"><div class="container">
  <div><div class="eyebrow"><span class="dot"></span>JustPDFit · SIGNATURES</div><h1>Signez un PDF, simplement.</h1><p>Une signature individuelle gratuite, directement sur votre appareil. Pour deux signataires à distance, invitations individuelles et vérification par email.</p>
  <div class="hero-tags"><span>✓ Sans compte pour signer seul</span><span>✓ Filigrane cliquable en version gratuite</span><span>✓ Optimisé mobile et tablette</span></div></div>
