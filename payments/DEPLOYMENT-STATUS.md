@@ -81,3 +81,15 @@ DB migrations: `payments/migrations/`.
 Local/CI tests: `npm test --prefix payments`.
 
 The code repository is `zmehanna/justpdfit-web`, deployed on GitHub Pages; the payment Workers are separate Cloudflare projects. Never replace the GitHub Pages domain's IONOS DNS records to deploy the payment Worker.
+
+## Incident de deploiement Cloudflare du 11 novembre 2026
+
+L'ajout du secret `STRIPE_WEBHOOK_SECRET` via l'interface Cloudflare a retourne `binding PAYMENTS_DB of type d1 failed to generate` (`code: 10021`). Le meme probleme a ete reproduit sur le VPS avec Wrangler CLI en tentant de redeployer les Workers JustPDFit **Live** et **sandbox**. La base D1 Live existe et repond toujours aux interrogations SQL.
+
+Diagnostic d'isolation :
+- Nouveau Worker provisoire **avec** liaison `PAYMENTS_DB` vers D1 sandbox : **erreur 10021**, identique
+- Nouveau Worker provisoire **sans** aucune liaison D1 : deploiement **reussi**; ce Worker diagnostique a ensuite ete supprime
+- Les Workers de paiement deja deployes restent disponibles, mais refusent le Checkout car le secret webhook n'est pas present
+- Le 11 novembre 2026, Cloudflare signale un statut Workers degrade; correlation plausible, causalite non demontree
+
+Ne supprimez pas les bases D1, les liaisons ou les Workers existants en tentative de correction : le code et les bases sont verifies et le probleme est reproduit hors du dashboard. Conserver le paiement public desactive (`payment-config.js` `endpoint: null`) jusqu'a un deploiement reussi avec les secrets et des tests Stripe reellement valides. Apres retablissement, placer `STRIPE_WEBHOOK_SECRET` uniquement dans les Secrets Cloudflare via l'interface ou `wrangler secret put STRIPE_WEBHOOK_SECRET --config wrangler.live.toml`, saisir le secret directement dans le terminal du VPS, puis verifier avec `wrangler secret list` (noms uniquement) et `/health`. La cle ne doit jamais apparaitre dans GitHub, le chat, les logs ou un script.
