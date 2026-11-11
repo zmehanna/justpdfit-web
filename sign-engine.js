@@ -15,13 +15,27 @@ const init=()=>{
  let paymentVerifying=false,checkoutStarting=false;
  const paymentStatus=message=>$("signPaymentStatus").textContent=message;
  const params=new URLSearchParams(location.search);
- if(params.get("payment")==="success"||params.get("payment")==="cancelled"){
-  const notice=$("paymentReturnNotice");
-  if(notice){
-   notice.hidden=false;
-   if(params.get("payment")==="cancelled")notice.textContent="Paiement annulé. Aucun téléchargement sans filigrane n’a été débloqué. Revenez à l’onglet d’origine pour continuer avec la version gratuite.";
-  }
+ const cancellationMessages={
+  en:["Payment cancelled","No payment was taken. The watermark-free version has not been unlocked. You can keep signing for free or return to your original tab.","Continue signing"],
+  fr:["Paiement annulé","Aucun paiement n’a été effectué. La version sans filigrane n’a pas été débloquée. Vous pouvez continuer gratuitement ou revenir à votre onglet d’origine.","Continuer la signature"],
+  ar:["تم إلغاء الدفع","لم يتم تحصيل أي مبلغ. لم يتم فتح النسخة من دون علامة مائية. يمكنك متابعة التوقيع مجاناً أو العودة إلى علامة التبويب الأصلية.","متابعة التوقيع"],
+  es:["Pago cancelado","No se ha realizado ningún cobro. No se ha desbloqueado la versión sin marca de agua. Puedes seguir firmando gratis o volver a la pestaña original.","Continuar firmando"],
+  de:["Zahlung abgebrochen","Es wurde kein Betrag abgebucht. Die Version ohne Wasserzeichen wurde nicht freigeschaltet. Sie können kostenlos weitersignieren oder zum ursprünglichen Tab zurückkehren.","Weiter unterschreiben"],
+  it:["Pagamento annullato","Nessun importo è stato addebitato. La versione senza filigrana non è stata sbloccata. Puoi continuare gratuitamente o tornare alla scheda originale.","Continua a firmare"],
+  pt:["Pagamento cancelado","Nenhum pagamento foi cobrado. A versão sem marca d’água não foi desbloqueada. Pode continuar a assinar gratuitamente ou voltar ao separador original.","Continuar a assinar"]
+ };
+ function showCheckoutReturn(){
+  const cancelled=params.get("payment")==="cancelled", notice=$("paymentReturnNotice");
+  if(!notice||!cancelled)return;
+  const language=(window.JustPDFItI18n?.getLanguage?.()||document.documentElement.lang||"en").split("-")[0].toLowerCase();
+  const translated=cancellationMessages[language]||cancellationMessages.en;
+  $("paymentCancelTitle").textContent=translated[0];
+  $("paymentCancelDescription").textContent=translated[1];
+  $("paymentCancelAction").textContent=translated[2]+" →";
+  notice.hidden=false;
  }
+ showCheckoutReturn();
+ document.addEventListener("justpdfit-language",showCheckoutReturn);
 
 
  // The source PDF and signature are staged ONLY in this browser (IndexedDB).
