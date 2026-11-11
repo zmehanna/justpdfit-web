@@ -3,6 +3,7 @@
  "use strict";
  const packs=window.JustPDFItSignPacks=window.JustPDFItSignPacks||{};
  packs.en={
+  soloFreePrice:"Free · With watermark",soloPaidPrice:"€1.99 · Without watermark",
   pageWord:"Page",
   title:"Sign a PDF online | JustPDFit",meta:"Sign PDF documents locally for free. Remote signing for two people is coming soon.",
   backTools:"← All PDF tools",heroKicker:"JustPDFit · SIGNATURES",heroTitle:"Sign a PDF, simply.",
@@ -75,6 +76,7 @@
   defaultDocument:"PDF document"
  };
  packs.fr={
+  soloFreePrice:"Gratuit · Avec filigrane",soloPaidPrice:"1,99 € · Sans filigrane",
   pageWord:"Page",
   title:"Signer un PDF en ligne | JustPDFit",meta:"Signez gratuitement un PDF sur votre appareil. Signature à deux à distance prochainement.",
   backTools:"← Tous les outils PDF",heroKicker:"JustPDFit · SIGNATURES",heroTitle:"Signez un PDF, simplement.",
@@ -147,6 +149,7 @@
   defaultDocument:"Document PDF"
  };
  packs.ar={
+  soloFreePrice:"مجاني · مع العلامة المائية",soloPaidPrice:"١٫٩٩ € · بدون علامة مائية",
   pageWord:"الصفحة",
   title:"توقيع ملف PDF عبر الإنترنت | JustPDFit",meta:"وقّع ملفات PDF مجاناً على جهازك. التوقيع عن بُعد لشخصين قريباً.",
   backTools:"← جميع أدوات PDF",heroKicker:"JustPDFit · التوقيعات",heroTitle:"وقّع ملف PDF بكل سهولة.",
@@ -241,7 +244,7 @@
   [".sign-section-heading .section-kicker","sectionKicker"],
   [".sign-section-heading h2","modeHeading"],[".sign-section-heading p","modeIntro"],
   ["#soloTab > span:first-child","soloKicker"],["#soloTab > strong","soloMode"],
-  ["#soloTab > span:nth-of-type(2)","soloModeInfo"],["#soloTab .price","free"],
+  ["#soloTab > span:nth-of-type(2)","soloModeInfo"],["#soloTab .solo-free-price","soloFreePrice"],["#soloTab .solo-paid-price","soloPaidPrice"],
   ["#duoTab > span:first-child","duoKicker"],["#duoTab > strong","duoMode"],
   ["#duoTab > span:nth-of-type(2)","duoModeInfo"],["#duoTab .price","fromPrice"],
   ["#soloTitle","soloTitle"],[".wizard-heading p","soloIntro"],
