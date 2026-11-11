@@ -26,7 +26,7 @@
 **Pricing:** Free outputs include a small watermark. Do not claim that paid removal works inside ChatGPT; it is not implemented. Any web checkout must be reviewed against current platform commerce policies.
 
 **Support URL:** https://justpdfit.com/support/ (verified reachable 2026-11-11).
-**Privacy URL:** https://justpdfit.com/chatgpt-privacy.html (draft added; live accessibility and legal review pending).
+**Privacy URL:** https://justpdfit.com/chatgpt-privacy.html (publicly accessible 2026-11-11; legal review pending).
 **Terms URL:** https://justpdfit.com/chatgpt-terms.html (draft added; live accessibility and legal review pending).
 **MCP URL:** https://justpdfit-chatgpt-mcp.onrender.com/mcp (Render live; /health verified externally with ok:true and version 0.2.0; actual MCP tool invocation NOT yet verified).
 **Icon/hero assets:** Still required per applicable listing specifications.
