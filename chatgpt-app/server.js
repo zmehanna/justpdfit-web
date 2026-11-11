@@ -31,7 +31,7 @@ const signatureInput={
 app.registerTool("propose_signature_placement",{
  title:"Find signature locations",
  description:"Analyze an attached PDF or base64 PDF for possible signature placements. Read-only. For scanned documents without searchable text, require manual placement; never invent a detected location. The user must approve page and position before any signature is applied.",
- inputSchema:signatureInput,
+ inputSchema:{...signatureInput,name:z.string().max(90).optional()},
  annotations:{readOnlyHint:true,destructiveHint:false,openWorldHint:false},
  _meta:{...uiMeta,"openai/fileParams":["file"]}
 },async args=>{
@@ -39,6 +39,7 @@ app.registerTool("propose_signature_placement",{
   const pdf=args.pdf||(args.file?await readChatFile(args.file):null);
   if(!pdf)throw Error("Select a PDF attachment or open JustPDFit and choose a PDF first.");
   const result=await analyzeSignatures(pdf);
+  result.requestedSignerName=args.name||null;
   return {structuredContent:result,content:[{type:"text",text:JSON.stringify(result)}]};
  }catch(e){return fail(e)}
 });
