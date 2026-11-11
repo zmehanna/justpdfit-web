@@ -86,3 +86,73 @@
 .editor-page .editor-custom-picker #editor-remove[hidden]{display:none!important}
 .editor-page .editor-custom-picker .jpi-file-picker__input{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;clip-path:inset(50%)!important;pointer-events:none!important}
 .editor-page .editor-custom-picker #editor-choose:focus-visible,.editor-offer:focus-visible{outline:3px solid #6c9efb;outline-offset:3px}
+
+/* Design parity with Sign PDF: section heading, choices and wizard all have the same hierarchy. */
+.editor-page #edit-app{max-width:1160px;margin:0 auto}
+.editor-page .tool-content{padding-top:32px}
+.edit-section-heading{margin-bottom:20px;padding:0 1px}
+.edit-section-heading .section-kicker{color:#e64a65;font-size:12px;font-weight:850;letter-spacing:.08em;margin-bottom:7px}
+.edit-section-heading h2{font-size:clamp(24px,3vw,30px);color:#202e4f;margin:0 0 7px;letter-spacing:-.8px;font-weight:850}
+.edit-section-heading p{color:#78849d;margin:0;font-size:14px;line-height:1.6}
+.editor-page .editor-offers{padding:0;margin:0 0 24px;border:0;background:transparent}
+.editor-page .editor-offers-heading{display:none}
+.editor-page .editor-offers-grid{gap:20px}
+.editor-page .editor-offer{border-radius:20px;box-shadow:0 13px 38px #23355f0d;min-height:185px;padding:23px;justify-content:flex-start;gap:0}
+.editor-page .editor-offer[aria-pressed=true]{padding:22px;border:2px solid #ed465c;background:linear-gradient(145deg,#fff,#fff6f8)}
+.editor-page .editor-offer-badge{font-size:12px;font-weight:700;color:#8e9bb2}
+.editor-page .editor-offer strong{font-size:19px;margin:11px 0 7px;color:#243451;line-height:1.2}
+.editor-page .editor-offer-description{font-size:13px;line-height:1.6;color:#7d8aa2;padding:0;max-width:390px}
+.editor-page .editor-offer-price{font-size:21px;color:#ed465c;font-weight:850;order:4;margin-top:auto;padding-top:12px}
+.editor-page .editor-offer-radio{top:20px;right:22px}
+.editor-page .editor-shell{background:#fff;border:1px solid #edf0f6;border-radius:20px;box-shadow:0 13px 38px #23355f0d!important;overflow:hidden}
+.editor-page .editor-top{padding:24px 24px 15px;border:0;border-radius:0}
+.editor-page .editor-top h2{font-size:24px;color:#243451}
+.editor-page .editor-top p{font-size:13px;color:#78849d;margin:5px 0 0}
+.editor-page .editor-button{font-weight:800}
+.editor-page .editor-button.primary{background:linear-gradient(100deg,#ed465c,#fc6472);box-shadow:0 10px 20px #ee4a6124;min-height:47px;padding:12px 20px}
+.edit-wizard{padding:0 24px 15px}
+.edit-wizard-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:0 0 24px}
+.edit-wizard-step{border:1px solid #e4eaf4;background:#f8faff;border-radius:11px;color:#9caac0;padding:12px 7px;min-height:45px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:800;line-height:1.25;text-align:center}
+.edit-wizard-step b{display:grid;place-items:center;flex:none;width:23px;height:23px;background:#e8edf5;color:#8897ad;border-radius:50%;font-size:12px}
+.edit-wizard-step.is-current{border-color:#ffa6b6;background:#fff2f5;color:#e64060}
+.edit-wizard-step.is-current b{background:#ee4b67;color:#fff}
+.edit-wizard-step.is-complete{border-color:#d7e9df;background:#f5fbf7;color:#28835a}
+.edit-wizard-step.is-complete b{background:#dcf4e6;color:#228055}
+.edit-wizard-kicker{font-size:11px;font-weight:850;color:#e64a65;letter-spacing:.08em}
+.edit-wizard-step-copy h3{color:#243451;font-size:21px;letter-spacing:-.4px;margin:9px 0 5px;font-weight:850}
+.edit-wizard-step-copy p{color:#78849d;font-size:13px;line-height:1.6;margin:0}
+.editor-page .editor-steps{display:none}
+.editor-page .editor-upload{padding:3px 24px 12px;border:0;background:white}
+.editor-page .editor-upload-inner{border:0;background:white;padding:0}
+.editor-page .editor-upload-title{font-size:13px;margin-bottom:8px;color:#30405c}
+.editor-page .editor-custom-picker{min-height:58px}
+.editor-page .editor-body{border:1px solid #e8edf6;border-radius:14px;margin:14px 24px 4px;overflow:hidden;min-height:420px}
+.editor-page .editor-body[hidden],.editor-page .editor-bottom[hidden],.editor-page .editor-status[hidden]{display:none!important}
+.editor-page .editor-bottom{border:0;border-top:1px solid #e8edf6;border-radius:0;background:white;padding:17px 24px}
+.editor-page .editor-status{border:0;background:white}
+.edit-upload-privacy{background:#f5f8ff;color:#61738e;margin:2px 24px 16px;border-radius:12px;padding:14px 16px;font-size:12px;line-height:1.6}
+.editor-page .editor-privacy{max-width:430px}
+.editor-page .edit-info-grid{margin:24px 0}
+.editor-page .edit-info-panel{box-shadow:0 10px 34px #14244a0c}
+.editor-page .related{margin-top:24px}
+@media(max-width:760px){
+ .editor-page .editor-offers-grid{gap:11px}
+ .editor-page .editor-offer{padding:17px;min-height:175px}
+ .editor-page .editor-offer[aria-pressed=true]{padding:16px}
+ .editor-page .editor-offer strong{font-size:16px}
+ .edit-wizard{padding:0 15px 13px}
+ .edit-wizard-steps{gap:5px}
+ .edit-wizard-step{padding:9px 4px;font-size:10px;flex-direction:column;gap:5px}
+ .edit-wizard-step b{width:21px;height:21px}
+ .editor-page .editor-upload{padding:3px 15px 12px}
+ .editor-page .editor-body{margin:12px 15px 4px}
+ .edit-upload-privacy{margin:2px 15px 14px}
+}
+@media(max-width:480px){
+ .editor-page .editor-offers-grid{grid-template-columns:1fr}
+ .editor-page .editor-offer{min-height:155px}
+ .edit-wizard-steps{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .edit-wizard-step{font-size:9px}
+ .editor-page .editor-top{padding:17px 15px}
+ .edit-section-heading h2{font-size:24px}
+}
