@@ -43,6 +43,23 @@ app.registerTool("propose_signature_placement",{
   return {structuredContent:result,content:[{type:"text",text:JSON.stringify(result)}]};
  }catch(e){return fail(e)}
 });
+app.registerTool("preview_signature_pdf",{
+ title:"Preview visible signature placement",
+ description:"Create a temporary preview of a proposed signature without finalizing, so the user can visually inspect the page before confirming.",
+ inputSchema:{...signatureInput,name:z.string().min(1).max(90),page:z.number().int().positive(),x:z.number().nonnegative(),y:z.number().nonnegative()},
+ annotations:{readOnlyHint:true,destructiveHint:false,openWorldHint:false},
+ _meta:{...uiMeta,"openai/fileParams":["file"]}
+},async args=>{
+ try{
+  const pdf=args.pdf||(args.file?await readChatFile(args.file):null);
+  if(!pdf)throw Error("Select a PDF first");
+  const result=await perform("sign",{pdf,name:args.name,page:args.page,x:args.x,y:args.y});
+  result.structuredContent.previewOnly=true;
+  result.structuredContent.filename="justpdfit-signature-preview.pdf";
+  result.content=[{type:"text",text:"Temporary preview only, not a finalized signature. Ask the user to confirm the exact page and position."}];
+  return result;
+ }catch(e){return fail(e)}
+});
 app.registerTool("finalize_signature_pdf",{
  title:"Confirm and sign PDF visually",
  description:"Apply a visual name signature ONLY after the user has explicitly approved the exact page and position. Requires confirmed=true and the signer name. Never use this tool speculatively or based solely on a proposed position. This is not a certificate-backed digital signature.",
