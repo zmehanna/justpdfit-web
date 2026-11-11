@@ -12,17 +12,22 @@ const INTENT = "pi_Test123";
 const SECRET = "whsec_testing_private_key_123456789";
 const dbData = new Map();
 const events = new Map();
+const revokedIntents = new Set();
 const db = {
   prepare(sql) {
     return {
       async first() {
         if (sql.startsWith("SELECT session_id FROM payment_orders")) return null;
+        if (sql.startsWith("SELECT payment_intent_id FROM revoked_payment_intents")) return null;
         throw Error("Unexpected direct SELECT " + sql);
       },
       bind(...args) {
         return {
           async first() {
             if (sql.startsWith("SELECT session_id FROM payment_orders")) return null;
+            if (sql.startsWith("SELECT payment_intent_id FROM revoked_payment_intents")) {
+              return revokedIntents.has(args[0]) ? {payment_intent_id:args[0]} : null;
+            }
             if (!sql.startsWith("SELECT payment_status")) throw Error("Unknown SELECT " + sql);
             const state = dbData.get(args[0]);
             return state ? { payment_status: state.status } : null;
@@ -34,6 +39,8 @@ const db = {
               dbData.set(id, { hash, kind, amount, currency, intent,
                 status: old?.status === "revoked" ? "revoked" :
                   old?.status === "paid" || status === "paid" ? "paid" : status });
+            } else if (sql.startsWith("INSERT OR IGNORE INTO revoked_payment_intents")) {
+              revokedIntents.add(args[0]);
             } else if (sql.startsWith("INSERT OR IGNORE INTO stripe_events")) {
               if (!events.has(args[0])) events.set(args[0], args[1]);
             } else if (sql.startsWith("UPDATE payment_orders")) {
@@ -248,6 +255,19 @@ test("refund webhook revokes future verification", async () => {
     { payment_intent: INTENT }))).status, 200);
   assert.equal(dbData.get(SESSION).status, "revoked");
   assert.deepEqual(await (await req("/verify", { fingerprint: HASH, sessionId: SESSION })).json(), { paid: false });
+});
+
+test("refund arriving before payment completion remains revoked", async () => {
+  dbData.clear();
+  revokedIntents.clear();
+  assert.equal((await deliver(event("evt_earlyRefund", "charge.refunded",
+    { payment_intent: INTENT }))).status, 200);
+  assert.equal(revokedIntents.has(INTENT), true);
+  assert.equal((await deliver(event("evt_paidLater", "checkout.session.completed"))).status, 200);
+  assert.equal(dbData.get(SESSION).status, "revoked");
+  assert.deepEqual(await (await req("/verify", { fingerprint: HASH, sessionId: SESSION })).json(), { paid: false });
+  revokedIntents.clear();
+  dbData.clear();
 });
 
 test("webhook rejects invalid signature, wrong account, wrong mode", async () => {
