@@ -1,0 +1,33 @@
+name: JustPDFit ChatGPT MCP security and integration checks
+on:
+  push:
+    paths:
+      - 'chatgpt-app/**'
+      - '.github/workflows/justpdfit-chatgpt.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    defaults:
+      run:
+        working-directory: chatgpt-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-fund
+      - name: Security audit (high and critical)
+        run: npm audit --audit-level=high
+      - name: JavaScript syntax validation
+        run: |
+          node --check server.js
+          node --check operations.js
+      - name: PDF operation tests
+        run: npm test
+      - name: MCP protocol and HTTP tests
+        run: node test/mcp.test.js
