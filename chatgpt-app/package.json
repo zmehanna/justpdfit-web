@@ -1,6 +1,6 @@
 {
   "name": "justpdfit-chatgpt-app",
-  "version": "0.3.0",
+  "version": "0.6.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,6 +12,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",
     "pdf-lib": "^1.17.1",
-    "zod": "4.6.7"
+    "zod": "4.6.7",
+    "pdfjs-dist": "6.5.438"
   }
 }
