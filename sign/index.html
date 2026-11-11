@@ -160,6 +160,10 @@ body{background:#f8f9fc;color:var(--ink)}
 .checkout-cancel-actions a:focus-visible{outline:3px solid #263d87;outline-offset:3px}
 @media(max-width:760px){.checkout-cancel-panel{flex-direction:column;align-items:stretch;padding:17px;margin:16px auto}.checkout-cancel-actions a{width:100%}.checkout-cancel-copy strong{font-size:18px}}
 
+
+#soloTab .solo-price-options{display:flex;flex-direction:column;gap:5px;align-items:flex-start;margin-top:auto;padding-top:12px;font-size:16px!important;line-height:1.35}
+#soloTab .solo-price-options .solo-free-price{font-size:17px;color:#e84662;font-weight:850}
+#soloTab .solo-price-options .solo-paid-price{font-size:14px;color:#42516c;font-weight:750}
 </style>
 <link rel="stylesheet" href="../site-shell.css">
 <script defer src="../site-shell.js"></script>
@@ -193,7 +197,7 @@ body{background:#f8f9fc;color:var(--ink)}
 </div></section>
 <div class="sign-shell">
 <div class="sign-section-heading"><div class="section-kicker">VOTRE ESPACE DE SIGNATURE</div><h2>Comment souhaitez-vous signer ?</h2><p>Choisissez une option pour commencer.</p></div>
-<div class="modes" role="group" aria-label="Mode de signature"><button id="soloTab" type="button" class="mode" aria-pressed="true"><span>✍️ Signature locale</span><strong>Je signe seul</strong><span>Sans compte, sans envoi au serveur. Téléchargez votre PDF signé.</span><span class="price">Gratuit</span></button><button id="duoTab" type="button" class="mode" aria-pressed="false"><span>✉️ Deux personnes</span><strong>Nous signons à distance</strong><span>Un lien unique et un code email pour chaque signataire.</span><span class="price">Dès 1,99 €</span></button></div>
+<div class="modes" role="group" aria-label="Mode de signature"><button id="soloTab" type="button" class="mode" aria-pressed="true"><span>✍️ Signature locale</span><strong>Je signe seul</strong><span>Sans compte, sans envoi au serveur. Téléchargez votre PDF signé.</span><span class="price solo-price-options"><span class="solo-free-price">Free · With watermark</span><span class="solo-paid-price">€1.99 · Without watermark</span></span></button><button id="duoTab" type="button" class="mode" aria-pressed="false"><span>✉️ Deux personnes</span><strong>Nous signons à distance</strong><span>Un lien unique et un code email pour chaque signataire.</span><span class="price">Dès 1,99 €</span></button></div>
 <section id="solo" class="panel sign-panel sign-wizard" aria-labelledby="soloTitle">
 <div class="wizard-heading"><div><h2 id="soloTitle">Signer un PDF gratuitement</h2><p>Un parcours simple, étape par étape. Votre document reste sur votre appareil.</p></div><span id="wizardCounter" class="wizard-counter">Étape 1 sur 4</span></div>
 <nav class="wizard-steps" aria-label="Progression de la signature">
