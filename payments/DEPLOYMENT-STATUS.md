@@ -93,3 +93,14 @@ Diagnostic d'isolation :
 - Le 11 novembre 2026, Cloudflare signale un statut Workers degrade; correlation plausible, causalite non demontree
 
 Ne supprimez pas les bases D1, les liaisons ou les Workers existants en tentative de correction : le code et les bases sont verifies et le probleme est reproduit hors du dashboard. Conserver le paiement public desactive (`payment-config.js` `endpoint: null`) jusqu'a un deploiement reussi avec les secrets et des tests Stripe reellement valides. Apres retablissement, placer `STRIPE_WEBHOOK_SECRET` uniquement dans les Secrets Cloudflare via l'interface ou `wrangler secret put STRIPE_WEBHOOK_SECRET --config wrangler.live.toml`, saisir le secret directement dans le terminal du VPS, puis verifier avec `wrangler secret list` (noms uniquement) et `/health`. La cle ne doit jamais apparaitre dans GitHub, le chat, les logs ou un script.
+
+## Reverification Cloudflare 2026-11-11 (apres ajout secret)
+
+Le VPS Wrangler confirme maintenant que les **deux noms de secrets** existent sur `justpdfit-payments-live`: `STRIPE_RESTRICTED_KEY` et `STRIPE_WEBHOOK_SECRET` (leurs valeurs ne sont pas lues et ne figurent pas dans GitHub).
+
+- `GET https://justpdfit-payments-live.zmehanna.workers.dev/health` avec l'origine JustPDFit -> **HTTP 200**, `{"service":"justpdfit-payments","status":"configured","mode":"live"}`.
+- `POST /webhook` **sans** signature Stripe -> **HTTP 400** (rejet attendu).
+- La base D1 Live contient bien `payment_orders`, `stripe_events` et `revoked_payment_intents`.
+- Les succes ci-dessus **ne prouvent pas** qu'un paiement Checkout a ete cree ni qu'un evenement webhook Stripe signe a ete livre. Realiser encore les validations de bout en bout avant d'activer la boutique publique. Le fichier public `payment-config.js` reste sur `endpoint: null`.
+
+L'erreur Cloudflare `10021` deja diagnostiquee a ete constatee sur plusieurs tentatives de mise a jour D1, mais le secret Live a ensuite ete enregistre par l'utilisateur. Ne pas en deduire que toutes les tentatives de redeploiement D1 fonctionneront.
