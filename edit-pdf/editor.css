@@ -12,3 +12,10 @@
 .editor-no-file{padding:100px 15px;line-height:1.6;text-align:center;color:#7887a3}.editor-pricing{background:#f8faff;border:1px solid #e1e9f5;border-radius:12px;padding:10px 14px;display:flex;gap:15px;flex-wrap:wrap;font-size:13px;color:#334968}.editor-pricing input{accent-color:#ef4b66}
 @media(max-width:990px){.editor-body{grid-template-columns:155px minmax(0,1fr)}.editor-properties{grid-column:1/-1;border-left:0;border-top:1px solid #e7edf6;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 12px}.editor-properties h3{grid-column:1/-1}}
 @media(max-width:630px){.editor-body{display:flex;flex-direction:column}.editor-toolbar{display:flex;overflow-x:auto;gap:8px;padding:10px;border-right:0;border-bottom:1px solid #e7edf6}.editor-toolbar h3{display:none}.editor-tool{min-width:108px;display:flex;flex-direction:column;text-align:center;margin:0;font-size:11px;padding:8px}.editor-workspace{padding:10px}.editor-properties{display:block}.editor-upload{padding:10px}.editor-bottom{align-items:stretch}.editor-actions{width:100%}.editor-actions .editor-button{flex:1}}
+
+/* Shared JustPDFit picker appearance */
+.editor-upload{background:#f5f8ff;padding:15px 20px}
+.editor-upload .jpi-file-picker{width:100%;box-sizing:border-box;background:#f5f8ff}
+.editor-upload .jpi-file-picker__input{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;clip-path:inset(50%)!important;pointer-events:none!important}
+.editor-upload .jpi-file-picker__choose{background:linear-gradient(100deg,#ed465c,#fc6472);border-radius:11px}
+.editor-upload #editor-filename[hidden]{display:none!important}

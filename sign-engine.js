@@ -723,10 +723,14 @@ const init=()=>{
    if(!pricingIsPaid())await watermark.stamp(copy);
    const out=await copy.save();
    const blob=new Blob([out],{type:"application/pdf"});
-   const url=URL.createObjectURL(blob),a=document.createElement("a");
-   a.href=url;a.download=($("soloFile").files[0].name.replace(/\.pdf$/i,"")||"document")+"-signe.pdf";
-   document.body.append(a);a.click();a.remove();
-   setTimeout(()=>URL.revokeObjectURL(url),10000);
+   const outputName=($("soloFile").files[0].name.replace(/\.pdf$/i,"")||"document")+"-signe.pdf";
+   if(window.JustPDFItConfirmation?.open){
+    window.JustPDFItConfirmation.open({blob,name:outputName,operation:"sign",watermarked:!pricingIsPaid()});
+   }else{
+    const url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download=outputName;document.body.append(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),10000);
+   }
    status(st("downloaded",{positions:placements.length,pages:signedPages().length},"Signed PDF downloaded.")+" · "+st(pricingIsPaid()?"watermarkDisplayPaid":"watermarkDisplayFree",null,"JustPDFit.com"));
   }catch(error){status(st("error",{message:error.message},"Erreur : "+error.message));}
   finally{syncWizard();}
