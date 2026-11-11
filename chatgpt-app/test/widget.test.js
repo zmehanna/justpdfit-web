@@ -7,6 +7,9 @@ test("embedded widget parses and exposes file controls",async()=>{
  const scripts=[...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
  assert.ok(scripts.length>0,"No embedded widget scripts");
  for(const js of scripts)new Script(js,{filename:"widget.html"});
- for(const id of ["file","library","action","run","download","preview"])assert.ok(html.includes('id="'+id+'"'),"Missing "+id);
+ for(const id of ["file","library","action","run","download","preview","demo","download-link"])assert.ok(html.includes('id="'+id+'"'),"Missing "+id);
+ assert.ok(html.includes('"ui/initialize"'));
+ assert.ok(html.includes('"ui/notifications/initialized"'));
+ assert.ok(html.includes('"tools/call"'));
  assert.ok(html.includes("window.openai.callTool"));
 });
