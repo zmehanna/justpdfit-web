@@ -116,7 +116,7 @@ const server = http.createServer(async(req,res)=>{
  res.setHeader("x-content-type-options","nosniff");
  res.setHeader("referrer-policy","no-referrer");
  if(req.url === "/health" && req.method==="GET"){
-   res.writeHead(200,{"content-type":"application/json"}); return res.end(JSON.stringify({ok:true,version:"0.5.0"}));
+   res.writeHead(200,{"content-type":"application/json"}); return res.end(JSON.stringify({ok:true,version:"0.6.0"}));
  }
  if(req.url !== "/mcp") return json(res,404,"Not found");
  if(req.method !== "POST") {res.setHeader("allow","POST");return json(res,405,"Method not allowed")}
