@@ -28,16 +28,25 @@ try{
  await client.connect(transport);
  const listing=await client.listTools();
  assert.ok(listing.tools.some(t=>t.name==="merge_pdfs"));
+ assert.ok(listing.tools.some(t=>t.name==="create_demo_pdf"));
+ assert.equal(listing.tools.length,10);
  const resources=await client.listResources();
- assert.ok(resources.resources.some(r=>r.uri==="ui://justpdfit/editor.html"));
- const widget=await client.readResource({uri:"ui://justpdfit/editor.html"});
+ assert.ok(resources.resources.some(r=>r.uri==="ui://justpdfit/editor-v4.html"));
+ const widget=await client.readResource({uri:"ui://justpdfit/editor-v4.html"});
  assert.ok(widget.contents.some(c=>c.text?.includes("JustPDFit")));
+ const demo=await client.callTool({name:"create_demo_pdf",arguments:{}});
+ assert.ok(demo.structuredContent?.base64);
+ const sample=Buffer.from(demo.structuredContent.base64,"base64");
+ assert.equal((await PDFDocument.load(sample)).getPageCount(),1);
+ const modified=await client.callTool({name:"annotate_pdf",arguments:{pdf:demo.structuredContent.base64,page:1,text:"Sample approved"}});
+ assert.ok(modified.structuredContent?.base64);
+ assert.equal((await PDFDocument.load(Buffer.from(modified.structuredContent.base64,"base64"))).getPageCount(),1);
  const pdf=await PDFDocument.create();pdf.addPage([300,400]);
  const base64=Buffer.from(await pdf.save()).toString("base64");
  const result=await client.callTool({name:"inspect_pdf",arguments:{pdf:base64}});
  assert.equal(JSON.parse(result.content[0].text).pages,1);
  await client.close();
- console.log("MCP HTTP smoke tests PASS; 9 tools exposed");
+ console.log("MCP HTTP smoke tests PASS; 10 tools exposed, demo generated and annotated");
 } finally{
  proc.kill("SIGTERM");
  await sleep(250);
