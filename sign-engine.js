@@ -23,6 +23,28 @@ const init=()=>{
   }
  }
 
+
+ // The source PDF and signature are staged ONLY in this browser (IndexedDB).
+ // Stripe receives the fingerprint, never file bytes. Staged entries expire after 24 hours.
+ async function stagePaymentDocument(sessionId){
+  if(!/^cs_(?:test_|live_)[A-Za-z0-9]+$/.test(sessionId))throw Error("Invalid checkout session.");
+  if(!bytes||!sigData||!placements.length||!documentFingerprint)throw Error("Complete your signature before paying.");
+  const entry={sessionId,fingerprint:documentFingerprint,createdAt:Date.now(),
+   name:($("soloFile").files[0]?.name||"document.pdf"),
+   bytes:bytes.slice(),signature:sigData,placements:orderedPlacements().map(item=>({...item}))};
+  await new Promise((resolve,reject)=>{
+   const req=indexedDB.open("justpdfit-checkout-local",1);
+   req.onupgradeneeded=()=>req.result.createObjectStore("documents",{keyPath:"sessionId"});
+   req.onerror=()=>reject(req.error);
+   req.onsuccess=()=>{
+    const db=req.result,tx=db.transaction("documents","readwrite");
+    tx.objectStore("documents").put(entry);
+    tx.oncomplete=()=>{db.close();resolve();};
+    tx.onerror=()=>{db.close();reject(tx.error);};
+   };
+  });
+ }
+
  function pricingIsPaid(){return $("signWatermarkPaid").checked;}
  function cleanUnlocked(){return !!(paidDocumentFingerprint&&paidDocumentFingerprint===documentFingerprint);}
  let documentFingerprint=null;
@@ -634,10 +656,11 @@ const init=()=>{
    if(!tab)throw Error(st("paymentPopupBlocked",null,"Allow pop-ups to open Stripe, then try again."));
    const result=await watermark.createCheckout(documentFingerprint);
    if(!result?.sessionId||!/^https:\/\/checkout\.stripe\.com\//.test(result.checkoutUrl||""))throw Error(st("paymentInvalidResponse",null,"Invalid response from payment service."));
+   await stagePaymentDocument(result.sessionId);
    pendingPaymentSession=result.sessionId;pendingPaymentFingerprint=documentFingerprint;
    try{sessionStorage.setItem("justpdfit-pending-clean-payment",JSON.stringify({fingerprint:documentFingerprint,sessionId:result.sessionId}));}catch{}
    tab.location.href=result.checkoutUrl;
-   paymentStatus(st("paymentStripePending",null,"Paiement ouvert dans un nouvel onglet. Gardez cet onglet JustPDFit ouvert et revenez vérifier votre paiement."));
+   paymentStatus(st("paymentStripePending",null,"Stripe is open. Once payment is confirmed, your signed PDF will appear automatically on the confirmation page."));
   }catch(error){
    try{tab?.close();}catch{}
    paymentStatus(st("error",{message:error.message},"Erreur : "+error.message));
