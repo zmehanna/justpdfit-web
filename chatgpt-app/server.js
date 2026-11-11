@@ -5,13 +5,16 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import { perform } from "./operations.js";
-const app = new McpServer({ name:"JustPDFit", version:"0.2.0" });
+const makeApp = () => new McpServer({ name:"JustPDFit", version:"0.3.0" });
+let app;
 const widgetUri = "ui://justpdfit/editor.html";
-const uiMeta = { "openai/outputTemplate":widgetUri, "openai/toolInvocation/invoking":"Processing PDF", "openai/toolInvocation/invoked":"PDF ready" };
+const uiMeta = { ui:{resourceUri:widgetUri,visibility:["model","app"]}, "openai/widgetAccessible":true, "openai/outputTemplate":widgetUri, "openai/toolInvocation/invoking":"Processing PDF", "openai/toolInvocation/invoked":"PDF ready" };
 const fail = e => ({ isError:true,content:[{ type:"text",text:e instanceof Error ? e.message : "PDF processing failed" }] });
 function tool(name,title,description,schema,action) {
   app.registerTool(name,{title,description,inputSchema:schema,_meta:uiMeta},async args=>{try{return await perform(action,args)}catch(e){return fail(e)}});
 }
+function registerApp(){
+ app=makeApp();
 tool("merge_pdfs","Merge PDF files","Combine 2 to 5 PDFs in sequence. Base64 inputs; document is processed by the JustPDFit server and watermarked. Do not send sensitive content without user consent.",{pdfs:z.array(z.string()).min(2).max(5)},"merge");
 tool("extract_pages","Extract PDF pages","Extract selected 1-based page numbers in the specified order.",{pdf:z.string(),pages:z.array(z.number().int().positive()).min(1).max(300)},"split");
 tool("reorder_pages","Reorder PDF pages","Create a new PDF with pages in the requested 1-based order.",{pdf:z.string(),pages:z.array(z.number().int().positive()).min(1).max(300)},"reorder");
@@ -24,16 +27,66 @@ tool("images_to_pdf","Convert images into PDF","Create a PDF from up to 10 JPEG/
 app.registerResource("JustPDFit editor",widgetUri,{ mimeType:"text/html;profile=mcp-app" },async()=>({
  contents:[{ uri:widgetUri,mimeType:"text/html;profile=mcp-app",text:await readFile(new URL("./widget.html",import.meta.url),"utf8"),_meta:{"openai/widgetDescription":"Upload, preview, process and download PDF files with JustPDFit"}}]
 }));
+
+ return app;
+}
 const port = Number(process.env.PORT || 3000);
+const MAX_BODY = 4 * 1024 * 1024;
+const WINDOW_MS = 60_000;
+const MAX_PER_IP = 25;
+const MAX_TOTAL = 150;
+const buckets = new Map();
+let total = { start: Date.now(), count: 0 };
+function limited(req) {
+ const now = Date.now();
+ if(now - total.start > WINDOW_MS) total = {start:now,count:0};
+ total.count++;
+ if(total.count > MAX_TOTAL) return true;
+ // Render is behind a managed reverse proxy; cap overall usage independently
+ // so that spoofed forwarded headers cannot bypass capacity controls.
+ const ip = String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "").split(",")[0].trim().slice(0,64);
+ const entry = buckets.get(ip);
+ const next = !entry || now - entry.start > WINDOW_MS ? {start:now,count:1} : {start:entry.start,count:entry.count+1};
+ buckets.set(ip,next);
+ if(buckets.size > 10000) buckets.clear();
+ return next.count > MAX_PER_IP;
+}
+function json(res,status,message){res.writeHead(status,{"content-type":"application/json","cache-control":"no-store","x-content-type-options":"nosniff"});res.end(JSON.stringify({error:message}))}
+
 const server = http.createServer(async(req,res)=>{
- if(req.url === "/health"){res.writeHead(200,{"content-type":"application/json"});return res.end(JSON.stringify({ok:true,version:"0.2.0"}))}
- if(req.url !== "/mcp"){res.writeHead(404);return res.end("Not found")}
- if(req.method !== "POST"){res.writeHead(405,{"allow":"POST"});return res.end()}
- if(Number(req.headers["content-length"] || 0)>18*1024*1024){res.writeHead(413);return res.end("Request too large")}
- const transport=new StreamableHTTPServerTransport({sessionIdGenerator:undefined});
- try{await app.connect(transport);await transport.handleRequest(req,res)}
- catch(e){console.error("MCP request failed",e?.message);if(!res.headersSent){res.writeHead(500);res.end("MCP request failed")}}
- finally{await transport.close()}
+ res.setHeader("cache-control","no-store");
+ res.setHeader("x-content-type-options","nosniff");
+ res.setHeader("referrer-policy","no-referrer");
+ if(req.url === "/health" && req.method==="GET"){
+   res.writeHead(200,{"content-type":"application/json"}); return res.end(JSON.stringify({ok:true,version:"0.3.0"}));
+ }
+ if(req.url !== "/mcp") return json(res,404,"Not found");
+ if(req.method !== "POST") {res.setHeader("allow","POST");return json(res,405,"Method not allowed")}
+ if(limited(req)) return json(res,429,"Too many requests");
+ const origin=req.headers.origin;
+ if(origin && !["https://chatgpt.com","https://chat.openai.com"].includes(origin)) return json(res,403,"Origin not allowed");
+ const announced=Number(req.headers["content-length"]||0);
+ if(!Number.isFinite(announced)||announced>MAX_BODY) return json(res,413,"Request too large");
+ // Limit actual streamed bytes before parsing even for chunked uploads.
+ const chunks=[];let bytes=0;
+ try{
+   for await (const chunk of req) {
+     bytes+=chunk.length;
+     if(bytes>MAX_BODY) return json(res,413,"Request too large");
+     chunks.push(chunk);
+   }
+   const body=JSON.parse(Buffer.concat(chunks).toString("utf8"));
+   if(Array.isArray(body) || !body || typeof body !== "object" || Object.keys(body).length>12) return json(res,400,"Invalid MCP message");
+   const transport=new StreamableHTTPServerTransport({sessionIdGenerator:undefined});
+   const instance=registerApp();
+   try{await instance.connect(transport);await transport.handleRequest(req,res,body)}
+   finally{await transport.close();await instance.close()}
+ }catch(e){
+   // Never log PDF bytes or the entire JSON request.
+   console.error("MCP request error",e?.name || "Error");
+   if(!res.headersSent) json(res,400,"Invalid MCP request");
+ }
 });
 server.requestTimeout=30000;
+server.headersTimeout=15000;
 server.listen(port,"0.0.0.0",()=>console.log("JustPDFit MCP on "+port));
