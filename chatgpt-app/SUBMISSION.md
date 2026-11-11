@@ -54,3 +54,13 @@
 - Live HTTPS `/health` validated for v0.3.0 after hardened deploy.
 - **Unverified:** ChatGPT developer-mode app connection, widget sandbox execution, library-picker support, attachment hand-off, PDF preview and download in the ChatGPT host. Official submission must wait.
 - App data still processes remotely. Existing justpdfit.com local-only guarantees do not apply to the MCP app. The terms/privacy URLs are separate.
+
+## ChatGPT host validation — 11 November 2026, widget v4
+
+- Render build commit `682d449d7c7a1754d5cb42a4d77a24387b6290ef` deployed live and verified via Render. Production npm audit 0 vulnerabilities; 6 operations tests, 1 widget script test and a 10-tool MCP smoke test passed.
+- Migrated widget to MCP Apps JSON-RPC handshake (`ui/initialize`, `ui/notifications/initialized`) and `tools/call`; new resource `ui://justpdfit/editor-v4.html` to invalidate old template caches.
+- TinyFish authenticated ChatGPT private plugin refreshed tools and invoked `create_demo_pdf`. No widget timeout reproduced; the side panel exposes Try demo PDF, Process document and Download PDF. Synthetic PDF ready status: 1 page.
+- Embedded widget controls are in a sandboxed iframe and TinyFish's parent DOM automation could not operate the action dropdown, annotation text field or real browser download. Clicking the visible download link did **not** prove a downloaded file. Neither editing nor actual file download in ChatGPT host has passed manual interaction validation.
+- Local backend MCP smoke test did successfully generate and annotate a synthetic PDF and re-open the returned PDF bytes with pdf-lib; this is not equivalent to a completed browser download.
+- **Gate:** Do NOT publicly submit as fully tested until the ChatGPT sandbox download and annotation interactions are verified. The embedded PDF preview may be restricted by the browser's sandbox.
+- Private TinyFish validation runs: https://agent.tinyfish.ai/runs/ad326e18-280e-4fe2-a1d5-0a63e38f4693 and https://agent.tinyfish.ai/runs/28300cd6-5b42-4a08-9e2b-e17bc96d801c.
