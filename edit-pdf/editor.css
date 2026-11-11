@@ -156,3 +156,35 @@
  .editor-page .editor-top{padding:17px 15px}
  .edit-section-heading h2{font-size:24px}
 }
+
+/* Option B — edit first; the export upgrade is only offered after editing. */
+.edit-free-benefits{margin:0 0 24px;padding:23px 25px;background:#fff;border:1px solid #e8edf6;border-radius:19px;box-shadow:0 12px 32px #14244a0a}
+.edit-free-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:17px}
+.edit-free-heading h3{font-size:22px;color:#243451;letter-spacing:-.5px;margin:0 0 5px;font-weight:850}
+.edit-free-heading p{font-size:13px;color:#7687a1;line-height:1.6;margin:0}
+.edit-free-label{white-space:nowrap;border-radius:999px;background:#e7f7ed;color:#187b50;padding:7px 11px;font-size:11px;font-weight:850}
+.edit-free-feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 15px;background:#f6f8fc;border-radius:13px;padding:17px}
+.edit-free-feature{display:flex;align-items:center;gap:9px;color:#31435e;font-size:13px;font-weight:650;line-height:1.5}
+.edit-free-feature>span:first-child{display:grid;place-items:center;flex:none;height:21px;width:21px;border-radius:50%;background:#def3e8;color:#168153;font-weight:850}
+.editor-page .edit-export-choices{margin:9px 24px 0;padding:22px;border:1px solid #e5eaf4;border-radius:17px;background:#fbfcff}
+.editor-page .edit-export-choices[hidden],.editor-page .edit-export-continue[hidden]{display:none!important}
+.editor-page .edit-export-choices .editor-offers-heading{display:block;margin-bottom:16px}
+.editor-page .edit-export-choices .editor-offers-heading h3{font-size:20px;color:#253655;margin:0 0 6px;font-weight:850}
+.editor-page .edit-export-choices .editor-offers-heading p{font-size:13px;line-height:1.6;color:#7b88a0;margin:0}
+.editor-page .edit-export-choices .editor-offers-grid{display:flex;flex-direction:column;gap:11px}
+.editor-page .edit-export-choices .editor-offer{display:grid;grid-template-columns:28px minmax(0,1fr) auto;grid-template-areas:"radio title price" "radio detail price";align-items:center;min-height:0;padding:16px 18px;border-radius:13px;gap:4px 14px;box-shadow:none;border:1px solid #dce4f0;background:#fff}
+.editor-page .edit-export-choices .editor-offer[aria-pressed=true]{padding:15px 17px;border:2px solid #ed465c;background:#fff7f9}
+.editor-page .edit-export-choices .editor-offer:hover{transform:none;box-shadow:0 3px 15px #14244a0c}
+.editor-page .edit-export-choices .editor-offer-badge{display:none}
+.editor-page .edit-export-choices .editor-offer-radio{grid-area:radio;position:static;width:18px;height:18px;align-self:center}
+.editor-page .edit-export-choices .editor-offer strong{grid-area:title;margin:0;font-size:15px}
+.editor-page .edit-export-choices .editor-offer-description{grid-area:detail;font-size:12px;line-height:1.5;margin:0;max-width:none}
+.editor-page .edit-export-choices .editor-offer-price{grid-area:price;align-self:center;margin:0;padding:0;font-size:22px;color:#243451;white-space:nowrap}
+.editor-page .edit-export-choices .editor-offer--paid .editor-offer-price{color:#ed465c}
+.editor-page .edit-export-continue{display:block;min-height:45px;margin:15px 24px 7px auto;padding:12px 20px;color:#e53f60;background:#fff3f6;border:1px solid #f7b4c1;border-radius:10px;font-size:13px;font-weight:800}
+.editor-page .edit-export-continue:hover{background:#ffe8ee}
+.editor-page .edit-export-choices+.editor-bottom{padding-top:16px}
+.editor-page .editor-bottom .editor-actions{min-width:210px}
+.editor-page .editor-bottom .editor-actions .primary{min-width:205px}
+@media(max-width:760px){.edit-free-benefits{padding:17px;margin-bottom:18px}.edit-free-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.edit-free-heading{flex-wrap:wrap}.editor-page .edit-export-choices{margin:9px 15px 0;padding:15px}.editor-page .edit-export-continue{margin-right:15px}}
+@media(max-width:450px){.edit-free-feature-grid{grid-template-columns:1fr 1fr;gap:12px 7px;padding:12px}.edit-free-feature{font-size:11px}.edit-free-heading h3{font-size:19px}.editor-page .edit-export-choices .editor-offer{grid-template-columns:24px minmax(0,1fr) auto;gap:4px 7px;padding:12px 10px}.editor-page .edit-export-choices .editor-offer[aria-pressed=true]{padding:11px 9px}.editor-page .edit-export-choices .editor-offer-price{font-size:18px}.editor-page .edit-export-choices .editor-offer strong{font-size:13px}.editor-page .edit-export-choices .editor-offer-description{font-size:11px}}
