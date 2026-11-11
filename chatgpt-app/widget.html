@@ -28,15 +28,64 @@ iframe{width:100%;height:360px;border:1px solid #b4bdca88;border-radius:10px;bac
 <label for="action">2. Choose an action</label>
 <select id="action"><option value="inspect_pdf">Inspect pages</option><option value="merge_pdfs">Merge PDFs</option><option value="extract_pages">Extract pages</option><option value="reorder_pages">Reorder pages</option><option value="rotate_pdf">Rotate pages</option><option value="annotate_pdf">Add text annotation</option><option value="sign_pdf_visual">Add visual signature</option><option value="optimize_pdf">Optimize PDF</option><option value="images_to_pdf">Images to PDF</option></select>
 <div id="options"></div>
-<div class="actions"><button id="run">Process document</button><button class="secondary" id="clear">Clear</button></div>
+<div class="actions"><button type="button" class="secondary" id="demo">Try demo PDF</button><button id="run">Process document</button><button class="secondary" id="clear">Clear</button></div>
 <p class="status" id="status" role="status" aria-live="polite"></p>
 <p class="warn">Free results contain a small JustPDFit watermark. Visual signature is not a cryptographic digital signature. Paid removal is not available within this app.</p>
 </section>
-<section><strong>3. Preview and download</strong><div class="actions"><button id="download" disabled>Download PDF</button></div><div id="preview" class="hint">Choose a PDF above to preview it.</div></section>
+<section><strong>3. Preview and download</strong><div class="actions"><button id="download" disabled>Download PDF</button><a id="download-link" hidden download="justpdfit.pdf">Download link</a></div><div id="preview" class="hint">Choose a PDF above to preview it.</div></section>
 </main>
 <script>
 const $=id=>document.getElementById(id);
-let outputBlob=null,outputName="justpdfit.pdf",previewURL=null,libraryFiles=[];
+let outputBlob=null,outputName="justpdfit.pdf",previewURL=null,libraryFiles=[],currentDemo=null;
+let rpcId=0, bridgeConnected=false;
+const pending=new Map();
+function notify(method,params={}) { window.parent.postMessage({jsonrpc:"2.0",method,params},"*"); }
+function request(method,params={}) {
+  return new Promise((resolve,reject)=>{
+    const id=++rpcId;
+    const timeout=setTimeout(()=>{pending.delete(id);reject(Error("ChatGPT bridge request timed out"));},20000);
+    pending.set(id,{resolve,reject,timeout});
+    window.parent.postMessage({jsonrpc:"2.0",id,method,params},"*");
+  });
+}
+window.addEventListener("message",e=>{
+  if(e.source!==window.parent || !e.data || e.data.jsonrpc!=="2.0") return;
+  const msg=e.data;
+  if(typeof msg.id==="number" && pending.has(msg.id)){
+    const p=pending.get(msg.id);pending.delete(msg.id);clearTimeout(p.timeout);
+    msg.error?p.reject(Error(msg.error.message||"Host error")):p.resolve(msg.result);
+  }
+  if(msg.method==="ui/notifications/tool-result" && msg.params?.structuredContent?.base64){
+    showResult(msg.params.structuredContent).catch(err=>$("status").textContent=err.message);
+  }
+});
+const bridgeReady=request("ui/initialize",{
+  appInfo:{name:"justpdfit-editor",version:"0.4.0"},
+  appCapabilities:{},protocolVersion:"2026-01-26"
+}).then(()=>{
+  bridgeConnected=true;notify("ui/notifications/initialized",{});
+  $("status").textContent="JustPDFit editor ready.";
+}).catch(err=>{
+  $("status").textContent="Interactive bridge unavailable: "+err.message;
+});
+async function callPdfTool(name,args){
+  await bridgeReady;
+  if(bridgeConnected)return request("tools/call",{name,arguments:args});
+  if(typeof window.openai?.callTool==="function")return window.openai.callTool(name,args);
+  throw Error("ChatGPT tool bridge unavailable");
+}
+async function showResult(data){
+  if(!data?.base64)throw Error("No PDF output received");
+  const bytes=Uint8Array.from(atob(data.base64),c=>c.charCodeAt(0));
+  outputBlob=new Blob([bytes],{type:"application/pdf"});
+  outputName=data.filename||"justpdfit.pdf";
+  setPreview(outputBlob);
+  $("download").disabled=false;
+  const link=$("download-link");
+  link.href=previewURL;link.download=outputName;link.hidden=false;
+  $("status").textContent="PDF ready · "+(data.pages||"?")+" page(s)";
+}
+
 const params={
 extract_pages:'<label>Pages (e.g. 1,3,5)</label><input id="pages" type="text" placeholder="1,3">',
 reorder_pages:'<label>New page order (e.g. 3,1,2)</label><input id="pages" type="text" placeholder="3,1,2">',
@@ -47,9 +96,20 @@ sign_pdf_visual:'<label>Page</label><input id="page" type="number" min="1" value
 $("action").onchange=()=>{$("options").innerHTML=params[$("action").value]||""};
 $("action").onchange();
 function read64(file){return new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(String(fr.result).split(",")[1]);fr.onerror=reject;fr.readAsDataURL(file)})}
-function setPreview(blob){if(previewURL)URL.revokeObjectURL(previewURL);previewURL=URL.createObjectURL(blob);$("preview").innerHTML="";const iframe=document.createElement("iframe");iframe.title="PDF preview";iframe.src=previewURL;$("preview").append(iframe)}
+function setPreview(blob){
+  if(previewURL)URL.revokeObjectURL(previewURL);
+  previewURL=URL.createObjectURL(blob);
+  $("preview").replaceChildren();
+  const info=document.createElement("div");
+  info.textContent="PDF selected · "+Math.round(blob.size/1024)+" KB. Preview may be restricted by ChatGPT's sandbox.";
+  $("preview").append(info);
+  const view=document.createElement("object");
+  view.type="application/pdf";view.data=previewURL;view.width="100%";view.height="300";
+  view.textContent="PDF preview not available in this environment.";
+  $("preview").append(view);
+}
 $("file").onchange=()=>{libraryFiles=[];const f=$("file").files[0];if(f?.type==="application/pdf"||f?.name.toLowerCase().endsWith(".pdf"))setPreview(f)};
-$("clear").onclick=()=>{libraryFiles=[];outputBlob=null;$("file").value="";$("status").textContent="";$("download").disabled=true;$("preview").textContent="Choose a PDF above to preview it.";if(previewURL)URL.revokeObjectURL(previewURL)};
+$("clear").onclick=()=>{currentDemo=null;libraryFiles=[];outputBlob=null;$("file").value="";$("status").textContent="";$("download").disabled=true;$("download-link").hidden=true;$("preview").textContent="Choose a PDF above to preview it.";if(previewURL)URL.revokeObjectURL(previewURL)};
 $("library").onclick=async()=>{
  if(typeof window.openai?.selectFiles!=="function"||typeof window.openai?.getFileDownloadUrl!=="function") {
    $("status").textContent="ChatGPT file picker is not available in this account. Choose a local file instead.";
@@ -74,12 +134,37 @@ $("library").onclick=async()=>{
    if(files[0]?.type==="application/pdf")setPreview(files[0]);
  }catch(e){$("status").textContent="File selection failed: "+(e?.message||String(e))}
 };
-$("download").onclick=()=>{if(!outputBlob)return;const url=URL.createObjectURL(outputBlob);const a=document.createElement("a");a.href=url;a.download=outputName;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+$("download").onclick=async()=>{
+ if(!outputBlob)return;
+ if(typeof window.openai?.uploadFile==="function" && typeof window.openai?.getFileDownloadUrl==="function"){
+   try{
+     const saved=await window.openai.uploadFile(new File([outputBlob],outputName,{type:"application/pdf"}));
+     if(saved?.fileId){
+       const response=await window.openai.getFileDownloadUrl({fileId:saved.fileId});
+       const href=typeof response==="string"?response:response?.downloadUrl||response?.url;
+       if(href){const link=$("download-link");link.href=href;link.download=outputName;link.hidden=false;link.click();$("status").textContent="Download link ready.";return}
+     }
+   }catch(err){$("status").textContent="ChatGPT file download fallback: "+(err.message||err)}
+ }
+ const link=$("download-link");link.href=previewURL;link.download=outputName;link.hidden=false;link.click();
+};
+$("demo").onclick=async()=>{
+ $("demo").disabled=true;$("status").textContent="Creating a synthetic demo PDF…";
+ try {
+   const result=await callPdfTool("create_demo_pdf",{});
+   if(result?.isError)throw Error(result.content?.[0]?.text||"Demo generation failed");
+   const data=result.structuredContent;
+   await showResult(data);
+   currentDemo=outputBlob;
+   libraryFiles=[new File([outputBlob],"justpdfit-demo.pdf",{type:"application/pdf"})];
+   $("file").value="";
+ }catch(err){$("status").textContent="Demo error: "+(err.message||err)}
+ finally{$("demo").disabled=false}
+};
 $("run").onclick=async()=>{
 const files=libraryFiles.length ? libraryFiles : Array.from($("file").files);
 const action=$("action").value;
-if(!files.length){$("status").textContent="Please choose a file";return}
-if(typeof window.openai?.callTool!=="function"){$("status").textContent="Connect the JustPDFit MCP app in ChatGPT to process files.";return}
+if(!files.length){$("status").textContent="Choose a file or try the demo.";return}
 $("run").disabled=true;$("status").textContent="Processing…";
 try{
 const args={};
@@ -93,14 +178,12 @@ if(action==="rotate_pdf")args.angle=Number($("angle").value);
 if(action==="annotate_pdf"){args.page=Number($("page").value);args.text=$("text").value;args.x=36;args.y=55;args.size=12}
 if(action==="sign_pdf_visual"){args.page=Number($("page").value);args.name=$("name").value;args.x=36;args.y=55}
 }
-const res=await window.openai.callTool(action,args);
+const res=await callPdfTool(action,args);
 if(res.isError)throw Error(res.content?.[0]?.text||"Processing failed");
 const data=res.structuredContent || JSON.parse(res.content?.find(x=>x.type==="text")?.text||"{}");
-if(action==="inspect_pdf"){$("status").textContent=JSON.stringify(data,null,2);return}
-if(!data.base64)throw Error("No PDF output received");
-const bytes=Uint8Array.from(atob(data.base64),c=>c.charCodeAt(0));
-outputBlob=new Blob([bytes],{type:"application/pdf"});outputName=data.filename||"justpdfit.pdf";
-setPreview(outputBlob);$("download").disabled=false;$("status").textContent="PDF ready · "+(data.pages||"?")+" page(s)";
+if(action==="inspect_pdf"){$("status").textContent=JSON.stringify(data.dimensions?data:JSON.parse(res.content?.[0]?.text||"{}"),null,2);return}
+await showResult(data);
+libraryFiles=[new File([outputBlob],outputName,{type:"application/pdf"})];
 }catch(e){$("status").textContent="Error: "+(e?.message||String(e))}
 finally{$("run").disabled=false}
 };
