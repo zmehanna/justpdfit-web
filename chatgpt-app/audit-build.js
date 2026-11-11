@@ -16,4 +16,5 @@ try {
 } catch(e) { console.log("AUDIT_UNAVAILABLE "+String(e)); }
 run(process.execPath,["--test","test/operations.test.js"]);
 run(process.execPath,["test/mcp.test.js"]);
+run(process.execPath,["--test","test/widget.test.js"]);
 if(process.exitCode)throw Error("Integration checks failed");
