@@ -1,3 +1,23 @@
+# STATUS — SUBMITTED FOR OPENAI REVIEW (12 November 2026)
+
+- Plugin: JustPDFit v0.6.0
+- Publisher: KL-MEHANNA
+- Project: JustPDFit
+- Plugin draft/page: https://platform.openai.com/plugins/manage/plugin_asdk_app_6af5ba270ce08191bb139abe96dd4592
+- Status observed in the official portal via TinyFish: **In review**
+- Publication: **Not published** pending approval and separate publication action.
+- MCP: https://justpdfit-chatgpt-mcp.onrender.com/mcp
+- MCP domain: verified on 12 November 2026, 13 discovered tools, no authentication.
+- Reviewer-accessible demo: https://justpdfit-chatgpt-mcp.onrender.com/review/walkthrough.mp4 (79 seconds, actual MCP backend test operations and synthetic PDF samples; not a capture of ChatGPT's sandboxed widget).
+- Supporting review information: all four sections completed (countries/translations, 5 positive cases, 3 negative cases, video walkthrough/release notes).
+- Final review declarations submitted in portal; submission succeeded with no blocking errors.
+- Non-blocking portal finding: "Remove pricing, subscription offers, and temporary promotions from the description."
+- Evidence: https://agent.tinyfish.ai/runs/7f01a848-9ea5-4176-b223-15f79fcf145d
+- **Caution:** The chat attachment handoff, in-widget signing interaction and host browser PDF download are not yet certified by a full manual ChatGPT-host E2E session. Do not state that all UI flows were tested.
+- Next step: await review decision; if approved, explicitly Publish; if rejected, fix specific review findings and resubmit.
+
+---
+
 # JustPDFit — OpenAI public plugin submission materials (draft)
 
 ## Status
