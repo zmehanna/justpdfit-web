@@ -1,3 +1,13 @@
+## Branding correction staged — 12 November 2026
+
+- The v0.6.0 OpenAI submission is currently **In review** with the wrong generic blue PDF icon. It has NOT been published.
+- Approved branding source: `justpdfit-icon.svg` in this repository (actual favicon/brand icon used by `index.html` on JustPDFit.com), showing white Just / white PDF on pink / white it on a navy blue background.
+- Corrected release ZIP: `chatgpt-app/release/JustPDFit_Public_Plugin_0.6.1_Official_Icon.zip`.
+- Both `assets/logo.svg` and `assets/composer-icon.svg` contain the exact approved source SVG; brand colors updated from generic blue to navy/pink, version bumped to 0.6.1.
+- The OpenAI submission dashboard was checked during review. It offers **Cancel review** and **Download release ZIP**, but not `Upload new version` or `Edit version` while review is active.
+- **Do not falsely claim that OpenAI now shows the corrected icon.** The revised ZIP is ready but was not uploaded; current 0.6.0 review is intentionally kept active to avoid losing the review queue. After approval, before Publish, upload the corrected ZIP as a new version; alternatively cancel current review then replace it and resubmit, if that disruption is explicitly accepted.
+- Only the brand assets and listing colors/release notes were changed: production MCP server 0.6.0 and its 13 tools are unchanged.
+
 # STATUS — SUBMITTED FOR OPENAI REVIEW (12 November 2026)
 
 - Plugin: JustPDFit v0.6.0
