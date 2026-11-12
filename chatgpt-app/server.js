@@ -118,6 +118,30 @@ const server = http.createServer(async(req,res)=>{
  res.setHeader("cache-control","no-store");
  res.setHeader("x-content-type-options","nosniff");
  res.setHeader("referrer-policy","no-referrer");
+ if(req.url === "/.well-known/openai-apps-challenge" && req.method==="GET"){
+   res.writeHead(200,{"content-type":"text/plain; charset=utf-8","cache-control":"no-store"});
+   return res.end("c58xWPxq7j4ivbee-x9EhF2_gnh1muR_JxbQqDHAkEw");
+ }
+ if(req.url === "/review/walkthrough.mp4" && ["GET","HEAD"].includes(req.method)){
+   try {
+     const video=await readFile(new URL("../review/justpdfit-mcp-review-v0.6.0.mp4",import.meta.url));
+     const total=video.length;
+     res.setHeader("content-type","video/mp4");
+     res.setHeader("cache-control","public, max-age=3600");
+     res.setHeader("accept-ranges","bytes");
+     const m=typeof req.headers.range==="string" ? /^bytes=(\d+)-(\d*)$/.exec(req.headers.range) : null;
+     if(req.headers.range && !m){res.writeHead(416,{"content-range":"bytes */"+total});return res.end()}
+     const start=m?Number(m[1]):0;
+     const end=m&&m[2]?Number(m[2]):total-1;
+     if(start<0||start>=total||end<start||end>=total){
+       res.writeHead(416,{"content-range":"bytes */"+total});return res.end();
+     }
+     const headers={"content-length":String(end-start+1)};
+     if(m)headers["content-range"]="bytes "+start+"-"+end+"/"+total;
+     res.writeHead(m?206:200,headers);
+     return res.end(req.method==="HEAD"?undefined:video.subarray(start,end+1));
+   }catch(e){return json(res,503,"Review video not yet available")}
+ }
  if(req.url === "/health" && req.method==="GET"){
    res.writeHead(200,{"content-type":"application/json"}); return res.end(JSON.stringify({ok:true,version:"0.6.0"}));
  }
