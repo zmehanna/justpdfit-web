@@ -20,7 +20,7 @@ test('webhook cannot be accepted without signed secret',async()=>{
  assert.equal(response.status,503);
 });
 test('seat management route and invoices route are registered',()=>{
- assert.match(source,/members\|invites\|billing\|entitlement\|invoices\|usage/);
+ assert.match(source,/members\|invites\|billing\|billing-change\|billing-portal\|entitlement\|invoices\|usage/);
 });
 test('production account pinned and billing gated',()=>{
  assert.match(source,/acct_1UaLHoEQp3CN3XtA/);
