@@ -101,7 +101,7 @@ if(req.method==="POST"&&url.pathname==="/organizations"){
  const id=uid();await env.BUSINESS_DB.batch([env.BUSINESS_DB.prepare("INSERT INTO organizations(id,name,owner_id) VALUES(?,?,?)").bind(id,name,current.id),env.BUSINESS_DB.prepare("INSERT INTO memberships(organization_id,user_id,role) VALUES(?,?,'owner')").bind(id,current.id)]);
  await audit(env,id,current.id,"organization_created");return response({id,name},201,origin);
 }
-const match=url.pathname.match(/^\/organizations\/([a-f0-9-]{36})(?:\/(members|invites|billing|entitlement))?$/);if(!match)return response({error:"not_found"},404,origin);
+const match=url.pathname.match(/^\/organizations\/([a-f0-9-]{36})(?:\/(members|invites|billing|entitlement|invoices|usage))?$/);if(!match)return response({error:"not_found"},404,origin);
 const id=match[1],resource=match[2]||"",membership=await member(env,id,current.id);
 if(!membership)return response({error:"not_found"},404,origin);
 const org=await organization(env,id);if(!org)return response({error:"not_found"},404,origin);
@@ -132,6 +132,20 @@ if(req.method==="POST"&&resource==="members"){
  await env.BUSINESS_DB.prepare("UPDATE memberships SET active=0 WHERE organization_id=? AND user_id=? AND role!='owner'").bind(id,d.user_id).run();
  await audit(env,id,current.id,"member_deactivated");return response({ok:true},200,origin);
 }
+if(req.method==="GET"&&resource==="usage"){
+ const totals=await env.BUSINESS_DB.prepare("SELECT COUNT(*) AS events FROM business_audit WHERE organization_id=?").bind(id).first();
+ const actions=await env.BUSINESS_DB.prepare("SELECT action,COUNT(*) AS total FROM business_audit WHERE organization_id=? GROUP BY action ORDER BY total DESC LIMIT 20").bind(id).all();
+ return response({events:totals?.events||0,actions:actions.results||[],ai_credits:null,pdf_exports:null},200,origin);
+}
+if(req.method==="GET"&&resource==="invoices"){
+ if(!["owner","admin"].includes(membership.role))return response({error:"forbidden"},403,origin);
+ const customer=await env.BUSINESS_DB.prepare("SELECT stripe_customer_id FROM organizations WHERE id=?").bind(id).first();
+ if(!customer?.stripe_customer_id)return response({invoices:[]},200,origin);
+ if(env.BUSINESS_BILLING_ENABLED!=="true")return response({invoices:[],billing_ready:false},200,origin);
+ await checkStripeAccount(env);
+ const data=await stripe(env,"/invoices?"+new URLSearchParams({customer:customer.stripe_customer_id,limit:"30"}));
+ return response({invoices:(data.data||[]).map(v=>({id:v.id,status:v.status,currency:v.currency,amount_paid:v.amount_paid,amount_due:v.amount_due,created:v.created,hosted_invoice_url:v.hosted_invoice_url,invoice_pdf:v.invoice_pdf}))},200,origin);
+}
 if(req.method==="POST"&&resource==="billing"){
  if(membership.role!=="owner")return response({error:"forbidden"},403,origin);
  if(env.BUSINESS_BILLING_ENABLED!=="true")return response({error:"billing_not_enabled"},503,origin);
@@ -143,7 +157,7 @@ if(req.method==="POST"&&resource==="billing"){
  if(!/^price_/.test(mainPrice||"")||(extra&&!/^price_/.test(extraPrice||"")))return response({error:"prices_not_configured"},503,origin);
  let customer=await env.BUSINESS_DB.prepare("SELECT stripe_customer_id FROM organizations WHERE id=?").bind(id).first();
  if(!customer.stripe_customer_id){const c=await stripe(env,"/customers",{name:org.name,email:current.email,"metadata[business_org_id]":id});await env.BUSINESS_DB.prepare("UPDATE organizations SET stripe_customer_id=? WHERE id=? AND stripe_customer_id IS NULL").bind(c.id,id).run();customer.stripe_customer_id=c.id}
- const form={"mode":"subscription","customer":customer.stripe_customer_id,"success_url":env.PUBLIC_SITE_URL+"/business/dashboard/?checkout=success","cancel_url":env.PUBLIC_SITE_URL+"/business/dashboard/?checkout=cancel","line_items[0][price]":mainPrice,"line_items[0][quantity]":"1","subscription_data[metadata][business_org_id]":id,"subscription_data[metadata][business_plan]":plan,"subscription_data[metadata][extra_seats]":String(extra),"metadata[business_org_id]":id};
+ const form={"mode":"subscription","customer":customer.stripe_customer_id,"success_url":env.PUBLIC_SITE_URL+"/business/dashboard/?checkout=success","cancel_url":env.PUBLIC_SITE_URL+"/business/dashboard/?checkout=cancel","line_items[0][price]":mainPrice,"line_items[0][quantity]":"1","client_reference_id":id,"billing_address_collection":"required","tax_id_collection[enabled]":"true","subscription_data[metadata][business_org_id]":id,"subscription_data[metadata][business_plan]":plan,"subscription_data[metadata][extra_seats]":String(extra),"metadata[business_org_id]":id};
  if(extra){form["line_items[1][price]"]=extraPrice;form["line_items[1][quantity]"]=String(extra)}
  const checkout=await stripe(env,"/checkout/sessions",form);await audit(env,id,current.id,"checkout_created",plan);return response({url:checkout.url},200,origin);
 }
