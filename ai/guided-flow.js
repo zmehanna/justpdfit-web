@@ -47,7 +47,9 @@ stages.forEach((stage,i)=>{
  edit.setAttribute("aria-expanded","false");
  edit.setAttribute("aria-label",(editLabels[lang]||editLabels.fr)+" "+(heading.textContent||"").trim());
  edit.addEventListener("click",()=>{
-  if(overrides.has(i)){overrides.delete(i);}else{overrides.add(i);}
+  // Earlier steps can be reopened without resetting the workflow or PDF.
+  if(i>=activeStep-1)return;
+  if(overrides.has(i))overrides.delete(i);else overrides.add(i);
   updateStageDisplay();
   if(overrides.has(i)&&i===2)$("request").focus({preventScroll:true});
  });
@@ -55,14 +57,25 @@ stages.forEach((stage,i)=>{
 });
 function updateStageDisplay(){
  stages.forEach((stage,i)=>{
-  const finished=i<activeStep-1&&i<5;
-  const collapsed=finished&&!overrides.has(i);
+  const finished=i<activeStep-1;
+  const upcoming=i>activeStep-1;
+  const active=i===activeStep-1;
+  const expanded=active||(finished&&overrides.has(i));
+  const collapsed=!expanded;
   stage.classList.toggle("is-collapsed",collapsed);
   stage.classList.toggle("is-complete",finished);
+  stage.classList.toggle("is-upcoming",upcoming);
+  stage.classList.toggle("is-active-panel",active);
   const summary=stage.querySelector(".stage-summary");
   summary.hidden=!collapsed;
-  summary.querySelector(".stage-summary-text").textContent=(summaries[i]?.()||"");
-  stage.querySelector(".stage-edit").setAttribute("aria-expanded",String(!collapsed));
+  const summaryText=summary.querySelector(".stage-summary-text");
+  summaryText.textContent=finished?(summaries[i]?.()||""):(lang==="en"?"Not started":lang==="ar"?"لم تبدأ بعد":"Pas encore commencée");
+  const edit=summary.querySelector(".stage-edit");
+  edit.hidden=!finished;
+  edit.disabled=!finished;
+  edit.setAttribute("aria-expanded",String(expanded));
+  stage.querySelector(".stage-body").hidden=!expanded;
+  stage.setAttribute("aria-label",(stage.querySelector("h3")?.textContent||"").trim());
  });
 }
 const phaseInstructions={
