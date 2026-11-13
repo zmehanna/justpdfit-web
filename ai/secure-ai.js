@@ -12,7 +12,21 @@
  const t=i18n[lang];
  const panel=document.createElement("section");panel.className="ai-card ai-v2";panel.style.marginTop="20px";
  panel.innerHTML='<h2></h2><p class="ai-note ai-v2-intro"></p><div class="ai-buttons"><button type="button" class="ai-btn" id="aiAsk"></button></div><label class="ai-check"><input type="checkbox" id="aiConsent"><span id="aiConsentText"></span></label><label class="ai-check"><input type="checkbox" id="aiShare"><span id="aiShareText"></span></label><p class="ai-note" id="aiPrivacy"></p><h3 id="aiDetectionTitle"></h3><div id="aiDetections" class="ai-note" aria-live="polite"></div><div id="aiMessage" class="ai-status" role="status" aria-live="polite"></div><div id="aiPlan" hidden><h3 id="aiReviewTitle"></h3><div id="aiActions"></div><label class="ai-check"><input type="checkbox" id="aiApprove"><span id="aiApproveText"></span></label><p class="ai-note" id="aiConfirmNote"></p><div class="ai-buttons"><button type="button" class="ai-btn" id="aiApply"></button><button type="button" class="ai-btn secondary" id="aiDownload" disabled></button></div><iframe class="ai-preview" id="aiPreview" hidden title="AI-reviewed PDF preview" style="margin-top:12px"></iframe></div>';
- const grid=document.querySelector(".ai-grid");grid.before(panel);
+ const grid=document.querySelector(".ai-grid");
+ const left=grid.querySelector(".ai-card:first-child"),right=grid.querySelector(".ai-card:last-child");
+ left.querySelector("#prompt").closest(".ai-field").after(panel);
+ // AI output belongs beside the document, rather than below the planning controls.
+ const aiPreview=panel.querySelector("#aiPreview");
+ const aiDownload=panel.querySelector("#aiDownload");
+ right.querySelector("#emptyPreview").after(aiPreview);
+ right.querySelector("#priceNote").after(aiDownload);
+ aiDownload.classList.add("ai-ai-result-actions");
+ const manual=$("manualTools");
+ const signatureLabel=$("signature").closest(".ai-field");
+ signatureLabel.hidden=true;$("clearSign").hidden=true;
+ const toggleSignature=(enabled)=>{signatureLabel.hidden=!enabled;$("clearSign").hidden=!enabled;};
+ manual.addEventListener("toggle",()=>{document.querySelectorAll(".ai-manual:not(details)").forEach(el=>el.style.display=manual.open?"block":"none");toggleSignature(manual.open||plan.some(a=>a.type==="add_signature"));});
+ 
  panel.querySelector("h2").textContent="✦ "+t.title;
  panel.querySelector(".ai-v2-intro").textContent=t.intro;
  for(const [id,label] of Object.entries({aiAsk:t.send,aiConsentText:t.allow,aiShareText:t.share,aiPrivacy:t.privacy,aiDetectionTitle:t.detect,aiReviewTitle:t.review,aiApproveText:t.confirm,aiConfirmNote:t.confirmNote,aiApply:t.preview,aiDownload:t.download}))$(id).textContent=label;
@@ -20,8 +34,8 @@
  const css=document.createElement("style");css.textContent='.ai-v2{background:linear-gradient(130deg,#fff,#fff9fb);border-color:#f5c7d1}.ai-v2 h3{font-size:15px;margin:17px 0 8px}.ai-v2 #aiActions{display:grid;gap:8px}.ai-v2 .ai-action{display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center;border:1px solid #e3e7f0;background:white;border-radius:11px;padding:12px;font-size:13px}.ai-v2 .ai-action input[type=checkbox]{accent-color:#ed465c}.ai-v2 .ai-action input[type=text]{max-width:190px;border-radius:6px;border:1px solid #cbd5e4;padding:6px}.ai-v2 .ai-action input[type=number]{width:75px;border-radius:6px;border:1px solid #cbd5e4;padding:6px}.ai-v2 .ai-action select{max-width:130px;border:1px solid #cbd5e4;border-radius:6px;padding:6px}.ai-v2 .ai-action div{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}@media(max-width:700px){.ai-v2 .ai-action{grid-template-columns:auto 1fr}.ai-v2 .ai-action div{grid-column:2;justify-content:flex-start}}';document.head.appendChild(css);
  let plan=[],pageCount=0,fieldInfo=[],detected=[],anchors=[],localBytes=null,previewUrl=null,previewBytes=null,inspectId=0;
  const message=(msg,bad=false)=>{$("aiMessage").textContent=msg;$("aiMessage").className="ai-status"+(bad?" error":"");};
- function clearPreview(){previewBytes=null;$("aiDownload").disabled=true;$("aiPreview").hidden=true;if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}}
- function reset(){plan=[];$("aiPlan").hidden=true;$("aiApprove").checked=false;clearPreview();message(t.none);}
+ function clearPreview(){previewBytes=null;$("emptyPreview").hidden=false;$("aiDownload").disabled=true;$("aiPreview").hidden=true;if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}}
+ function reset(){toggleSignature(manual.open);plan=[];$("aiPlan").hidden=true;$("aiApprove").checked=false;clearPreview();message(t.none);}
  async function inspectPDF(){
   reset();localBytes=null;fieldInfo=[];detected=[];anchors=[];pageCount=0;
   const f=$("file").files?.[0];const id=++inspectId;if(!f)return;
@@ -65,6 +79,7 @@
  }
  function renderPlan(){
   $("aiActions").replaceChildren();$("aiPlan").hidden=!plan.length;$("aiApprove").checked=false;clearPreview();
+  toggleSignature(manual.open||plan.some(a=>a.type==="add_signature"));
   plan.forEach((a,i)=>{
    const wrapper=document.createElement("label");wrapper.className="ai-action";
    const check=document.createElement("input");check.type="checkbox";check.checked=true;check.addEventListener("change",invalidateApproval);
@@ -200,7 +215,7 @@
    watermark(pdf,font);
    previewBytes=new Uint8Array(await pdf.save());
    previewUrl=URL.createObjectURL(new Blob([previewBytes],{type:"application/pdf"}));
-   $("aiPreview").src=previewUrl;$("aiPreview").hidden=false;$("aiDownload").disabled=false;
+   $("aiPreview").src=previewUrl;$("aiPreview").hidden=false;$("emptyPreview").hidden=true;$("aiDownload").disabled=false;
    message(t.previewReady);
   }catch(e){message((e&&e.message)||t.failed,true);}
   finally{$("aiApply").disabled=false;}
