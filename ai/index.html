@@ -85,7 +85,7 @@ footer{text-align:center;font-size:12px;color:var(--sub);margin-top:20px}
 <div class="smallrow"><label for="pagePicker" id="pageLabel">Page :</label><select id="pagePicker" disabled></select><span id="positionLabel" class="note">Aucun emplacement choisi</span></div>
 <div id="signatureControls" hidden>
 <label class="field" style="margin-top:12px"><span id="drawLabel">Dessinez votre signature</span><canvas id="signature" width="600" height="220"></canvas></label>
-<div class="btn-row"><button type="button" class="secondary" id="clearSignature">Effacer la signature</button></div></div>
+<p id="signatureRequired" class="hint" role="status">Dessinez d’abord votre signature dans le cadre ci-dessus. La date et la position peuvent être préparées sans elle, mais l’aperçu final nécessite une signature.</p><div class="btn-row"><button type="button" class="secondary" id="clearSignature">Effacer la signature</button></div></div>
 <div id="positionStatus" class="status">La signature sera placée uniquement à l'emplacement que vous choisissez.</div></div>
 <div class="stage"><h3><em>5</em><span id="s5">Voir le PDF modifié</span></h3>
 <button id="previewButton" type="button" class="primary" disabled>Générer l'aperçu</button><p class="note" id="previewHelp">Aucune approbation n'est requise pour prévisualiser.</p></div>
@@ -105,5 +105,5 @@ footer{text-align:center;font-size:12px;color:var(--sub);margin-top:20px}
 </div><footer>JustPDFit · <a href="../privacy/">Privacy</a> · KL-MEHANNA</footer>
 </div>
 <script defer src="./local-ocr.js?v=20261113-smart-place1"></script>
-<script defer src="./guided-flow.js?v=20261113-smart-place2"></script>
+<script defer src="./guided-flow.js?v=20261113-relative-date"></script>
 </body></html>

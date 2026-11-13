@@ -10,7 +10,7 @@ const labels={fr:["Fichier","Analyse","Instructions","Emplacement","Aperçu","Va
 document.documentElement.lang=lang;if(lang==="ar")document.documentElement.dir="rtl";
 [...document.querySelectorAll(".step")].forEach((e,i)=>e.lastElementChild.textContent=(labels[lang]||labels.fr)[i]);
 let bytes=null,source=null,pdfDoc=null,pages=0,fields=[],anchors=[],selectedPage=1,viewport=null,
- activeStep=1,plan=[],point=null,datePoint=null,signatureWidth=155,placementMode="signature",previewUrl=null,previewBytes=null,previewDoc=null,hasInk=false,renderSerial=0;
+ activeStep=1,plan=[],point=null,datePoint=null,dateFollowsSignature=false,signatureWidth=155,placementMode="signature",previewUrl=null,previewBytes=null,previewDoc=null,hasInk=false,renderSerial=0;
 const API="https://justpdfit-ai-planner.zmehanna.workers.dev/interpret";
 const signature=$("signature"),ink=signature.getContext("2d");ink.lineWidth=3.5;ink.lineCap="round";ink.lineJoin="round";ink.strokeStyle="#1c3055";let drawing=false;
 function status(id,msg,error=false){$(id).textContent=msg;$(id).className="status"+(error?" error":"");}
@@ -65,7 +65,7 @@ function step(n){
  // A new step folds earlier ones; the user can always reopen any completed step.
  overrides.clear();updateStageDisplay();
 }
-function planChange(){point=null;datePoint=null;invalidate();$("positionLabel").textContent=t.noPosition;drawMark();}
+function planChange(){point=null;datePoint=null;dateFollowsSignature=false;invalidate();$("positionLabel").textContent=t.noPosition;drawMark();}
 function invalidate(){previewDoc=null;if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}previewBytes=null;$("approve").checked=false;$("approve").disabled=true;$("download").disabled=true;$("pdfPreview").style.display="none";$("paper").hidden=!source;$("empty").hidden=!!source;$("previewMode").textContent=t.original;$("backToSource").hidden=true;drawMark();}
 function drawMark(){
  const canvas=$("pageCanvas"),rect=canvas.getBoundingClientRect();
@@ -101,7 +101,7 @@ function updateSignatureAspect(){
 function canPlan(){const ok=!!bytes&&$("request").value.trim().length>2;$("planButton").disabled=!ok;$("localButton").disabled=!ok;}
 $("request").addEventListener("input",()=>{canPlan();if(plan.length){plan=[];point=null;$("plans")?.remove();invalidate();status("planStatus",t.changed);step(3);}});
 $("file").addEventListener("change",async()=>{
- const f=$("file").files?.[0];renderSerial++;bytes=null;source=null;pdfDoc=null;fields=[];anchors=[];plan=[];point=null;datePoint=null;signatureWidth=155;pages=0;
+ const f=$("file").files?.[0];renderSerial++;bytes=null;source=null;pdfDoc=null;fields=[];anchors=[];plan=[];point=null;datePoint=null;dateFollowsSignature=false;signatureWidth=155;pages=0;
  $("pagePicker").replaceChildren();$("pagePicker").disabled=true;$("prevPage").disabled=true;$("nextPage").disabled=true;$("plans")?.remove();$("fieldCandidates").textContent="";
  $("analysis").textContent=t.analyzing;step(2);invalidate();canPlan();
  if(!f){status("analysis",t.file);step(1);return;}
@@ -166,11 +166,12 @@ signature.addEventListener("pointerdown",e=>{e.preventDefault();drawing=true;has
 signature.addEventListener("pointermove",e=>{if(!drawing)return;e.preventDefault();const p=inkPos(e);ink.lineTo(p.x,p.y);ink.stroke();});
 function updateSignatureGhost(){
  const data=croppedSignature(),ghost=$("signatureGhost");
+ $("signatureRequired").hidden=!!data;
  ghost.hidden=!data;
  if(data)ghost.src=data;else ghost.removeAttribute("src");
  $("signaturePlaceholder").hidden=!!data;
 }
-["pointerup","pointercancel"].forEach(n=>signature.addEventListener(n,()=>{drawing=false;updateSignatureAspect();updateSignatureGhost();drawMark();}));
+["pointerup","pointercancel"].forEach(n=>signature.addEventListener(n,()=>{drawing=false;updateSignatureAspect();if(dateFollowsSignature)datePoint=proposedDateBelowSignature();updateSignatureGhost();drawMark();}));
 $("clearSignature").addEventListener("click",()=>{ink.clearRect(0,0,signature.width,signature.height);hasInk=false;signatureInkAspect=.34;updateSignatureGhost();invalidate();});
 const centerFromPointer=e=>{
  const canvas=$("pageCanvas"),rect=canvas.getBoundingClientRect();
@@ -180,17 +181,32 @@ const centerFromPointer=e=>{
  const pg=source.getPage(selectedPage-1);
  return {page:selectedPage,x:Math.max(8,Math.min(pg.getWidth()-8,px)),y:Math.max(8,Math.min(pg.getHeight()-8,py))};
 };
+function wantsDateUnderSignature(){
+ const q=$("request").value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+ return /(?:juste\s+)?(?:en\s+)?dessous\s+de\s+(?:la\s+)?signature|sous\s+(?:la\s+)?signature|under\s+(?:the\s+)?signature|below\s+(?:the\s+)?signature|signature.{0,90}(?:date.{0,30}(?:dessous|sous|under|below))/.test(q);
+}
+function proposedDateBelowSignature(){
+ if(!point)return null;
+ const pg=source?.getPage(point.page-1);
+ if(!pg)return null;
+ const width=effectiveSignatureWidth(),height=signatureHeight();
+ // Point is the visual center of the handwritten signature.
+ const centerX=point.x;
+ const y=point.y-height/2-23; // 23pt gap provides separation from the signature.
+ return {page:point.page,x:Math.max(53,Math.min(pg.getWidth()-53,centerX)),y:Math.max(17,Math.min(pg.getHeight()-17,y))};
+}
 function positionItem(mode,position){
  if(!position||previewDoc)return;
  if(mode==="date"){
   const action=plan.find(a=>a.type==="add_date"&&a.enabled);
   if(!action)return;
-  datePoint=position;action.page=selectedPage;
+  datePoint=position;dateFollowsSignature=false;action.page=selectedPage;
   status("positionStatus",lang==="fr"?"Date placée sur la page "+selectedPage+" — déplacez-la si nécessaire.":"Date positioned on page "+selectedPage);
  }else{
   const action=plan.find(a=>a.type==="add_signature"&&a.enabled);
   if(!action)return;
   point=position;action.page=selectedPage;
+  if(dateFollowsSignature){const d=plan.find(a=>a.type==="add_date"&&a.enabled);if(d){d.page=point.page;datePoint=proposedDateBelowSignature();}}
   $("positionLabel").textContent=t.position+selectedPage;
   status("positionStatus",t.position+selectedPage);
  }
@@ -224,6 +240,7 @@ for(const [id,mode] of [["placementMark","signature"],["dateMark","date"]]){
   if(drag.resize){
    const ratio=$("pageCanvas").getBoundingClientRect().width/$("pageCanvas").width;
    signatureWidth=Math.max(45,Math.min(240,drag.initialWidth+(e.clientX-drag.startX)/(Math.max(.01,viewport.scale*ratio))));
+   if(dateFollowsSignature)datePoint=proposedDateBelowSignature();
    invalidate();drawMark();
   }else{
    positionItem(mode,centerFromPointer(e));
@@ -274,7 +291,7 @@ async function detectRequestedSignature(){
 }
 function setPlan(items,sourceMode){
  plan=items.slice(0,8).filter(a=>a&&["add_signature","add_date","delete_page","add_text","fill_field"].includes(a.type)&&Number.isInteger(Number(a.page))&&a.page>=1&&a.page<=pages).map(a=>({...a,enabled:true,page:Number(a.page)}));
- point=null;datePoint=null;signatureWidth=155;invalidate();$("plans")?.remove();if(!plan.length){status("planStatus",t.unrecognized,true);return;}
+ point=null;datePoint=null;dateFollowsSignature=false;signatureWidth=155;invalidate();$("plans")?.remove();if(!plan.length){status("planStatus",t.unrecognized,true);return;}
  const holder=document.createElement("div");holder.id="plans";holder.className="status";
  const heading=document.createElement("strong");heading.textContent=t.select;holder.append(heading);
  for(const item of plan){
@@ -286,6 +303,7 @@ function setPlan(items,sourceMode){
  $("planStatus").after(holder);
  const sig=plan.find(a=>a.type==="add_signature");
  $("signatureControls").hidden=!sig;
+ $("signatureRequired").hidden=!sig||!!croppedSignature();
  if(sig){const requested=$("request").value.toLowerCase(),hint=anchors.find(a=>a.page===sig.page&&(/assur[ée]|insured/i.test(requested)?/signature.*assur[ée]|assur[ée].*signature|assur[ée]|insured/i.test(a.label):/signature|sign/i.test(a.label)));
   selectedPage=sig.page;$("pagePicker").value=String(sig.page);
   if(hint&&(!hint.source||hint.confidence>=0.85)){
@@ -302,7 +320,13 @@ function setPlan(items,sourceMode){
   const named=dates.find(a=>/date|fait en|exemplaire|تاريخ/i.test(a.label));
   const dateAnchor=named||dates[0];
   const pg=source.getPage(dateAction.page-1);
-  if(dateAnchor&&(!dateAnchor.source||dateAnchor.confidence>=.82)){
+  // Relative instructions win over unrelated date labels elsewhere on the page.
+  if(sig&&point&&wantsDateUnderSignature()){
+   dateFollowsSignature=true;
+   dateAction.page=sig.page;
+   datePoint=proposedDateBelowSignature();
+   status("positionStatus",lang==="fr"?"Date proposée juste sous la signature, selon votre instruction. Vous pouvez déplacer les deux éléments.":"Date proposed just beneath the signature as requested. You can adjust both.");
+  }else if(dateAnchor&&(!dateAnchor.source||dateAnchor.confidence>=.82)){
    datePoint={page:dateAction.page,x:Math.max(25,Math.min(pg.getWidth()-55,dateAnchor.x+70)),y:Math.max(20,Math.min(pg.getHeight()-20,dateAnchor.y-2))};
    status("positionStatus",lang==="fr"?"Date proposée près du repère « "+dateAnchor.label+" ». Vérifiez et ajustez les deux éléments dans l’aperçu.":"Date proposed near “"+dateAnchor.label+"”. Review both placements.");
   }else if(point&&point.page===dateAction.page){
