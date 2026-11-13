@@ -75,8 +75,11 @@ Do not infer signature location from document text unless user specifically asks
   const prompt=JSON.stringify({instruction,pageCount,documentExcerpt:body.shareDocument===true?extracted:"",fields:body.shareDocument===true?fields:[]});
   try {
    if(!env.AI)return json({error:"ai_binding_missing"},503);
-   const result=await env.AI.run(MODEL,{messages:[{role:"system",content:instructions},{role:"user",content:prompt}],temperature:0,max_tokens:650});
+   const result=await env.AI.run(MODEL,{messages:[{role:"system",content:instructions},{role:"user",content:prompt}],temperature:0,max_tokens:700,response_format:{type:"json_schema",json_schema:{type:"object",properties:{actions:{type:"array",items:{type:"object",properties:{type:{type:"string"},page:{type:"integer"},position:{type:"string"},text:{type:"string"}},required:["type","page","position","text"]}},explanation:{type:"string"},uncertainty:{type:"string"}},required:["actions","explanation","uncertainty"]}}});
    let content=result?.response||result?.result?.response||"";
+   if(content&&typeof content==="object"){
+    return json({actions:normalize(content,pageCount),explanation:tidy(content.explanation,400),uncertainty:tidy(content.uncertainty,300),engine:"workers-ai",processedDocumentText:body.shareDocument===true});
+   }
    if(typeof content!=="string")return json({error:"model_invalid_response"},502);
    content=content.trim().replace(/^\`\`\`(?:json)?\s*/i,"").replace(/\`\`\`$/,"").trim();
    const start=content.indexOf("{"),end=content.lastIndexOf("}");
