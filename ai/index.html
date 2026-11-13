@@ -29,8 +29,10 @@ button.primary{background:linear-gradient(90deg,#ed465e,#fa6576);color:white}but
 #signature{width:100%;height:112px;border:2px dashed #d2ddea;border-radius:11px;background:#fff;touch-action:none}
 #pagePicker{max-width:135px}#fieldCandidates{font-size:12px;color:var(--sub)}.smallrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .preview{position:sticky;top:12px}.viewer{min-height:440px;background:#f0f2f8;border:1px solid #e0e6ed;border-radius:13px;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:10px}
-#paper{position:relative;line-height:0;display:inline-block;max-width:100%}#pageCanvas{display:block;max-width:100%;height:auto;cursor:crosshair;box-shadow:0 2px 8px #35456625;background:white;touch-action:manipulation}
-#placementMark{position:absolute;display:none;border:2px dashed #ec435e;background:#ee49611a;pointer-events:none;border-radius:5px;line-height:1.3;color:#be2f49;font:750 11px system-ui;padding:4px;min-width:75px}
+/* [hidden] must always win over display rules; otherwise placeholder and PDF overlap. */
+[hidden]{display:none!important}
+#paper{position:relative;line-height:0;display:inline-block;max-width:100%;flex:0 0 auto}#pageCanvas{display:block;max-width:100%;height:auto;cursor:crosshair;box-shadow:0 2px 8px #35456625;background:white;touch-action:manipulation}
+#placementMark{position:absolute;display:none;border:2px dashed #ec435e;background:#ee49611a;pointer-events:none;border-radius:5px;line-height:1.3;color:#be2f49;font:750 11px system-ui;padding:4px;min-width:75px;box-sizing:border-box;max-width:100%;z-index:2}
 #pdfPreview{display:none;width:100%;height:560px;border:0;background:#fff}.empty{display:grid;place-items:center;text-align:center;min-height:380px;color:#8290a6;padding:20px}
 #download{margin-top:10px}.viewer-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.viewer-controls small{color:var(--sub)}
 #analysis{white-space:pre-wrap}.approval{margin-top:15px;padding-top:12px;border-top:1px solid var(--edge)}
