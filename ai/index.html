@@ -4,6 +4,9 @@
 <title>JustPDFit AI | Assistant PDF</title>
 <meta name="robots" content="noindex">
 <link rel="icon" href="../justpdfit-icon.svg">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../site-shell.css">
+<script defer src="../site-shell.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
@@ -11,11 +14,30 @@
 :root{--ink:#213454;--sub:#63728b;--pink:#ef4c65;--edge:#e2e7f0;--bg:#f5f7fc}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
 a{color:#cd3654}.container{max-width:1200px;margin:auto;padding:20px 18px 60px}
-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}header a{text-decoration:none;color:var(--ink);font-size:21px;font-weight:850;display:flex;align-items:center;gap:10px}
-header img{width:42px;height:42px}header span{color:#dc3f5b}
+/* Shared homepage header/footer take precedence over the local editor styles. */
+header.topbar{display:block;margin:0}
+header.topbar .brand{display:flex;align-items:center}
+header.topbar .brand-icon{width:46px;height:46px}
+header.topbar .brand-wordmark{display:inline-flex;align-items:center;gap:2px}
+header.topbar .brand-wordmark .brand-pdf{color:#ed465c}
+header.topbar .topbar-actions{display:flex;gap:12px;align-items:center}
+header.topbar .language-label{font-size:12px;color:#73809a}
+header.topbar #language{width:auto;padding:8px 10px}
+.ai-workspace{padding-top:22px}
+.ai-workspace h1{color:var(--ink);font-size:clamp(26px,3vw,38px);line-height:1.17;margin:8px 0}
+.ai-workspace h1::first-line{color:var(--ink)}
+.ai-workspace .lead{color:var(--sub);font-size:13px;line-height:1.6;max-width:none;margin:0 0 16px}
 h1{font-size:clamp(24px,3.2vw,38px);letter-spacing:-.8px;margin:8px 0 5px}
 .lead{color:var(--sub);margin:0 0 18px}
-.steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}.step{flex:1;min-width:115px;display:flex;align-items:center;gap:7px;border:1px solid var(--edge);border-radius:11px;background:#fff;padding:9px 11px;font-size:11px;font-weight:700;color:#7a8496}.step b{background:#ebeff6;border-radius:50%;width:23px;height:23px;display:grid;place-items:center;flex-shrink:0}.step.active{color:#c53550;border-color:#f9c4cf;background:#fff6f8}.step.done{color:#286847;border-color:#c4ead5;background:#f3fbf5}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}.step{flex:1;min-width:115px;display:flex;align-items:center;gap:7px;border:1px solid var(--edge);border-radius:11px;background:#fff;padding:9px 11px;font-size:11px;font-weight:700;color:#7a8496}.step b{background:#ebeff6;border-radius:50%;width:23px;height:23px;display:grid;place-items:center;flex-shrink:0}.step.active{color:#fff;background:linear-gradient(105deg,#e8425d,#fa6379);border-color:#e8425d;box-shadow:0 5px 14px #e8425d33;transform:translateY(-1px);font-size:12px;font-weight:850;outline:2px solid #f7bfd0;outline-offset:2px}
+.step.active b{background:#fff;color:#cb3151;box-shadow:0 1px 3px #0002}
+.step.active::after{content:"•";font-size:17px;line-height:1;margin-left:auto;color:white}
+.step.done{color:#286847;border-color:#bce6c9;background:#edf9f1}
+.step.done b{background:#ccebd7;color:#217446}
+.step{transition:background .16s,color .16s,box-shadow .16s}
+.step:not(.active):not(.done){color:#8b96a9;background:#f9fafc;border-color:#edf0f5}
+.step:not(.active):not(.done) b{color:#9ca5b8;background:#edf0f6}
+.step[aria-current=step]{outline:2px solid #f7bfd0;outline-offset:2px}
 .layout{display:grid;grid-template-columns:minmax(345px,.87fr) minmax(0,1.13fr);gap:18px;align-items:start}
 .card{background:#fff;border:1px solid var(--edge);border-radius:19px;padding:22px;box-shadow:0 10px 30px #3344660a;min-width:0}
 .card h2{font-size:17px;margin:0 0 13px}.stage{padding-bottom:15px;margin-bottom:16px;border-bottom:1px solid #edf0f5}.stage:last-child{padding-bottom:0;margin-bottom:0;border-bottom:0}.stage h3{font-size:14px;margin:0 0 9px}.stage h3 em{font-style:normal;display:inline-grid;place-items:center;margin-right:7px;width:23px;height:23px;background:#ffe9ee;color:#cc3653;border-radius:50%;font-size:11px}
@@ -53,11 +75,32 @@ button.primary{background:linear-gradient(90deg,#ed465e,#fa6576);color:white}but
 .stage-edit:hover{background:#fff0f4}
 .stage.is-complete:not(.is-collapsed)>.stage-summary{display:none}
 .stage:focus-within{scroll-margin-top:12px}
-footer{text-align:center;font-size:12px;color:var(--sub);margin-top:20px}
+#nextAction{display:flex;align-items:center;gap:9px;border-radius:12px;background:#fff4f6;border:1px solid #fad2da;padding:10px 14px;margin:0 0 14px;color:#9d2946;font-weight:750;font-size:12px}
+#nextAction::before{content:"➜";font-size:17px;flex:none}
+footer.jpi-site-footer{margin-top:36px}
+footer.jpi-site-footer a{text-decoration:none}
+footer.jpi-site-footer .container{padding-top:0;padding-bottom:0}
+@media(max-width:650px){.step{min-width:100px}.step.active{font-size:11px}.topbar .free-chip{display:none}header.topbar .brand-wordmark{font-size:18px}}
 @media(max-width:850px){.layout{grid-template-columns:1fr}.preview{position:static}.viewer{min-height:320px}#pdfPreview{height:480px}.card{padding:16px}.steps{gap:4px}.step{min-width:98px;font-size:10px;padding:7px}}
 </style></head>
-<body><div class="container">
-<header><a href="../"><img src="../justpdfit-icon.svg" alt="">JustPDFit <span>AI</span></a><small style="color:#8c5a6a">PDF privé · Validation humaine</small></header>
+<body>
+<a class="skip" href="#mainContent">Aller à l'assistant PDF</a>
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a class="brand" href="../" aria-label="JustPDFit — Accueil">
+      <img class="brand-icon" src="../justpdfit-icon.svg" width="46" height="46" alt="" aria-hidden="true">
+      <span class="brand-wordmark"><span class="brand-word">Just</span><span class="brand-pdf"><strong>PDF</strong></span><span class="brand-word">it!</span></span>
+    </a>
+    <div class="topbar-actions">
+      <span class="free-chip">Édition gratuite · Sans compte</span>
+      <label for="language" class="language-label">Langue</label>
+      <select id="language" aria-label="Langue / Language">
+        <option value="fr">🇫🇷 FR</option><option value="en">🇬🇧 EN</option><option value="ar">🇱🇧 AR</option>
+      </select>
+    </div>
+  </div>
+</header>
+<main id="mainContent" class="container ai-workspace">
 <h1 id="heading">Votre assistant PDF intelligent</h1>
 <p id="intro" class="lead">Chargez le fichier, décrivez votre demande, vérifiez la position, prévisualisez, validez et téléchargez.</p>
 <div class="steps" id="steps" aria-label="Étapes du document">
@@ -65,6 +108,7 @@ footer{text-align:center;font-size:12px;color:var(--sub);margin-top:20px}
 <div class="step" data-step="3"><b>3</b><span>Instructions</span></div><div class="step" data-step="4"><b>4</b><span>Emplacement</span></div>
 <div class="step" data-step="5"><b>5</b><span>Aperçu</span></div><div class="step" data-step="6"><b>6</b><span>Valider & télécharger</span></div>
 </div>
+<div id="nextAction" role="status" aria-live="polite">Étape 1 sur 6 · Choisissez un PDF pour commencer.</div>
 <div class="layout">
 <section class="card" aria-label="Assistant PDF">
 <div class="stage"><h3><em>1</em><span id="s1">Choisir le PDF</span></h3>
@@ -102,8 +146,9 @@ footer{text-align:center;font-size:12px;color:var(--sub);margin-top:20px}
 <div id="paper" hidden><canvas id="pageCanvas"></canvas><div id="placementMark"><span id="signaturePlaceholder">Signature</span><img id="signatureGhost" hidden alt="" draggable="false"><span class="resize-handle" aria-label="Redimensionner la signature" title="Redimensionner"></span></div><div id="dateMark">Date</div></div>
 <iframe title="Prévisualisation du PDF modifié" id="pdfPreview"></iframe></div>
 <p id="previewNote" class="note">Cliquez directement sur la page pour positionner la signature. Vérifiez ensuite le résultat généré.</p></section>
-</div><footer>JustPDFit · <a href="../privacy/">Privacy</a> · KL-MEHANNA</footer>
 </div>
+</main>
+<footer class="jpi-site-footer" aria-label="Pied de page JustPDFit"></footer>
 <script defer src="./local-ocr.js?v=20261113-smart-place1"></script>
 <script defer src="./guided-flow.js?v=20261113-relative-date"></script>
 </body></html>
