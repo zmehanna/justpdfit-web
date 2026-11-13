@@ -88,8 +88,8 @@ function drawMark(){
  $("moveDate").hidden=!plan.some(a=>a.type==="add_date"&&a.enabled);
  $("editHint").hidden=$("moveSignature").hidden&&$("moveDate").hidden;
 }
-function effectiveSignatureWidth(){return Math.min(signatureWidth,80/Math.max(.1,signatureInkAspect||.34));}
-function signatureHeight(){return Math.min(80,effectiveSignatureWidth()*(signatureInkAspect||.34));}
+function effectiveSignatureWidth(){return Math.min(signatureWidth,200/Math.max(.1,signatureInkAspect||.34));}
+function signatureHeight(){return Math.min(200,effectiveSignatureWidth()*(signatureInkAspect||.34));}
 let signatureInkAspect=.34;
 function updateSignatureAspect(){
  const d=ink.getImageData(0,0,signature.width,signature.height).data;
@@ -385,7 +385,7 @@ $("previewButton").addEventListener("click",async()=>{
    if(a.type==="add_signature"){
     const img=await pdf.embedPng(signaturePng);
     const aspect=img.height/img.width;
-    const width=Math.min(effectiveSignatureWidth(),p.getWidth()*.8,80/Math.max(.1,aspect));
+    const width=Math.min(effectiveSignatureWidth(),p.getWidth()*.8,200/Math.max(.1,aspect));
     const height=width*aspect;
     const x=Math.max(10,Math.min(p.getWidth()-width-10,point.x-width/2));
     const y=Math.max(10,Math.min(p.getHeight()-height-10,point.y-height/2));
