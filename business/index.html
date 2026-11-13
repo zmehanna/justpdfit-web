@@ -66,6 +66,7 @@ footer a{text-decoration:underline} [dir=rtl] .plan,[dir=rtl] .feature{text-alig
 </div></div></section>
 </main>
 <footer><div class="container">© 2026 KL-MEHANNA LLC · JustPDFit</div></footer>
+<script src="./i18n-extra.js"></script><script src="./i18n-extra-2.js"></script>
 <script>
 (()=>{'use strict';
 const names={en:'English',fr:'Français',ar:'العربية',es:'Español',de:'Deutsch',it:'Italiano',pt:'Português',nl:'Nederlands',ru:'Русский',pl:'Polski',tr:'Türkçe',zh:'中文',ja:'日本語',ko:'한국어',hi:'हिन्दी',ur:'اردو',fa:'فارسی',id:'Bahasa Indonesia',vi:'Tiếng Việt',th:'ไทย',ms:'Bahasa Melayu',fil:'Filipino',sv:'Svenska',el:'Ελληνικά',ro:'Română',bn:'বাংলা',sw:'Kiswahili'};
@@ -83,7 +84,7 @@ const $=id=>document.getElementById(id),sel=$('language');Object.entries(names).
 let pref='';try{pref=localStorage.getItem('justpdfit-language')||localStorage.getItem('justpdfit_lang')||''}catch(e){}
 let lang=names[pref]?pref:(names[(navigator.language||'en').split('-')[0]]?(navigator.language||'en').split('-')[0]:'en');
 let annual=false;
-function t(i){return(local[lang]||local.en)[i]||local.en[i]}
+function t(i){const row=local[lang]||window.JustPDFitBusinessExtra?.[lang]||local.en;return row[i]||local.en[i]}
 function money(n){return new Intl.NumberFormat(lang,{style:'currency',currency:'EUR',maximumFractionDigits:2}).format(n)}
 function render(){
 document.documentElement.lang=lang;document.documentElement.dir=['ar','fa','ur'].includes(lang)?'rtl':'ltr';sel.value=lang;
