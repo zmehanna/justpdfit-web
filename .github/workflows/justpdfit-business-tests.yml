@@ -1,0 +1,29 @@
+name: JustPDFit Business Security Checks
+on:
+  push:
+    paths:
+      - 'business/**'
+      - 'business-api/**'
+      - '.github/workflows/justpdfit-business-tests.yml'
+  pull_request:
+    paths:
+      - 'business/**'
+      - 'business-api/**'
+      - '.github/workflows/justpdfit-business-tests.yml'
+permissions:
+  contents: read
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check API syntax and deterministic business assertions
+        run: |
+          node --check business-api/worker.js
+          node --test business-api/*.test.mjs
+      - name: Check browser script syntax and pricing localization
+        run: |
+          node --test business/*.test.mjs
