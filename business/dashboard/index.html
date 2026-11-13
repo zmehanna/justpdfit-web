@@ -15,7 +15,7 @@
 </form>
 <button type="button" class="secondary" id="billingPortal" data-label="manageBilling" hidden>Manage payment methods</button>
 <div class="form" style="margin-top:15px"><label><span data-label="invoiceHeading">Invoices</span><button type="button" class="secondary" id="refreshInvoices" data-label="refresh">Refresh</button></label></div><div id="invoices" class="muted"></div></div><div class="card"><h2 data-label="activityHeading">Activity</h2><p data-label="usageHint">Document and AI credit counters will appear after premium entitlement integration.</p><div id="activity" class="muted"></div></div>
-</div></div></main><footer><div class="container">© 2026 KL-MEHANNA LLC — JustPDFit</div></footer><script src="../business-api-config.js"></script><script>
+</div></div></main><footer><div class="container">© 2026 KL-MEHANNA LLC — JustPDFit</div></footer><script src="../business-api-config.js"></script><script src="./i18n-extra.js"></script><script>
 (()=>{"use strict";
 const languages={en:"English",fr:"Français",ar:"العربية",es:"Español",de:"Deutsch",it:"Italiano",pt:"Português",nl:"Nederlands",ru:"Русский",pl:"Polski",tr:"Türkçe",zh:"中文",ja:"日本語",ko:"한국어",hi:"हिन्दी",ur:"اردو",fa:"فارسی",id:"Bahasa Indonesia",vi:"Tiếng Việt",th:"ไทย",ms:"Bahasa Melayu",fil:"Filipino",sv:"Svenska",el:"Ελληνικά",ro:"Română",bn:"বাংলা",sw:"Kiswahili"};
 const translations={
@@ -27,7 +27,7 @@ const $=id=>document.getElementById(id),api=window.JustPDFitBusinessAPI?.endpoin
 Object.entries(languages).forEach(([code,name])=>{const option=document.createElement("option");option.value=code;option.textContent=name;language.append(option)});
 let lang="en";try{const saved=localStorage.getItem("justpdfit-language");lang=languages[saved]?saved:(languages[navigator.language.split("-")[0]]?navigator.language.split("-")[0]:"en")}catch(e){}
 let orgs=[],selected="",role="",user=null;let sessionToken=sessionStorage.getItem("jpi_business_access")||"";
-function t(key){return(translations[lang]||translations.en)[key]||translations.en[key]||key}
+function t(key){return(translations[lang]||window.JPIBusinessDashboardExtra?.[lang]||translations.en)[key]||translations.en[key]||key}
 function localize(){document.documentElement.lang=lang;document.documentElement.dir=["ar","fa","ur"].includes(lang)?"rtl":"ltr";language.value=lang;$("title").textContent=t("title");$("intro").textContent=t("intro");for(const el of document.querySelectorAll("[data-label]"))el.textContent=t(el.dataset.label);if(!api)$("setup").textContent=t("setup")}
 function status(message,error=false){$("status").textContent=message;$("status").className=error?"error":"success"}
 async function request(path,options={}){const headers={"Content-Type":"application/json",...(sessionToken?{"Authorization":"Bearer "+sessionToken}:{}),...(options.headers||{})};const response=await fetch(api+path,{credentials:"omit",...options,headers});const json=await response.json().catch(()=>({}));if(!response.ok)throw Error(json.error||t("error"));return json}
