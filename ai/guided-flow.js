@@ -10,15 +10,15 @@ const labels={fr:["Fichier","Analyse","Instructions","Emplacement","Aperçu","Va
 document.documentElement.lang=lang;if(lang==="ar")document.documentElement.dir="rtl";
 [...document.querySelectorAll(".step")].forEach((e,i)=>e.lastElementChild.textContent=(labels[lang]||labels.fr)[i]);
 let bytes=null,source=null,pdfDoc=null,pages=0,fields=[],anchors=[],selectedPage=1,viewport=null,
- activeStep=1,plan=[],point=null,previewUrl=null,previewBytes=null,hasInk=false,renderSerial=0;
+ activeStep=1,plan=[],point=null,previewUrl=null,previewBytes=null,previewDoc=null,hasInk=false,renderSerial=0;
 const API="https://justpdfit-ai-planner.zmehanna.workers.dev/interpret";
 const signature=$("signature"),ink=signature.getContext("2d");ink.lineWidth=3.5;ink.lineCap="round";ink.lineJoin="round";ink.strokeStyle="#1c3055";let drawing=false;
 function status(id,msg,error=false){$(id).textContent=msg;$(id).className="status"+(error?" error":"");}
 function step(n){activeStep=n;document.querySelectorAll(".step").forEach(e=>{const num=Number(e.dataset.step);e.classList.toggle("done",num<n);e.classList.toggle("active",num===n);});}
 function planChange(){point=null;invalidate();$("positionLabel").textContent=t.noPosition;drawMark();}
-function invalidate(){if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}previewBytes=null;$("approve").checked=false;$("approve").disabled=true;$("download").disabled=true;$("pdfPreview").style.display="none";$("paper").hidden=!source;$("empty").hidden=!!source;$("previewMode").textContent=t.original;$("backToSource").hidden=true;drawMark();}
+function invalidate(){previewDoc=null;if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}previewBytes=null;$("approve").checked=false;$("approve").disabled=true;$("download").disabled=true;$("pdfPreview").style.display="none";$("paper").hidden=!source;$("empty").hidden=!!source;$("previewMode").textContent=t.original;$("backToSource").hidden=true;drawMark();}
 function drawMark(){
- const mark=$("placementMark");if(!point||!viewport||selectedPage!==point.page){mark.style.display="none";return;}
+ const mark=$("placementMark");if(!point||!viewport||selectedPage!==point.page||previewDoc){mark.style.display="none";return;}
  const [x,y]=viewport.convertToViewportPoint(point.x,point.y);
  const rect=$("pageCanvas").getBoundingClientRect();
  if(!rect.width||!rect.height){mark.style.display="none";return;}
@@ -64,11 +64,26 @@ $("file").addEventListener("change",async()=>{
   canPlan();step(3);await showSource(1);
  }catch(e){bytes=null;source=null;pdfDoc=null;status("analysis",t.failed,true);step(1);}
 });
+async function showModified(pageNum){
+ if(!previewDoc)return;
+ const id=++renderSerial,all=previewDoc.numPages;
+ selectedPage=Math.min(Math.max(1,pageNum),all);
+ $("currentPage").textContent=t.page+" "+selectedPage+" / "+all;
+ $("prevPage").disabled=selectedPage<=1;$("nextPage").disabled=selectedPage>=all;
+ $("empty").hidden=true;$("paper").hidden=false;$("pdfPreview").style.display="none";
+ $("previewMode").textContent=t.modified;$("placementMark").style.display="none";$("previewNote").textContent=lang==="fr"?"PDF modifié : vérifiez la signature et chaque page avant de valider.":lang==="ar"?"راجع الملف المعدّل والتوقيع قبل الموافقة.":"Modified PDF: review the signature and all pages before approving.";
+ const page=await previewDoc.getPage(selectedPage);
+ const bounds=page.view,width=Math.max(240,Math.min(610,$("viewer").clientWidth-28));
+ const v=page.getViewport({scale:Math.min(1.6,width/Math.max(1,bounds[2]-bounds[0]))});
+ const canvas=$("pageCanvas");canvas.width=Math.ceil(v.width);canvas.height=Math.ceil(v.height);
+ await page.render({canvasContext:canvas.getContext("2d"),viewport:v}).promise;
+ if(id!==renderSerial)return;viewport=v;
+}
 async function showSource(pageNum){
  if(!pdfDoc)return;const id=++renderSerial;selectedPage=pageNum;
  $("pagePicker").value=String(pageNum);$("currentPage").textContent=t.page+" "+pageNum+" / "+pages;
  $("prevPage").disabled=pageNum<=1;$("nextPage").disabled=pageNum>=pages;
- $("empty").hidden=true;$("paper").hidden=false;$("pdfPreview").style.display="none";$("previewMode").textContent=t.original;
+ $("empty").hidden=true;$("paper").hidden=false;$("pdfPreview").style.display="none";$("previewMode").textContent=t.original;$("previewNote").textContent=lang==="fr"?"Cliquez sur la page pour ajuster l’emplacement, puis générez le nouvel aperçu.":lang==="ar"?"اضغط على الصفحة لتعديل الموضع ثم أنشئ معاينة جديدة.":"Click on the document to adjust the position, then generate a new preview.";
  const pdfPage=await pdfDoc.getPage(pageNum);
  const bounds=pdfPage.view,width=Math.max(240,Math.min(610,$("viewer").clientWidth-28));
  const scale=Math.min(1.6,width/Math.max(1,bounds[2]-bounds[0]));
@@ -77,22 +92,22 @@ async function showSource(pageNum){
  await pdfPage.render({canvasContext:canvas.getContext("2d"),viewport:v}).promise;
  if(id!==renderSerial)return;viewport=v;drawMark();
 }
-$("pagePicker").addEventListener("change",()=>{const n=Number($("pagePicker").value);if(Number.isInteger(n)){if(plan.some(a=>a.type==="add_signature")){plan.find(a=>a.type==="add_signature").page=n;point=null;invalidate();$("positionLabel").textContent=t.noPosition;step(4);}showSource(n);}});
-$("prevPage").addEventListener("click",()=>{if(selectedPage>1)$("pagePicker").value=String(selectedPage-1),$("pagePicker").dispatchEvent(new Event("change"));});
-$("nextPage").addEventListener("click",()=>{if(selectedPage<pages)$("pagePicker").value=String(selectedPage+1),$("pagePicker").dispatchEvent(new Event("change"));});
+$("pagePicker").addEventListener("change",()=>{if(previewDoc)return;const n=Number($("pagePicker").value);if(Number.isInteger(n)){if(plan.some(a=>a.type==="add_signature")){plan.find(a=>a.type==="add_signature").page=n;point=null;invalidate();$("positionLabel").textContent=t.noPosition;step(4);}showSource(n);}});
+$("prevPage").addEventListener("click",()=>{if(selectedPage>1){if(previewDoc)showModified(selectedPage-1);else $("pagePicker").value=String(selectedPage-1),$("pagePicker").dispatchEvent(new Event("change"));}});
+$("nextPage").addEventListener("click",()=>{if(selectedPage<(previewDoc?previewDoc.numPages:pages)){if(previewDoc)showModified(selectedPage+1);else $("pagePicker").value=String(selectedPage+1),$("pagePicker").dispatchEvent(new Event("change"));}});
 function inkPos(e){const r=signature.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*signature.width,y:(e.clientY-r.top)/r.height*signature.height};}
 signature.addEventListener("pointerdown",e=>{e.preventDefault();drawing=true;hasInk=true;signature.setPointerCapture(e.pointerId);const p=inkPos(e);ink.beginPath();ink.moveTo(p.x,p.y);ink.lineTo(p.x+.1,p.y+.1);ink.stroke();invalidate();});
 signature.addEventListener("pointermove",e=>{if(!drawing)return;e.preventDefault();const p=inkPos(e);ink.lineTo(p.x,p.y);ink.stroke();});
 ["pointerup","pointercancel"].forEach(n=>signature.addEventListener(n,()=>drawing=false));
 $("clearSignature").addEventListener("click",()=>{ink.clearRect(0,0,signature.width,signature.height);hasInk=false;invalidate();});
 $("pageCanvas").addEventListener("click",e=>{
- if(!plan.some(a=>a.type==="add_signature"&&a.enabled!==false)||!viewport)return;
+ if(previewDoc||!plan.some(a=>a.type==="add_signature"&&a.enabled!==false)||!viewport)return;
  const rect=$("pageCanvas").getBoundingClientRect(),x=(e.clientX-rect.left)/rect.width*$("pageCanvas").width,y=(e.clientY-rect.top)/rect.height*$("pageCanvas").height;
  const [px,py]=viewport.convertToPdfPoint(x,y);point={page:selectedPage,x:px,y:py};
  plan.find(a=>a.type==="add_signature").page=selectedPage;invalidate();
  $("positionLabel").textContent=t.position+selectedPage;status("positionStatus",t.position+selectedPage);step(4);drawMark();$("previewButton").disabled=false;
 });
-$("backToSource").addEventListener("click",()=>{invalidate();showSource(selectedPage);step(4);});
+$("backToSource").addEventListener("click",()=>{const n=point?.page||plan.find(a=>a.type==="add_signature")?.page||1;invalidate();showSource(n);step(4);});
 function localActions(){
  const q=$("request").value.trim();if(!q)return [];
  let num=1;const match=q.match(/(?:page|p\.|صفحة)\s*(\d+)/i),last=/derni[eè]re|last page|آخر صفحة/i.test(q),first=/premi[eè]re|first page|الصفحة الأولى/i.test(q);
@@ -103,6 +118,30 @@ function localActions(){
  if(/date du jour|today.s date|add date|ajoute.*date|أضف.*تاريخ/i.test(q))items.push({type:"add_date",page:num,position:"bottom-right",enabled:true});
  const del=q.match(/(?:supprim|delete|remove|حذف)[^\d]{0,20}(?:page\s*)?(\d+)/i);if(del)items.push({type:"delete_page",page:Number(del[1]),enabled:true});
  return items.filter(a=>a.page>=1&&a.page<=pages);
+}
+async function detectRequestedSignature(){
+ const q=$("request").value.toLowerCase();
+ if(!pdfDoc||!/sign|signe|signature|paraph|توقيع|إمضاء/i.test(q))return;
+ const matches=anchors.some(a=>/assur[ée]|insured/i.test(q)?/assur[ée]|insured/i.test(a.label):/signature|sign here|توقيع|إمضاء/i.test(a.label));
+ if(matches)return;
+ if(!window.JustPDFitLocalOCR){
+  status("planStatus",lang==="fr"?"OCR indisponible. Vous pourrez placer la signature manuellement.":"OCR unavailable; place the signature manually.",true);return;
+ }
+ const m=q.match(/(?:page|p\\.|صفحة)\\s*(\\d+)/i);
+ const forced=m?Number(m[1]):/premi[eè]re|first page|الأولى/.test(q)?1:/derni[eè]re|last page|الأخيرة/.test(q)?pages:0;
+ const candidate=forced?[forced]:Array.from({length:Math.min(pages,3)},(_,i)=>i+1);
+ status("planStatus",lang==="fr"?"Document scanné : recherche locale de l’emplacement de signature…":"Scanning locally for the signature location…");
+ try{
+  const result=await JustPDFitLocalOCR.search(pdfDoc,candidate,n=>status("planStatus",(lang==="fr"?"Reconnaissance visuelle de la page ":"Scanning page ")+n+"…"));
+  anchors.push(...result);
+  if(result.length){
+   $("fieldCandidates").textContent=(lang==="fr"?"Emplacement(s) reconnus dans le scan : ":"Detected on scan: ")+result.map(a=>(lang==="fr"?"page ":"page ")+a.page+" — "+a.label).join(" · ");
+  }else{
+   status("planStatus",lang==="fr"?"Aucun repère fiable reconnu sur le scan. Placement manuel disponible.":"No reliable label detected; manual placement available.");
+  }
+ }catch(e){
+  status("planStatus",lang==="fr"?"Analyse visuelle indisponible. Placement manuel toujours possible.":"Local visual analysis unavailable; manual placement remains available.");
+ }
 }
 function setPlan(items,sourceMode){
  plan=items.slice(0,8).filter(a=>a&&["add_signature","add_date","delete_page","add_text","fill_field"].includes(a.type)&&Number.isInteger(Number(a.page))&&a.page>=1&&a.page<=pages).map(a=>({...a,enabled:true,page:Number(a.page)}));
@@ -120,22 +159,28 @@ function setPlan(items,sourceMode){
  $("signatureControls").hidden=!sig;
  if(sig){const requested=$("request").value.toLowerCase(),hint=anchors.find(a=>a.page===sig.page&&(/assur[ée]|insured/i.test(requested)?/signature.*assur[ée]|assur[ée].*signature|assur[ée]|insured/i.test(a.label):/signature|sign/i.test(a.label)));
   selectedPage=sig.page;$("pagePicker").value=String(sig.page);
-  if(hint){
+  if(hint&&(!hint.source||hint.confidence>=0.85)){
    const page=source.getPage(sig.page-1);
-   point={page:sig.page,x:Math.max(24,Math.min(page.getWidth()-60,hint.x+35)),y:Math.max(24,Math.min(page.getHeight()-24,hint.y-27))};
+   point={page:sig.page,x:Math.max(24,Math.min(page.getWidth()-60,hint.x+(hint.source==="ocr"?0:35))),y:Math.max(24,Math.min(page.getHeight()-24,hint.y-(hint.source==="ocr"?32:27)))};
    $("positionLabel").textContent=t.position+sig.page;
   }
   showSource(sig.page);
-  status("positionStatus",hint?t.auto:t.positionNeeded);
+  status("positionStatus",hint?(hint.source==="ocr"?(lang==="fr"?"Emplacement proposé par reconnaissance visuelle (« "+hint.label+" »). Vérifiez et déplacez-le si nécessaire.":"Visual OCR proposal (“"+hint.label+"”). Check and reposition if needed."):t.auto):t.positionNeeded);
  } else status("positionStatus",t.local);
  $("previewButton").disabled=false;
  status("planStatus",sourceMode==="ai"?t.plan:t.local);step(sig?4:5);
 }
-$("localButton").addEventListener("click",()=>{if(!bytes)return;setPlan(localActions(),"local");});
+$("localButton").addEventListener("click",async()=>{
+ if(!bytes)return;
+ $("localButton").disabled=true;
+ try{await detectRequestedSignature();setPlan(localActions(),"local");}
+ finally{canPlan();}
+});
 $("planButton").addEventListener("click",async()=>{
  if(!bytes)return;if(!$("requestConsent").checked){status("planStatus",t.consent,true);return;}
  $("planButton").disabled=true;status("planStatus",t.working);
  try{
+  await detectRequestedSignature();
   let excerpt="";
   const share=$("docConsent").checked;
   if(share&&pdfDoc){
@@ -157,7 +202,7 @@ $("planButton").addEventListener("click",async()=>{
    if(target)actions=actions.map(a=>a.type==="add_signature"?{...a,page:target.page}:a);
   }
   setPlan(actions,"ai");
-  if(data.uncertainty)status("positionStatus",data.uncertainty);
+  if(data.uncertainty&&!point)status("positionStatus",data.uncertainty);
  }catch(e){status("planStatus",t.modelFailed,true);}finally{canPlan();}
 });
 function croppedSignature(){
@@ -205,8 +250,9 @@ $("previewButton").addEventListener("click",async()=>{
   [...deleted].sort((a,b)=>b-a).forEach(n=>pdf.removePage(n-1));
   linkMark(pdf,font);previewBytes=new Uint8Array(await pdf.save());
   previewUrl=URL.createObjectURL(new Blob([previewBytes],{type:"application/pdf"}));
-  $("paper").hidden=true;$("empty").hidden=true;$("pdfPreview").src=previewUrl;$("pdfPreview").style.display="block";
-  $("previewMode").textContent=t.modified;$("backToSource").hidden=false;$("approve").disabled=false;
+  previewDoc=await pdfjsLib.getDocument({data:previewBytes.slice()}).promise;
+  await showModified(Math.min(point?.page||1,previewDoc.numPages));
+  $("backToSource").hidden=false;$("approve").disabled=false;
   status("planStatus",t.previewReady);step(6);
  }catch(e){status("planStatus",e?.message||t.export,true);step(4);invalidate();}
  finally{$("previewButton").disabled=false;}
