@@ -10,7 +10,7 @@ const labels={fr:["Fichier","Analyse","Instructions","Emplacement","Aperçu","Va
 document.documentElement.lang=lang;if(lang==="ar")document.documentElement.dir="rtl";
 [...document.querySelectorAll(".step")].forEach((e,i)=>e.lastElementChild.textContent=(labels[lang]||labels.fr)[i]);
 let bytes=null,source=null,pdfDoc=null,pages=0,fields=[],anchors=[],selectedPage=1,viewport=null,
- activeStep=1,plan=[],point=null,previewUrl=null,previewBytes=null,previewDoc=null,hasInk=false,renderSerial=0;
+ activeStep=1,plan=[],point=null,datePoint=null,signatureWidth=155,placementMode="signature",previewUrl=null,previewBytes=null,previewDoc=null,hasInk=false,renderSerial=0;
 const API="https://justpdfit-ai-planner.zmehanna.workers.dev/interpret";
 const signature=$("signature"),ink=signature.getContext("2d");ink.lineWidth=3.5;ink.lineCap="round";ink.lineJoin="round";ink.strokeStyle="#1c3055";let drawing=false;
 function status(id,msg,error=false){$(id).textContent=msg;$(id).className="status"+(error?" error":"");}
@@ -65,27 +65,43 @@ function step(n){
  // A new step folds earlier ones; the user can always reopen any completed step.
  overrides.clear();updateStageDisplay();
 }
-function planChange(){point=null;invalidate();$("positionLabel").textContent=t.noPosition;drawMark();}
+function planChange(){point=null;datePoint=null;invalidate();$("positionLabel").textContent=t.noPosition;drawMark();}
 function invalidate(){previewDoc=null;if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}previewBytes=null;$("approve").checked=false;$("approve").disabled=true;$("download").disabled=true;$("pdfPreview").style.display="none";$("paper").hidden=!source;$("empty").hidden=!!source;$("previewMode").textContent=t.original;$("backToSource").hidden=true;drawMark();}
 function drawMark(){
- const mark=$("placementMark");if(!point||!viewport||selectedPage!==point.page||previewDoc){mark.style.display="none";return;}
- const [x,y]=viewport.convertToViewportPoint(point.x,point.y);
- const rect=$("pageCanvas").getBoundingClientRect();
- if(!rect.width||!rect.height){mark.style.display="none";return;}
- const xDisplayed=x*rect.width/$("pageCanvas").width;
- const yDisplayed=y*rect.height/$("pageCanvas").height;
- const width=Math.min(110,Math.max(56,rect.width-8)),height=Math.min(48,Math.max(26,rect.height-8));
- const left=Math.max(4,Math.min(xDisplayed-width/2,rect.width-width-4));
- const top=Math.max(4,Math.min(yDisplayed-height/2,rect.height-height-4));
- mark.style.display="block";
- mark.style.left=left+"px";mark.style.top=top+"px";
- mark.style.width=width+"px";mark.style.height=height+"px";
- mark.textContent=t.mark;
+ const canvas=$("pageCanvas"),rect=canvas.getBoundingClientRect();
+ const sourceVisible=!previewDoc&&!!viewport&&rect.width>0&&rect.height>0;
+ const show=(id,p,widthPdf,heightPdf)=>{
+  const mark=$(id);
+  if(!sourceVisible||!p||p.page!==selectedPage){mark.style.display="none";return;}
+  const [x,y]=viewport.convertToViewportPoint(p.x,p.y);
+  const ratio=rect.width/canvas.width;
+  const width=Math.min(rect.width-8,Math.max(28,widthPdf*viewport.scale*ratio));
+  const height=Math.min(rect.height-8,Math.max(17,heightPdf*viewport.scale*ratio));
+  const left=Math.max(4,Math.min(x*ratio-width/2,rect.width-width-4));
+  const top=Math.max(4,Math.min(y*ratio-height/2,rect.height-height-4));
+  mark.style.display="block";mark.style.left=left+"px";mark.style.top=top+"px";
+  mark.style.width=width+"px";mark.style.height=height+"px";
+ };
+ show("placementMark",point,signatureWidth,signatureHeight());
+ show("dateMark",datePoint,86,20);
+ $("moveSignature").hidden=!plan.some(a=>a.type==="add_signature"&&a.enabled);
+ $("moveDate").hidden=!plan.some(a=>a.type==="add_date"&&a.enabled);
+ $("editHint").hidden=$("moveSignature").hidden&&$("moveDate").hidden;
+}
+function signatureHeight(){
+ return Math.min(80,signatureWidth*(signatureInkAspect||.34));
+}
+let signatureInkAspect=.34;
+function updateSignatureAspect(){
+ const d=ink.getImageData(0,0,signature.width,signature.height).data;
+ let x0=signature.width,y0=signature.height,x1=-1,y1=-1;
+ for(let y=0;y<signature.height;y++)for(let x=0;x<signature.width;x++)if(d[(y*signature.width+x)*4+3]>25){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);}
+ if(x1>=x0)signatureInkAspect=Math.min(2,Math.max(.1,(y1-y0+16)/(x1-x0+16)));
 }
 function canPlan(){const ok=!!bytes&&$("request").value.trim().length>2;$("planButton").disabled=!ok;$("localButton").disabled=!ok;}
 $("request").addEventListener("input",()=>{canPlan();if(plan.length){plan=[];point=null;$("plans")?.remove();invalidate();status("planStatus",t.changed);step(3);}});
 $("file").addEventListener("change",async()=>{
- const f=$("file").files?.[0];renderSerial++;bytes=null;source=null;pdfDoc=null;fields=[];anchors=[];plan=[];point=null;pages=0;
+ const f=$("file").files?.[0];renderSerial++;bytes=null;source=null;pdfDoc=null;fields=[];anchors=[];plan=[];point=null;datePoint=null;signatureWidth=155;pages=0;
  $("pagePicker").replaceChildren();$("pagePicker").disabled=true;$("prevPage").disabled=true;$("nextPage").disabled=true;$("plans")?.remove();$("fieldCandidates").textContent="";
  $("analysis").textContent=t.analyzing;step(2);invalidate();canPlan();
  if(!f){status("analysis",t.file);step(1);return;}
@@ -102,8 +118,8 @@ $("file").addEventListener("change",async()=>{
    const pg=await pdfDoc.getPage(n),content=await pg.getTextContent();
    for(const item of content.items){
     const label=String(item.str||"").trim(),matrix=item.transform;
-    if(label&&matrix?.length>=6&&/assur[ée]|insured|signature|signataire|sign here|توقيع|إمضاء/i.test(label)){
-     anchors.push({page:n,label,x:Number(matrix[4]),y:Number(matrix[5])});
+    if(label&&matrix?.length>=6&&/assur[ée]|insured|signature|signataire|sign here|date|fait en|exemplaire|تاريخ|توقيع|إمضاء/i.test(label)){
+     anchors.push({page:n,label,x:Number(matrix[4]),y:Number(matrix[5]),kind:/date|fait en|exemplaire|تاريخ/i.test(label)?"date":"signature",source:"native",confidence:.85});
     }
    }
   }
@@ -148,8 +164,8 @@ $("nextPage").addEventListener("click",()=>{if(selectedPage<(previewDoc?previewD
 function inkPos(e){const r=signature.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*signature.width,y:(e.clientY-r.top)/r.height*signature.height};}
 signature.addEventListener("pointerdown",e=>{e.preventDefault();drawing=true;hasInk=true;signature.setPointerCapture(e.pointerId);const p=inkPos(e);ink.beginPath();ink.moveTo(p.x,p.y);ink.lineTo(p.x+.1,p.y+.1);ink.stroke();invalidate();});
 signature.addEventListener("pointermove",e=>{if(!drawing)return;e.preventDefault();const p=inkPos(e);ink.lineTo(p.x,p.y);ink.stroke();});
-["pointerup","pointercancel"].forEach(n=>signature.addEventListener(n,()=>drawing=false));
-$("clearSignature").addEventListener("click",()=>{ink.clearRect(0,0,signature.width,signature.height);hasInk=false;invalidate();});
+["pointerup","pointercancel"].forEach(n=>signature.addEventListener(n,()=>{drawing=false;updateSignatureAspect();drawMark();}));
+$("clearSignature").addEventListener("click",()=>{ink.clearRect(0,0,signature.width,signature.height);hasInk=false;signatureInkAspect=.34;invalidate();});
 $("pageCanvas").addEventListener("click",e=>{
  if(previewDoc||!plan.some(a=>a.type==="add_signature"&&a.enabled!==false)||!viewport)return;
  const rect=$("pageCanvas").getBoundingClientRect(),x=(e.clientX-rect.left)/rect.width*$("pageCanvas").width,y=(e.clientY-rect.top)/rect.height*$("pageCanvas").height;
