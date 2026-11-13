@@ -5,18 +5,32 @@
 (()=>{"use strict";
  const norm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9\u0600-\u06ff ]/g," ").replace(/\s+/g," ").trim();
  function extractLine(doc){
-  const lines=[...doc.querySelectorAll(".ocr_line,.ocrx_line")];
-  const result=[];
+  const lines=[...doc.querySelectorAll(".ocr_line,.ocrx_line")],result=[];
   for(const el of lines){
-   const raw=el.textContent||"",txt=norm(raw);
-   if(!txt||!(/sign|assur|insured|توقيع|امضاء/.test(txt)))continue;
-   const m=(el.getAttribute("title")||"").match(/bbox\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/);
-   if(!m)continue;
-   const score=/(signature|signe|sign here|signataire|توقيع|امضاء)/.test(txt)?(/assur|insured/.test(txt)?0.96:0.75):0.35;
-   if(score<0.70)continue;
-   result.push({label:raw.trim().slice(0,120),score,bbox:m.slice(1).map(Number)});
+   const words=[...el.querySelectorAll(".ocrx_word")].map(w=>{
+    const bbox=(w.getAttribute("title")||"").match(/bbox\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/);
+    return {text:norm(w.textContent),raw:String(w.textContent||"").trim(),bbox:bbox?bbox.slice(1).map(Number):null};
+   }).filter(w=>w.text&&w.bbox);
+   const line=norm(el.textContent||"");
+   if(!/signature|sign here|signe|توقيع|امضاء/.test(line))continue;
+   // Detect the specific insured signature words, rather than centering a line
+   // that may also contain a subcontractor's signature in a second column.
+   for(let i=0;i<words.length;i++){
+    if(!/^(signature|signe|sign)$/.test(words[i].text))continue;
+    const follow=words.slice(i,i+5),phrase=follow.map(w=>w.text).join(" ");
+    let end=i,confidence=.68;
+    if(/assur|insured/.test(phrase)){
+     end=Math.min(words.length-1,i+4);
+     const insured=words.findIndex((w,j)=>j>=i&&j<i+5&&/assur|insured/.test(w.text));
+     if(insured>=0)end=insured;
+     confidence=.96;
+    }else if(/sous traitant|subcontractor|sous traitance/.test(phrase))continue;
+    const subset=words.slice(i,end+1);
+    const box=[Math.min(...subset.map(w=>w.bbox[0])),Math.min(...subset.map(w=>w.bbox[1])),Math.max(...subset.map(w=>w.bbox[2])),Math.max(...subset.map(w=>w.bbox[3]))];
+    result.push({label:subset.map(w=>w.raw).join(" ").slice(0,110),score:confidence,bbox:box});
+   }
   }
-  return result;
+  return result.sort((a,b)=>b.score-a.score);
  }
  async function search(pdfDoc,pageNumbers,onProgress){
   if(!pdfDoc||!window.Tesseract?.createWorker)throw Error("ocr_not_available");
