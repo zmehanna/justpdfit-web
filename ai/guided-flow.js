@@ -20,8 +20,17 @@ function invalidate(){if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=
 function drawMark(){
  const mark=$("placementMark");if(!point||!viewport||selectedPage!==point.page){mark.style.display="none";return;}
  const [x,y]=viewport.convertToViewportPoint(point.x,point.y);
- const rect=$("pageCanvas").getBoundingClientRect(),ratio=rect.width/$("pageCanvas").width;
- mark.style.display="block";mark.style.left=Math.max(0,x*ratio-50)+"px";mark.style.top=Math.max(0,y*ratio-32)+"px";mark.style.width="110px";mark.style.height="48px";mark.textContent=t.mark;
+ const rect=$("pageCanvas").getBoundingClientRect();
+ if(!rect.width||!rect.height){mark.style.display="none";return;}
+ const xDisplayed=x*rect.width/$("pageCanvas").width;
+ const yDisplayed=y*rect.height/$("pageCanvas").height;
+ const width=Math.min(110,Math.max(56,rect.width-8)),height=Math.min(48,Math.max(26,rect.height-8));
+ const left=Math.max(4,Math.min(xDisplayed-width/2,rect.width-width-4));
+ const top=Math.max(4,Math.min(yDisplayed-height/2,rect.height-height-4));
+ mark.style.display="block";
+ mark.style.left=left+"px";mark.style.top=top+"px";
+ mark.style.width=width+"px";mark.style.height=height+"px";
+ mark.textContent=t.mark;
 }
 function canPlan(){const ok=!!bytes&&$("request").value.trim().length>2;$("planButton").disabled=!ok;$("localButton").disabled=!ok;}
 $("request").addEventListener("input",()=>{canPlan();if(plan.length){plan=[];point=null;$("plans")?.remove();invalidate();status("planStatus",t.changed);step(3);}});
@@ -207,6 +216,7 @@ $("download").addEventListener("click",()=>{
  if(!previewUrl||!previewBytes||!$("approve").checked){status("planStatus",t.approval,true);return;}
  const a=document.createElement("a");a.href=previewUrl;a.download=($("file").files?.[0]?.name||"document.pdf").replace(/\.pdf$/i,"")+"-justpdfit-ai.pdf";document.body.append(a);a.click();a.remove();
 });
+window.addEventListener("resize",drawMark);
 window.addEventListener("pagehide",()=>{if(previewUrl)URL.revokeObjectURL(previewUrl);});
 status("analysis",t.file);
 })();
