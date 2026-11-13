@@ -211,8 +211,8 @@ function updateSignatureGhost(){
  if(data)ghost.src=data;else ghost.removeAttribute("src");
  $("signaturePlaceholder").hidden=!!data;
 }
-["pointerup","pointercancel"].forEach(n=>signature.addEventListener(n,()=>{drawing=false;updateSignatureAspect();if(dateFollowsSignature)datePoint=proposedDateBelowSignature();updateSignatureGhost();drawMark();}));
-$("clearSignature").addEventListener("click",()=>{ink.clearRect(0,0,signature.width,signature.height);hasInk=false;signatureInkAspect=.34;updateSignatureGhost();invalidate();});
+["pointerup","pointercancel"].forEach(n=>signature.addEventListener(n,()=>{drawing=false;updateSignatureAspect();if(dateFollowsSignature)datePoint=proposedDateBelowSignature();updateSignatureGhost();drawMark();updateContinueButton();}));
+$("clearSignature").addEventListener("click",()=>{ink.clearRect(0,0,signature.width,signature.height);hasInk=false;signatureInkAspect=.34;updateSignatureGhost();invalidate();updateContinueButton();});
 const centerFromPointer=e=>{
  const canvas=$("pageCanvas"),rect=canvas.getBoundingClientRect();
  const x=(e.clientX-rect.left)/rect.width*canvas.width;
@@ -235,6 +235,26 @@ function proposedDateBelowSignature(){
  const y=point.y-height/2-23; // 23pt gap provides separation from the signature.
  return {page:point.page,x:Math.max(53,Math.min(pg.getWidth()-53,centerX)),y:Math.max(17,Math.min(pg.getHeight()-17,y))};
 }
+function canContinueToPreview(){
+ const edits=plan.filter(a=>a.enabled);
+ if(!edits.length)return false;
+ const sign=edits.find(a=>a.type==="add_signature");
+ const date=edits.find(a=>a.type==="add_date");
+ if(sign&&(!point||point.page!==sign.page||!croppedSignature()))return false;
+ if(date&&(!datePoint||datePoint.page!==date.page))return false;
+ return true;
+}
+function updateContinueButton(){
+ const btn=$("continuePreview");
+ if(btn)btn.disabled=!canContinueToPreview();
+}
+$("continuePreview").addEventListener("click",()=>{
+ if(!canContinueToPreview()){
+  status("positionStatus",lang==="fr"?"Terminez le placement et dessinez la signature avant de poursuivre.":lang==="ar"?"حدّد الموضع وارسم التوقيع قبل المتابعة.":"Place and draw the signature before continuing.",true);
+  return;
+ }
+ step(5);$("previewButton").focus({preventScroll:true});
+});
 function positionItem(mode,position){
  if(!position||previewDoc)return;
  if(mode==="date"){
@@ -250,7 +270,7 @@ function positionItem(mode,position){
   $("positionLabel").textContent=t.position+selectedPage;
   status("positionStatus",t.position+selectedPage);
  }
- invalidate();step(4);drawMark();$("previewButton").disabled=false;
+ invalidate();step(4);drawMark();$("previewButton").disabled=false;updateContinueButton();
 }
 $("pageCanvas").addEventListener("click",e=>{
  if(previewDoc||!viewport||!plan.length)return;
@@ -380,7 +400,8 @@ function setPlan(items,sourceMode){
  switchPlacementMode(sig?"signature":"date");
  drawMark();
  $("previewButton").disabled=false;
- status("planStatus",sourceMode==="ai"?t.plan:t.local);step(sig?4:5);
+ status("planStatus",sourceMode==="ai"?t.plan:t.local);step((sig||dateAction)?4:5);
+ updateContinueButton();
 }
 $("localButton").addEventListener("click",async()=>{
  if(!bytes)return;
