@@ -137,9 +137,10 @@ if(req.method==="POST"&&resource==="members"){
  await audit(env,id,current.id,"member_deactivated");return response({ok:true},200,origin);
 }
 if(req.method==="GET"&&resource==="usage"){
- const totals=await env.BUSINESS_DB.prepare("SELECT COUNT(*) AS events FROM business_audit WHERE organization_id=?").bind(id).first();
- const actions=await env.BUSINESS_DB.prepare("SELECT action,COUNT(*) AS total FROM business_audit WHERE organization_id=? GROUP BY action ORDER BY total DESC LIMIT 20").bind(id).all();
- return response({events:totals?.events||0,actions:actions.results||[],ai_credits:null,pdf_exports:null},200,origin);
+ const totals=await env.BUSINESS_DB.prepare("SELECT kind,SUM(quantity) AS total FROM business_usage_events WHERE organization_id=? GROUP BY kind").bind(id).all();
+ const credits=await env.BUSINESS_DB.prepare("SELECT kind,allowance,used,reset_at FROM business_credit_pools WHERE organization_id=?").bind(id).all();
+ const activity=Object.fromEntries((totals.results||[]).map(x=>[x.kind,x.total]));
+ return response({pdf_exports:activity.pdf_export||0,ai_requests:activity.ai_request||0,remote_signatures:activity.remote_signature||0,id_verifications:activity.id_verification||0,credit_pools:credits.results||[],metrics_live:false},200,origin);
 }
 if(req.method==="GET"&&resource==="invoices"){
  if(!["owner","admin"].includes(membership.role))return response({error:"forbidden"},403,origin);
