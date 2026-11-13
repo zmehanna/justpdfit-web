@@ -84,6 +84,7 @@ function drawMark(){
  };
  show("placementMark",point,effectiveSignatureWidth(),signatureHeight());
  show("dateMark",datePoint,86,20);
+ $("dateMark").textContent=new Date().toLocaleDateString(lang==="fr"?"fr-FR":"en-GB");
  $("moveSignature").hidden=!plan.some(a=>a.type==="add_signature"&&a.enabled);
  $("moveDate").hidden=!plan.some(a=>a.type==="add_date"&&a.enabled);
  $("editHint").hidden=$("moveSignature").hidden&&$("moveDate").hidden;
@@ -163,8 +164,14 @@ $("nextPage").addEventListener("click",()=>{if(selectedPage<(previewDoc?previewD
 function inkPos(e){const r=signature.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*signature.width,y:(e.clientY-r.top)/r.height*signature.height};}
 signature.addEventListener("pointerdown",e=>{e.preventDefault();drawing=true;hasInk=true;signature.setPointerCapture(e.pointerId);const p=inkPos(e);ink.beginPath();ink.moveTo(p.x,p.y);ink.lineTo(p.x+.1,p.y+.1);ink.stroke();invalidate();});
 signature.addEventListener("pointermove",e=>{if(!drawing)return;e.preventDefault();const p=inkPos(e);ink.lineTo(p.x,p.y);ink.stroke();});
-["pointerup","pointercancel"].forEach(n=>signature.addEventListener(n,()=>{drawing=false;updateSignatureAspect();drawMark();}));
-$("clearSignature").addEventListener("click",()=>{ink.clearRect(0,0,signature.width,signature.height);hasInk=false;signatureInkAspect=.34;invalidate();});
+function updateSignatureGhost(){
+ const data=croppedSignature(),ghost=$("signatureGhost");
+ ghost.hidden=!data;
+ if(data)ghost.src=data;else ghost.removeAttribute("src");
+ $("signaturePlaceholder").hidden=!!data;
+}
+["pointerup","pointercancel"].forEach(n=>signature.addEventListener(n,()=>{drawing=false;updateSignatureAspect();updateSignatureGhost();drawMark();}));
+$("clearSignature").addEventListener("click",()=>{ink.clearRect(0,0,signature.width,signature.height);hasInk=false;signatureInkAspect=.34;updateSignatureGhost();invalidate();});
 const centerFromPointer=e=>{
  const canvas=$("pageCanvas"),rect=canvas.getBoundingClientRect();
  const x=(e.clientX-rect.left)/rect.width*canvas.width;
