@@ -1,0 +1,21 @@
+/* JustPDFit AI guided assistant beta. */
+.jpi-ai-trigger{position:fixed;right:22px;bottom:22px;z-index:11000;border:0;border-radius:999px;padding:14px 20px;background:linear-gradient(105deg,#ed465c,#fc6472);color:#fff;font:700 14px/1.2 system-ui,sans-serif;box-shadow:0 12px 30px #a62b5060;cursor:pointer}
+.jpi-ai-trigger:focus-visible,.jpi-ai-panel button:focus-visible,.jpi-ai-panel a:focus-visible,.jpi-ai-panel textarea:focus-visible{outline:3px solid #174cdd;outline-offset:3px}
+.jpi-ai-panel[hidden]{display:none!important}
+.jpi-ai-panel{position:fixed;right:20px;bottom:80px;z-index:11001;width:min(390px,calc(100vw - 28px));max-height:min(690px,calc(100dvh - 106px));overflow:auto;border:1px solid #e9dfe5;border-radius:20px;background:#fff;box-shadow:0 25px 65px #14264240;color:#243451;padding:18px;font:14px/1.5 system-ui,sans-serif;direction:ltr}
+html[lang^="ar"] .jpi-ai-panel{direction:rtl}
+.jpi-ai-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.jpi-ai-head strong{font-size:17px}
+.jpi-ai-dismiss{border:0;background:#f5f6fa;border-radius:50%;width:32px;height:32px;font-size:25px;line-height:1;color:#243451;cursor:pointer}
+.jpi-ai-intro{color:#65718b;margin:10px 0 16px;font-size:13px}
+.jpi-ai-form{display:grid;gap:9px}
+.jpi-ai-form textarea{resize:vertical;min-height:80px;width:100%;box-sizing:border-box;border:1px solid #dce3ee;border-radius:12px;padding:12px;font:inherit;color:#243451;background:#fcfdff}
+.jpi-ai-submit,.jpi-ai-route{display:inline-flex;align-items:center;justify-content:center;min-height:42px;background:#ed465c;color:#fff;border:0;border-radius:11px;padding:10px 15px;font:700 13px/1.3 system-ui,sans-serif;cursor:pointer;text-decoration:none}
+.jpi-ai-feedback:not(:empty){background:#fff6f8;border:1px solid #f9d5dd;border-radius:12px;padding:12px;margin:14px 0;font-size:13px}
+.jpi-ai-feedback strong{display:block;margin-bottom:6px}
+.jpi-ai-feedback p{margin:4px 0 10px;color:#5b6880}
+.jpi-ai-feedback .jpi-ai-route{background:#263a64}
+.jpi-ai-examples{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}
+.jpi-ai-examples button{border:1px solid #dfe5ef;border-radius:999px;padding:7px 10px;background:#fafbfe;color:#40506c;cursor:pointer;font:600 12px/1.3 system-ui,sans-serif}
+.jpi-ai-privacy,.jpi-ai-caption{font-size:11px;line-height:1.5;color:#71809a;margin:8px 0}
+@media(max-width:520px){.jpi-ai-trigger{right:12px;bottom:calc(12px + env(safe-area-inset-bottom));padding:13px 16px}.jpi-ai-panel{right:8px;bottom:calc(72px + env(safe-area-inset-bottom));width:calc(100vw - 16px);max-height:calc(100dvh - 98px);border-radius:16px}}
