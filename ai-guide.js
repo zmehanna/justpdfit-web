@@ -53,7 +53,7 @@
     feedback.replaceChildren();
     if(!key){const p=document.createElement("p");p.textContent=t.noMatch;feedback.append(p);return;}
     const info=routes[key],name=document.createElement("strong"),p=document.createElement("p");name.textContent=t.label+": "+t[key];p.textContent=info.live?t.notice:t.soon;feedback.append(name,p);
-    if(info.live){const a=document.createElement("a");const workflow=["sign","split","edit"].includes(key);a.href=workflow?"/ai/?lang="+encodeURIComponent(lang())+"&request="+encodeURIComponent(question.slice(0,450)):info.href+(info.href.includes("#")?"":"?lang="+encodeURIComponent(lang()));a.className="jpi-ai-route";a.textContent=t.route+" →";feedback.append(a);}
+    if(info.live){const a=document.createElement("a");const workflow=key==="sign" || (key==="split" && /delete|remove|supprim|retir|حذف|احذف/i.test(question)) || (key==="edit" && /date|today|aujourd|تاريخ|اليوم/i.test(question));a.href=workflow?"/ai/?lang="+encodeURIComponent(lang())+"&request="+encodeURIComponent(question.slice(0,450)):info.href+(info.href.includes("#")?"":"?lang="+encodeURIComponent(lang()));a.className="jpi-ai-route";a.textContent=t.route+" →";feedback.append(a);}
   }
   form.addEventListener("submit",e=>{e.preventDefault();recommend(input.value.trim().slice(0,500));});
   document.addEventListener("justpdfit-language",refresh);
