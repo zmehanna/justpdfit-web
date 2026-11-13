@@ -122,7 +122,7 @@ function localActions(){
 async function detectRequestedSignature(){
  const q=$("request").value.toLowerCase();
  if(!pdfDoc||!/sign|signe|signature|paraph|توقيع|إمضاء/i.test(q))return;
- const matches=anchors.some(a=>/assur[ée]|insured|signature|sign here|توقيع|إمضاء/i.test(a.label));
+ const matches=anchors.some(a=>/assur[ée]|insured/i.test(q)?/assur[ée]|insured/i.test(a.label):/signature|sign here|توقيع|إمضاء/i.test(a.label));
  if(matches)return;
  if(!window.JustPDFitLocalOCR){
   status("planStatus",lang==="fr"?"OCR indisponible. Vous pourrez placer la signature manuellement.":"OCR unavailable; place the signature manually.",true);return;
@@ -159,7 +159,7 @@ function setPlan(items,sourceMode){
  $("signatureControls").hidden=!sig;
  if(sig){const requested=$("request").value.toLowerCase(),hint=anchors.find(a=>a.page===sig.page&&(/assur[ée]|insured/i.test(requested)?/signature.*assur[ée]|assur[ée].*signature|assur[ée]|insured/i.test(a.label):/signature|sign/i.test(a.label)));
   selectedPage=sig.page;$("pagePicker").value=String(sig.page);
-  if(hint){
+  if(hint&&(!hint.source||hint.confidence>=0.85)){
    const page=source.getPage(sig.page-1);
    point={page:sig.page,x:Math.max(24,Math.min(page.getWidth()-60,hint.x+(hint.source==="ocr"?0:35))),y:Math.max(24,Math.min(page.getHeight()-24,hint.y-(hint.source==="ocr"?32:27)))};
    $("positionLabel").textContent=t.position+sig.page;
