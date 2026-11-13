@@ -25,7 +25,7 @@
  const signatureLabel=$("signature").closest(".ai-field");
  signatureLabel.hidden=true;$("clearSign").hidden=true;
  const toggleSignature=(enabled)=>{signatureLabel.hidden=!enabled;$("clearSign").hidden=!enabled;};
- manual.addEventListener("toggle",()=>{document.querySelectorAll(".ai-manual:not(details)").forEach(el=>el.style.display=manual.open?"block":"none");});
+ manual.addEventListener("toggle",()=>{document.querySelectorAll(".ai-manual:not(details)").forEach(el=>el.style.display=manual.open?"block":"none");toggleSignature(manual.open||plan.some(a=>a.type==="add_signature"));});
  
  panel.querySelector("h2").textContent="✦ "+t.title;
  panel.querySelector(".ai-v2-intro").textContent=t.intro;
@@ -35,7 +35,7 @@
  let plan=[],pageCount=0,fieldInfo=[],detected=[],anchors=[],localBytes=null,previewUrl=null,previewBytes=null,inspectId=0;
  const message=(msg,bad=false)=>{$("aiMessage").textContent=msg;$("aiMessage").className="ai-status"+(bad?" error":"");};
  function clearPreview(){previewBytes=null;$("emptyPreview").hidden=false;$("aiDownload").disabled=true;$("aiPreview").hidden=true;if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}}
- function reset(){toggleSignature(false);plan=[];$("aiPlan").hidden=true;$("aiApprove").checked=false;clearPreview();message(t.none);}
+ function reset(){toggleSignature(manual.open);plan=[];$("aiPlan").hidden=true;$("aiApprove").checked=false;clearPreview();message(t.none);}
  async function inspectPDF(){
   reset();localBytes=null;fieldInfo=[];detected=[];anchors=[];pageCount=0;
   const f=$("file").files?.[0];const id=++inspectId;if(!f)return;
@@ -79,7 +79,7 @@
  }
  function renderPlan(){
   $("aiActions").replaceChildren();$("aiPlan").hidden=!plan.length;$("aiApprove").checked=false;clearPreview();
-  toggleSignature(plan.some(a=>a.type==="add_signature"));
+  toggleSignature(manual.open||plan.some(a=>a.type==="add_signature"));
   plan.forEach((a,i)=>{
    const wrapper=document.createElement("label");wrapper.className="ai-action";
    const check=document.createElement("input");check.type="checkbox";check.checked=true;check.addEventListener("change",invalidateApproval);
