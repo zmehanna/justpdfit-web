@@ -22,6 +22,12 @@
  right.querySelector("#priceNote").after(aiDownload);
  aiDownload.classList.add("ai-ai-result-actions");
  const manual=$("manualTools");
+ const placementArea=document.createElement("section");
+ placementArea.id="aiPlacementArea";placementArea.hidden=true;
+ placementArea.style.cssText="border:1px solid #f3cbd5;border-radius:14px;background:#fff8fa;padding:12px;margin:12px 0;max-width:100%;";
+ right.querySelector("#emptyPreview").before(placementArea);
+ const closePlacement=()=>{placementArea.hidden=true;placementArea.replaceChildren();};
+
  const signatureLabel=$("signature").closest(".ai-field");
  signatureLabel.hidden=true;$("clearSign").hidden=true;
  const toggleSignature=(enabled)=>{signatureLabel.hidden=!enabled;$("clearSign").hidden=!enabled;};
@@ -35,7 +41,7 @@
  let plan=[],pageCount=0,fieldInfo=[],detected=[],anchors=[],localBytes=null,previewUrl=null,previewBytes=null,inspectId=0;
  const message=(msg,bad=false)=>{$("aiMessage").textContent=msg;$("aiMessage").className="ai-status"+(bad?" error":"");};
  function clearPreview(){previewBytes=null;$("emptyPreview").hidden=false;$("aiDownload").disabled=true;$("aiPreview").hidden=true;if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}}
- function reset(){toggleSignature(manual.open);plan=[];$("aiPlan").hidden=true;$("aiApprove").checked=false;clearPreview();message(t.none);}
+ function reset(){closePlacement();toggleSignature(manual.open);plan=[];$("aiPlan").hidden=true;$("aiApprove").checked=false;clearPreview();message(t.none);}
  async function inspectPDF(){
   reset();localBytes=null;fieldInfo=[];detected=[];anchors=[];pageCount=0;
   const f=$("file").files?.[0];const id=++inspectId;if(!f)return;
@@ -78,7 +84,7 @@
   return /assur[ée]|insured|assurance/i.test(request)?(list.find(a=>/signature.*assur[ée]|assur[ée].*signature|insured.*sign|sign.*insured/i.test(a.label))||list.find(a=>/assur[ée]|insured/i.test(a.label))||null):(list.find(a=>/signature|sign here|توقيع|إمضاء/i.test(a.label))||null);
  }
  function renderPlan(){
-  $("aiActions").replaceChildren();$("aiPlan").hidden=!plan.length;$("aiApprove").checked=false;clearPreview();
+  closePlacement();$("aiActions").replaceChildren();$("aiPlan").hidden=!plan.length;$("aiApprove").checked=false;clearPreview();
   toggleSignature(manual.open||plan.some(a=>a.type==="add_signature"));
   plan.forEach((a,i)=>{
    const wrapper=document.createElement("label");wrapper.className="ai-action";
@@ -95,10 +101,23 @@
     const holder=document.createElement("div");holder.style.cssText="grid-column:1/-1;width:100%;display:none;background:#f5f7fa;border:1px solid #dbe3ee;border-radius:9px;padding:8px;position:relative";
     const hint=document.createElement("p");hint.className="ai-note";hint.textContent=lang==="fr"?"Cliquez où placer le coin inférieur gauche de la signature.":"Click where the lower-left of the signature should go.";
     const pdfCanvas=document.createElement("canvas");pdfCanvas.style.cssText="width:100%;height:auto;display:block;cursor:crosshair;touch-action:manipulation";
-    holder.append(hint,pdfCanvas);wrapper.append(holder);
+    holder.append(hint,pdfCanvas);
+    // Keep the document viewport in the right preview pane, never inside the
+    // narrow action list; retain the action controls on the left.
+    holder.style.cssText="width:100%;background:#fff;border:0;padding:0;display:block";
+    choose.setAttribute("aria-controls","aiPlacementArea");
+
     choose.addEventListener("click",async()=>{
      if(!localBytes||!window.pdfjsLib)return;
-     holder.style.display=holder.style.display==="none"?"block":"none";if(holder.style.display==="none")return;
+     const alreadyOpen=!placementArea.hidden && placementArea.contains(holder);
+     if(alreadyOpen){closePlacement();return;}
+     placementArea.replaceChildren();
+     const heading=document.createElement("strong");
+     heading.textContent=lang==="fr"?"Placer la signature sur la page "+a.page:lang==="ar"?"حدد موقع التوقيع على الصفحة "+a.page:"Place signature on page "+a.page;
+     heading.style.display="block";heading.style.marginBottom="8px";
+     placementArea.append(heading,holder);placementArea.hidden=false;
+     placementArea.scrollIntoView({behavior:"smooth",block:"nearest"});
+
      try{
       const pdf=await pdfjsLib.getDocument({data:localBytes.slice()}).promise;
       const pg=await pdf.getPage(a.page),view=pg.getViewport({scale:Math.min(1.4,520/pg.view[2])});
@@ -111,6 +130,8 @@
       const rect=pdfCanvas.getBoundingClientRect(),x=(e.clientX-rect.left)/rect.width*pdfCanvas.width,y=(e.clientY-rect.top)/rect.height*pdfCanvas.height;
       const scale=Number(pdfCanvas.dataset.scale)||1;
       a.point={x:x/scale,y:(pdfCanvas.height-y)/scale};a.anchor=null;invalidateApproval();
+      // Keep a small marker and the page visible for verification.
+
       hint.textContent=lang==="fr"?"Emplacement choisi. Vérifiez-le dans l'aperçu avant de télécharger.":"Location selected. Check the preview before download.";
       const ctx=pdfCanvas.getContext("2d");ctx.save();ctx.strokeStyle="#ed465c";ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,11,0,Math.PI*2);ctx.stroke();ctx.restore();
     });
@@ -215,7 +236,7 @@
    watermark(pdf,font);
    previewBytes=new Uint8Array(await pdf.save());
    previewUrl=URL.createObjectURL(new Blob([previewBytes],{type:"application/pdf"}));
-   $("aiPreview").src=previewUrl;$("aiPreview").hidden=false;$("emptyPreview").hidden=true;$("aiDownload").disabled=false;
+   closePlacement();$("aiPreview").src=previewUrl;$("aiPreview").hidden=false;$("emptyPreview").hidden=true;$("aiDownload").disabled=false;
    message(t.previewReady);
   }catch(e){message((e&&e.message)||t.failed,true);}
   finally{$("aiApply").disabled=false;}
