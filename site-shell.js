@@ -140,5 +140,8 @@
    if(lastLang!==document.documentElement.lang){lastLang=document.documentElement.lang;render();}
   }).observe(document.documentElement,{attributes:true,attributeFilter:["lang"]});
  }
+ /* Load the optional AI guide after the shared shell, without changing PDF processing. */
+ const aiCss=document.createElement("link");aiCss.rel="stylesheet";aiCss.href="/ai-guide.css?v=20261113-beta";document.head.appendChild(aiCss);
+ const aiScript=document.createElement("script");aiScript.src="/ai-guide.js?v=20261113-beta";aiScript.defer=true;document.head.appendChild(aiScript);
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
