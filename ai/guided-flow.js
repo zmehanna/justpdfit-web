@@ -14,7 +14,57 @@ let bytes=null,source=null,pdfDoc=null,pages=0,fields=[],anchors=[],selectedPage
 const API="https://justpdfit-ai-planner.zmehanna.workers.dev/interpret";
 const signature=$("signature"),ink=signature.getContext("2d");ink.lineWidth=3.5;ink.lineCap="round";ink.lineJoin="round";ink.strokeStyle="#1c3055";let drawing=false;
 function status(id,msg,error=false){$(id).textContent=msg;$(id).className="status"+(error?" error":"");}
-function step(n){activeStep=n;document.querySelectorAll(".step").forEach(e=>{const num=Number(e.dataset.step);e.classList.toggle("done",num<n);e.classList.toggle("active",num===n);});}
+// Compact completed steps, retaining a one-line summary and an explicit Edit action.
+const stages=[...document.querySelectorAll(".layout > .card:first-child > .stage")];
+const overrides=new Set();
+const summaries=[
+ ()=>$("file").files?.[0]?.name||"",
+ ()=>pages?(pages+" "+(lang==="fr"?"pages analysées":lang==="ar"?"صفحات محللة":"pages analyzed")):"",
+ ()=>$("request").value.trim().replace(/\\s+/g," ").slice(0,90),
+ ()=>point?(lang==="fr"?"Signature placée sur la page ":lang==="ar"?"التوقيع في الصفحة ":"Signature placed on page ")+point.page:(lang==="fr"?"Emplacement à vérifier":lang==="ar"?"تحقق من الموضع":"Review placement"),
+ ()=>previewBytes?(lang==="fr"?"Aperçu généré":lang==="ar"?"تم إنشاء المعاينة":"Preview generated"):"",
+ ()=>""
+];
+const editLabels={fr:"Modifier",en:"Edit",ar:"تعديل"};
+stages.forEach((stage,i)=>{
+ stage.dataset.stage=String(i+1);
+ const heading=stage.querySelector("h3");
+ const body=document.createElement("div");body.className="stage-body";
+ while(heading.nextSibling)body.appendChild(heading.nextSibling);
+ stage.appendChild(body);
+ const summary=document.createElement("div");summary.className="stage-summary";summary.hidden=true;
+ const textNode=document.createElement("span");textNode.className="stage-summary-text";
+ const edit=document.createElement("button");edit.type="button";edit.className="stage-edit";
+ edit.textContent=editLabels[lang]||editLabels.fr;
+ edit.setAttribute("aria-expanded","false");
+ edit.setAttribute("aria-label",(editLabels[lang]||editLabels.fr)+" "+(heading.textContent||"").trim());
+ edit.addEventListener("click",()=>{
+  if(overrides.has(i)){overrides.delete(i);}else{overrides.add(i);}
+  updateStageDisplay();
+  if(overrides.has(i)&&i===2)$("request").focus({preventScroll:true});
+ });
+ summary.append(textNode,edit);stage.insertBefore(summary,body);
+});
+function updateStageDisplay(){
+ stages.forEach((stage,i)=>{
+  const finished=i<activeStep-1&&i<5;
+  const collapsed=finished&&!overrides.has(i);
+  stage.classList.toggle("is-collapsed",collapsed);
+  stage.classList.toggle("is-complete",finished);
+  const summary=stage.querySelector(".stage-summary");
+  summary.hidden=!collapsed;
+  summary.querySelector(".stage-summary-text").textContent=(summaries[i]?.()||"");
+  stage.querySelector(".stage-edit").setAttribute("aria-expanded",String(!collapsed));
+ });
+}
+function step(n){
+ activeStep=n;
+ document.querySelectorAll(".step").forEach(e=>{
+  const num=Number(e.dataset.step);e.classList.toggle("done",num<n);e.classList.toggle("active",num===n);
+ });
+ // A new step folds earlier ones; the user can always reopen any completed step.
+ overrides.clear();updateStageDisplay();
+}
 function planChange(){point=null;invalidate();$("positionLabel").textContent=t.noPosition;drawMark();}
 function invalidate(){previewDoc=null;if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}previewBytes=null;$("approve").checked=false;$("approve").disabled=true;$("download").disabled=true;$("pdfPreview").style.display="none";$("paper").hidden=!source;$("empty").hidden=!!source;$("previewMode").textContent=t.original;$("backToSource").hidden=true;drawMark();}
 function drawMark(){
@@ -264,5 +314,6 @@ $("download").addEventListener("click",()=>{
 });
 window.addEventListener("resize",drawMark);
 window.addEventListener("pagehide",()=>{if(previewUrl)URL.revokeObjectURL(previewUrl);});
+updateStageDisplay();
 status("analysis",t.file);
 })();
