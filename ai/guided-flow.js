@@ -10,15 +10,15 @@ const labels={fr:["Fichier","Analyse","Instructions","Emplacement","Aperçu","Va
 document.documentElement.lang=lang;if(lang==="ar")document.documentElement.dir="rtl";
 [...document.querySelectorAll(".step")].forEach((e,i)=>e.lastElementChild.textContent=(labels[lang]||labels.fr)[i]);
 let bytes=null,source=null,pdfDoc=null,pages=0,fields=[],anchors=[],selectedPage=1,viewport=null,
- activeStep=1,plan=[],point=null,previewUrl=null,previewBytes=null,hasInk=false,renderSerial=0;
+ activeStep=1,plan=[],point=null,previewUrl=null,previewBytes=null,previewDoc=null,hasInk=false,renderSerial=0;
 const API="https://justpdfit-ai-planner.zmehanna.workers.dev/interpret";
 const signature=$("signature"),ink=signature.getContext("2d");ink.lineWidth=3.5;ink.lineCap="round";ink.lineJoin="round";ink.strokeStyle="#1c3055";let drawing=false;
 function status(id,msg,error=false){$(id).textContent=msg;$(id).className="status"+(error?" error":"");}
 function step(n){activeStep=n;document.querySelectorAll(".step").forEach(e=>{const num=Number(e.dataset.step);e.classList.toggle("done",num<n);e.classList.toggle("active",num===n);});}
 function planChange(){point=null;invalidate();$("positionLabel").textContent=t.noPosition;drawMark();}
-function invalidate(){if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}previewBytes=null;$("approve").checked=false;$("approve").disabled=true;$("download").disabled=true;$("pdfPreview").style.display="none";$("paper").hidden=!source;$("empty").hidden=!!source;$("previewMode").textContent=t.original;$("backToSource").hidden=true;drawMark();}
+function invalidate(){previewDoc=null;if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}previewBytes=null;$("approve").checked=false;$("approve").disabled=true;$("download").disabled=true;$("pdfPreview").style.display="none";$("paper").hidden=!source;$("empty").hidden=!!source;$("previewMode").textContent=t.original;$("backToSource").hidden=true;drawMark();}
 function drawMark(){
- const mark=$("placementMark");if(!point||!viewport||selectedPage!==point.page){mark.style.display="none";return;}
+ const mark=$("placementMark");if(!point||!viewport||selectedPage!==point.page||previewDoc){mark.style.display="none";return;}
  const [x,y]=viewport.convertToViewportPoint(point.x,point.y);
  const rect=$("pageCanvas").getBoundingClientRect();
  if(!rect.width||!rect.height){mark.style.display="none";return;}
@@ -64,6 +64,21 @@ $("file").addEventListener("change",async()=>{
   canPlan();step(3);await showSource(1);
  }catch(e){bytes=null;source=null;pdfDoc=null;status("analysis",t.failed,true);step(1);}
 });
+async function showModified(pageNum){
+ if(!previewDoc)return;
+ const id=++renderSerial,all=previewDoc.numPages;
+ selectedPage=Math.min(Math.max(1,pageNum),all);
+ $("currentPage").textContent=t.page+" "+selectedPage+" / "+all;
+ $("prevPage").disabled=selectedPage<=1;$("nextPage").disabled=selectedPage>=all;
+ $("empty").hidden=true;$("paper").hidden=false;$("pdfPreview").style.display="none";
+ $("previewMode").textContent=t.modified;$("placementMark").style.display="none";
+ const page=await previewDoc.getPage(selectedPage);
+ const bounds=page.view,width=Math.max(240,Math.min(610,$("viewer").clientWidth-28));
+ const v=page.getViewport({scale:Math.min(1.6,width/Math.max(1,bounds[2]-bounds[0]))});
+ const canvas=$("pageCanvas");canvas.width=Math.ceil(v.width);canvas.height=Math.ceil(v.height);
+ await page.render({canvasContext:canvas.getContext("2d"),viewport:v}).promise;
+ if(id!==renderSerial)return;viewport=v;
+}
 async function showSource(pageNum){
  if(!pdfDoc)return;const id=++renderSerial;selectedPage=pageNum;
  $("pagePicker").value=String(pageNum);$("currentPage").textContent=t.page+" "+pageNum+" / "+pages;
@@ -77,22 +92,22 @@ async function showSource(pageNum){
  await pdfPage.render({canvasContext:canvas.getContext("2d"),viewport:v}).promise;
  if(id!==renderSerial)return;viewport=v;drawMark();
 }
-$("pagePicker").addEventListener("change",()=>{const n=Number($("pagePicker").value);if(Number.isInteger(n)){if(plan.some(a=>a.type==="add_signature")){plan.find(a=>a.type==="add_signature").page=n;point=null;invalidate();$("positionLabel").textContent=t.noPosition;step(4);}showSource(n);}});
-$("prevPage").addEventListener("click",()=>{if(selectedPage>1)$("pagePicker").value=String(selectedPage-1),$("pagePicker").dispatchEvent(new Event("change"));});
-$("nextPage").addEventListener("click",()=>{if(selectedPage<pages)$("pagePicker").value=String(selectedPage+1),$("pagePicker").dispatchEvent(new Event("change"));});
+$("pagePicker").addEventListener("change",()=>{if(previewDoc)return;const n=Number($("pagePicker").value);if(Number.isInteger(n)){if(plan.some(a=>a.type==="add_signature")){plan.find(a=>a.type==="add_signature").page=n;point=null;invalidate();$("positionLabel").textContent=t.noPosition;step(4);}showSource(n);}});
+$("prevPage").addEventListener("click",()=>{if(selectedPage>1){if(previewDoc)showModified(selectedPage-1);else $("pagePicker").value=String(selectedPage-1),$("pagePicker").dispatchEvent(new Event("change"));}});
+$("nextPage").addEventListener("click",()=>{if(selectedPage<(previewDoc?previewDoc.numPages:pages)){if(previewDoc)showModified(selectedPage+1);else $("pagePicker").value=String(selectedPage+1),$("pagePicker").dispatchEvent(new Event("change"));}});
 function inkPos(e){const r=signature.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*signature.width,y:(e.clientY-r.top)/r.height*signature.height};}
 signature.addEventListener("pointerdown",e=>{e.preventDefault();drawing=true;hasInk=true;signature.setPointerCapture(e.pointerId);const p=inkPos(e);ink.beginPath();ink.moveTo(p.x,p.y);ink.lineTo(p.x+.1,p.y+.1);ink.stroke();invalidate();});
 signature.addEventListener("pointermove",e=>{if(!drawing)return;e.preventDefault();const p=inkPos(e);ink.lineTo(p.x,p.y);ink.stroke();});
 ["pointerup","pointercancel"].forEach(n=>signature.addEventListener(n,()=>drawing=false));
 $("clearSignature").addEventListener("click",()=>{ink.clearRect(0,0,signature.width,signature.height);hasInk=false;invalidate();});
 $("pageCanvas").addEventListener("click",e=>{
- if(!plan.some(a=>a.type==="add_signature"&&a.enabled!==false)||!viewport)return;
+ if(previewDoc||!plan.some(a=>a.type==="add_signature"&&a.enabled!==false)||!viewport)return;
  const rect=$("pageCanvas").getBoundingClientRect(),x=(e.clientX-rect.left)/rect.width*$("pageCanvas").width,y=(e.clientY-rect.top)/rect.height*$("pageCanvas").height;
  const [px,py]=viewport.convertToPdfPoint(x,y);point={page:selectedPage,x:px,y:py};
  plan.find(a=>a.type==="add_signature").page=selectedPage;invalidate();
  $("positionLabel").textContent=t.position+selectedPage;status("positionStatus",t.position+selectedPage);step(4);drawMark();$("previewButton").disabled=false;
 });
-$("backToSource").addEventListener("click",()=>{invalidate();showSource(selectedPage);step(4);});
+$("backToSource").addEventListener("click",()=>{const n=point?.page||plan.find(a=>a.type==="add_signature")?.page||1;invalidate();showSource(n);step(4);});
 function localActions(){
  const q=$("request").value.trim();if(!q)return [];
  let num=1;const match=q.match(/(?:page|p\.|صفحة)\s*(\d+)/i),last=/derni[eè]re|last page|آخر صفحة/i.test(q),first=/premi[eè]re|first page|الصفحة الأولى/i.test(q);
@@ -235,8 +250,9 @@ $("previewButton").addEventListener("click",async()=>{
   [...deleted].sort((a,b)=>b-a).forEach(n=>pdf.removePage(n-1));
   linkMark(pdf,font);previewBytes=new Uint8Array(await pdf.save());
   previewUrl=URL.createObjectURL(new Blob([previewBytes],{type:"application/pdf"}));
-  $("paper").hidden=true;$("empty").hidden=true;$("pdfPreview").src=previewUrl;$("pdfPreview").style.display="block";
-  $("previewMode").textContent=t.modified;$("backToSource").hidden=false;$("approve").disabled=false;
+  previewDoc=await pdfjsLib.getDocument({data:previewBytes.slice()}).promise;
+  await showModified(Math.min(point?.page||1,previewDoc.numPages));
+  $("backToSource").hidden=false;$("approve").disabled=false;
   status("planStatus",t.previewReady);step(6);
  }catch(e){status("planStatus",e?.message||t.export,true);step(4);invalidate();}
  finally{$("previewButton").disabled=false;}
