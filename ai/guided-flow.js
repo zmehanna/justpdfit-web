@@ -209,6 +209,27 @@ $("nextPage").addEventListener("click",()=>{if(selectedPage<(previewDoc?previewD
 function inkPos(e){const r=signature.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*signature.width,y:(e.clientY-r.top)/r.height*signature.height};}
 signature.addEventListener("pointerdown",e=>{if(signatureMode!=="draw")return;e.preventDefault();drawing=true;hasInk=true;signature.setPointerCapture(e.pointerId);const p=inkPos(e);ink.beginPath();ink.moveTo(p.x,p.y);ink.lineTo(p.x+.1,p.y+.1);ink.stroke();invalidate();});
 signature.addEventListener("pointermove",e=>{if(!drawing)return;e.preventDefault();const p=inkPos(e);ink.lineTo(p.x,p.y);ink.stroke();});
+function translateSignatureOptions(){
+ const locale={
+  fr:{heading:"Choisissez votre type de signature",tabs:["✍️ Dessiner","Taper mon nom","Importer","Initiales"],draw:"Dessinez votre signature",clear:"Effacer le dessin",name:"Nom à signer",namePlaceholder:"Prénom Nom",style:"Style manuscrit",upload:"Image de votre signature (PNG ou JPG, 5 Mo maximum)",uploadNote:"Une image PNG avec fond transparent donne généralement le meilleur résultat. L'image reste dans votre navigateur.",remove:"Retirer l'image",initials:"Vos initiales",initialsStyle:"Style",color:"Couleur de la signature",hint:"Choisissez ou créez votre signature avant de générer l'aperçu final."},
+  en:{heading:"Choose your signature method",tabs:["✍️ Draw","Type my name","Upload image","Initials"],draw:"Draw your signature",clear:"Clear drawing",name:"Name to sign",namePlaceholder:"First and last name",style:"Handwriting style",upload:"Signature image (PNG or JPG, up to 5 MB)",uploadNote:"A transparent PNG usually works best. Your image stays in your browser.",remove:"Remove image",initials:"Your initials",initialsStyle:"Style",color:"Signature color",hint:"Create or select a signature before previewing."},
+  ar:{heading:"اختر طريقة التوقيع",tabs:["✍️ ارسم","اكتب اسمي","استيراد صورة","الأحرف الأولى"],draw:"ارسم توقيعك",clear:"مسح الرسم",name:"اسم الموقّع",namePlaceholder:"الاسم الكامل",style:"نمط الخط",upload:"صورة التوقيع (PNG أو JPG، حتى 5 ميغابايت)",uploadNote:"يفضل ملف PNG بخلفية شفافة. تبقى الصورة داخل متصفحك.",remove:"إزالة الصورة",initials:"الأحرف الأولى من اسمك",initialsStyle:"النمط",color:"لون التوقيع",hint:"أنشئ توقيعك أو اختره قبل المعاينة."}
+ };
+ const tr=locale[lang]||locale.fr;
+ $("signatureMethodTitle").textContent=tr.heading;
+ document.querySelectorAll(".signature-tab").forEach((btn,i)=>btn.textContent=tr.tabs[i]);
+ $("drawLabel").textContent=tr.draw;$("clearSignature").textContent=tr.clear;
+ document.querySelector("#signTypePane .field span").textContent=tr.name;
+ $("signatureText").placeholder=tr.namePlaceholder;
+ document.querySelectorAll("#signTypePane .field span")[1].textContent=tr.style;
+ document.querySelector("#signUploadPane .field span").textContent=tr.upload;
+ document.querySelector("#signUploadPane .note").textContent=tr.uploadNote;
+ $("clearSignatureImage").textContent=tr.remove;
+ document.querySelector("#signInitialsPane .field span").textContent=tr.initials;
+ document.querySelectorAll("#signInitialsPane .field span")[1].textContent=tr.initialsStyle;
+ document.querySelector(".signature-colors>span").textContent=tr.color;
+ $("signatureRequired").textContent=tr.hint;
+}
 function refreshSignatureArtwork(){
  invalidate();
  updateSignatureGhost();drawMark();updateContinueButton();
@@ -610,5 +631,5 @@ window.addEventListener("pagehide",()=>{if(previewUrl)URL.revokeObjectURL(previe
 updateStageDisplay();updatePhaseInstruction();
 $("fileChooseText").textContent=lang==="en"?"Choose a PDF":lang==="ar"?"اختر ملف PDF":"Choisir un PDF";
 $("selectedFilename").textContent=lang==="en"?"No file selected":lang==="ar"?"لم يتم اختيار ملف":"Aucun fichier sélectionné";
-chooseSignatureMode("draw");status("analysis",t.file);
+translateSignatureOptions();chooseSignatureMode("draw");status("analysis",t.file);
 })();
