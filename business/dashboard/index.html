@@ -18,11 +18,11 @@ ar:{title:"لوحة تحكم الشركات",intro:"إدارة شركتك وفر
 const $=id=>document.getElementById(id),api=window.JustPDFitBusinessAPI?.endpoint||"",language=$("language");
 Object.entries(languages).forEach(([code,name])=>{const option=document.createElement("option");option.value=code;option.textContent=name;language.append(option)});
 let lang="en";try{const saved=localStorage.getItem("justpdfit-language");lang=languages[saved]?saved:(languages[navigator.language.split("-")[0]]?navigator.language.split("-")[0]:"en")}catch(e){}
-let orgs=[],selected="",role="",user=null;
+let orgs=[],selected="",role="",user=null;let sessionToken=sessionStorage.getItem("jpi_business_access")||"";
 function t(key){return(translations[lang]||translations.en)[key]||translations.en[key]||key}
 function localize(){document.documentElement.lang=lang;document.documentElement.dir=["ar","fa","ur"].includes(lang)?"rtl":"ltr";language.value=lang;$("title").textContent=t("title");$("intro").textContent=t("intro");for(const el of document.querySelectorAll("[data-label]"))el.textContent=t(el.dataset.label);if(!api)$("setup").textContent=t("setup")}
 function status(message,error=false){$("status").textContent=message;$("status").className=error?"error":"success"}
-async function request(path,options={}){const response=await fetch(api+path,{credentials:"include",headers:{"Content-Type":"application/json"},...options});const json=await response.json().catch(()=>({}));if(!response.ok)throw Error(json.error||t("error"));return json}
+async function request(path,options={}){const headers={"Content-Type":"application/json",...(sessionToken?{"Authorization":"Bearer "+sessionToken}:{}),...(options.headers||{})};const response=await fetch(api+path,{credentials:"omit",...options,headers});const json=await response.json().catch(()=>({}));if(!response.ok)throw Error(json.error||t("error"));return json}
 function showApp(on){$("auth").hidden=on;$("app").hidden=!on}
 async function boot(){
 if(!api){$("setup").hidden=false;$("setup").textContent=t("setup");return}
@@ -44,8 +44,8 @@ $("createForm").onsubmit=async e=>{e.preventDefault();try{const x=await request(
 $("inviteForm").onsubmit=async e=>{e.preventDefault();try{await request("/organizations/"+selected+"/invites",{method:"POST",body:JSON.stringify({email:$("inviteEmail").value,role:$("role").value})});status(t("inviteSent"));$("inviteEmail").value=""}catch(e){status(e.message,true)}};
 $("orgChoice").onchange=()=>{selected=$("orgChoice").value;loadOrg();loadExtras()};
 $("refreshInvoices").onclick=()=>loadExtras();
-$("logout").onclick=async()=>{try{await request("/auth/logout",{method:"POST",body:"{}"})}catch(e){}showApp(false)};
-const hash=new URLSearchParams(location.hash.slice(1)),token=hash.get("login"),invite=hash.get("invite");if(token||invite){history.replaceState(null,"",location.pathname);if(token){request("/auth/verify",{method:"POST",body:JSON.stringify({token})}).then(()=>boot()).catch(e=>status(e.message,true))}else{sessionStorage.setItem("justpdfit_business_invite",invite);status(t("inviteLogin")||"Sign in with your invited email to accept.");boot()}}else boot();
+$("logout").onclick=async()=>{try{await request("/auth/logout",{method:"POST",body:"{}"})}catch(e){}sessionToken="";sessionStorage.removeItem("jpi_business_access");showApp(false)};
+const hash=new URLSearchParams(location.hash.slice(1)),token=hash.get("login"),invite=hash.get("invite");if(token||invite){history.replaceState(null,"",location.pathname);if(token){request("/auth/verify",{method:"POST",body:JSON.stringify({token})}).then(result=>{if(!result.session_token)throw Error("Session missing");sessionToken=result.session_token;sessionStorage.setItem("jpi_business_access",sessionToken);return boot()}).catch(e=>status(e.message,true))}else{sessionStorage.setItem("justpdfit_business_invite",invite);status(t("inviteLogin")||"Sign in with your invited email to accept.");boot()}}else boot();
 localize();
 })();
 </script></body></html>
