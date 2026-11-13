@@ -59,8 +59,25 @@ const init=()=>{
   });
  }
 
- function pricingIsPaid(){return $("signWatermarkPaid").checked;}
- function cleanUnlocked(){return !!(paidDocumentFingerprint&&paidDocumentFingerprint===documentFingerprint);}
+ let businessCleanAllowed=false;
+ const businessEndpoint=window.JustPDFitBusinessAPI?.endpoint;
+ async function checkBusinessEntitlement(){
+  businessCleanAllowed=false;
+  const token=sessionStorage.getItem("jpi_business_access")||"";
+  const org=sessionStorage.getItem("jpi_business_org")||"";
+  if(!/^https:\/\/[a-z0-9.-]+\/?$/i.test(businessEndpoint||"")||!/^[a-f0-9]{64}$/.test(token)||!/^[0-9a-f-]{36}$/.test(org))return false;
+  try{
+   const response=await fetch(businessEndpoint.replace(/\/$/,"")+"/organizations/"+encodeURIComponent(org)+"/entitlement",{
+    method:"GET",cache:"no-store",headers:{"Authorization":"Bearer "+token}
+   });
+   if(!response.ok)return false;
+   const rights=await response.json();
+   businessCleanAllowed=rights.eligible===true&&Number(rights.seats)>0;
+  }catch(e){businessCleanAllowed=false}
+  return businessCleanAllowed;
+ }
+ function pricingIsPaid(){return businessCleanAllowed||$("signWatermarkPaid").checked;}
+ function cleanUnlocked(){return businessCleanAllowed||!!(paidDocumentFingerprint&&paidDocumentFingerprint===documentFingerprint);}
  let documentFingerprint=null;
  function syncDownloadPricing(){
   const enabled=!!(pdfDoc&&sigData&&placements.length);
@@ -718,6 +735,8 @@ const init=()=>{
      height:item.h*sy
     });
    }
+   // The business entitlement is refreshed server-side before each clean export.
+   await checkBusinessEntitlement();
    // A paid option cannot be unlocked by just selecting a radio button.
    if(pricingIsPaid()&&!cleanUnlocked())throw Error(st("paymentUnverifiedDownload",null,"Verify payment before downloading without a watermark."));
    if(!pricingIsPaid())await watermark.stamp(copy);
@@ -742,6 +761,7 @@ const init=()=>{
  document.querySelectorAll('input[name="verify"]').forEach(input=>input.addEventListener("change",syncDuoPrice));
  $("duoNoWatermark").addEventListener("change",syncDuoPrice);
  renderPlacementList();syncWizard();
+ if(businessEndpoint)checkBusinessEntitlement().then(()=>syncWizard());
  document.addEventListener("justpdfit-language",()=>{
   updateStylePreview();
   renderPlacementList();
