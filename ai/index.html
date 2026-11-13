@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JustPDFit AI — PDF assistant workspace</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../justpdfit-icon.svg">
+<script defer src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<link rel="stylesheet" href="../styles.css">
+<style>
+:root{--ai-ink:#233451;--ai-pink:#ed465c;--ai-line:#e4e9f2}*{box-sizing:border-box}
+body{background:#f7f9fd;color:var(--ai-ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.ai-wrap{max-width:1120px;margin:auto;padding:20px 20px 70px}.ai-head{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:24px}
+.ai-logo{display:flex;align-items:center;gap:12px;color:inherit;text-decoration:none;font-weight:850;font-size:21px}.ai-logo img{width:43px;height:43px}
+.ai-pill{border-radius:999px;background:#ffe9ee;color:#bd304c;padding:7px 12px;font-size:12px;font-weight:750}
+.ai-title{font-size:clamp(27px,4vw,43px);letter-spacing:-1.2px;margin:18px 0 7px}
+.ai-lead{font-size:15px;color:#65728b;max-width:780px}
+.ai-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;margin-top:26px}
+.ai-card{background:white;border:1px solid var(--ai-line);border-radius:21px;padding:23px;box-shadow:0 9px 35px #2434510b;min-width:0}
+.ai-card h2{font-size:20px;margin:0 0 15px}.ai-field{display:grid;gap:7px;margin:15px 0;font-size:13px;font-weight:700}
+.ai-field input,.ai-field textarea,.ai-field select{width:100%;padding:11px 12px;border:1px solid #d6dfee;border-radius:10px;background:#fff;color:var(--ai-ink);font:inherit;font-weight:400}
+.ai-field textarea{min-height:76px;resize:vertical}.ai-controls{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.ai-controls label{font-size:12px}.ai-controls input{width:100%;padding:9px;border:1px solid #d6dfee;border-radius:8px}
+.ai-check{display:flex;gap:9px;align-items:flex-start;font-size:13px;margin:12px 0}.ai-check input{accent-color:var(--ai-pink);margin-top:3px}
+.ai-sign{width:100%;height:132px;border:2px dashed #d1dcea;border-radius:11px;touch-action:none;background:white;display:block}
+.ai-buttons{display:flex;flex-wrap:wrap;gap:9px;margin-top:19px}
+.ai-btn{border:0;background:linear-gradient(95deg,#ea445c,#fc6574);color:#fff;border-radius:11px;min-height:43px;padding:11px 17px;font:750 13px system-ui;cursor:pointer}
+.ai-btn.secondary{background:#eef2f9;color:#334c6f}
+.ai-btn:disabled{opacity:.5;cursor:not-allowed}
+.ai-note,.ai-status{font-size:12px;color:#64738a;line-height:1.6}
+.ai-status{padding:10px 12px;border-radius:10px;background:#f1f4fa;margin-top:14px;min-height:40px}
+.ai-status.error{background:#fff0f1;color:#a72741}.ai-status.ok{background:#eef8f0;color:#276b3e}
+.ai-preview{height:525px;width:100%;border:1px solid var(--ai-line);border-radius:12px;background:#f2f4f8}
+.ai-empty{display:grid;place-items:center;border:1px dashed #d7dfec;border-radius:12px;height:300px;color:#7886a1;text-align:center;padding:26px}
+.ai-warning{background:#fff6f8;border:1px solid #ffd7df;border-radius:12px;padding:11px 13px;font-size:12px;margin-top:15px;line-height:1.6}
+.ai-small{font-size:11px;color:#72809a;line-height:1.5}
+.ai-footer{margin-top:20px;text-align:center}.ai-footer a{color:#c53150}
+@media(max-width:800px){.ai-grid{grid-template-columns:1fr}.ai-preview{height:420px}.ai-card{padding:17px}}
+</style>
+</head>
+<body>
+<main class="ai-wrap">
+<header class="ai-head"><a class="ai-logo" href="../"><img src="../justpdfit-icon.svg" alt="">JustPDFit <span style="color:#ed465c">AI</span></a><span class="ai-pill" id="badge">PDF workspace · beta</span></header>
+<h1 class="ai-title" id="heading">Tell us what to do with your PDF</h1>
+<p class="ai-lead" id="lead">Describe the change, upload your PDF, check the actions, and preview the result before downloading. Your PDF stays on your device.</p>
+<div class="ai-grid">
+<section class="ai-card">
+<h2 id="section1">1. Document & instructions</h2>
+<label class="ai-field"><span id="fileLabel">Choose a PDF</span><input id="file" type="file" accept=".pdf,application/pdf"></label>
+<label class="ai-field"><span id="promptLabel">Your instructions</span><textarea id="prompt" maxlength="600" placeholder="Sign the last page, add today's date and delete page 2."></textarea></label>
+<div class="ai-buttons"><button class="ai-btn secondary" id="interpret" type="button">Understand request</button></div>
+<div class="ai-warning" id="limitations">The assistant interprets supported commands locally, not with a generative AI model. Review and adjust the actions below. It cannot replace existing PDF text or identify a signature field automatically.</div>
+<h2 style="margin-top:25px" id="section2">2. Confirm PDF actions</h2>
+<label class="ai-check"><input id="remove" type="checkbox"><span id="removeLabel">Delete a page</span></label>
+<div class="ai-controls"><label><span id="removePageLabel">Page to delete</span><input id="removePage" type="number" min="1" value="2"></label><label><span id="numPagesLabel">Pages in file</span><input id="pageCount" readonly value="—"></label></div>
+<label class="ai-check"><input id="date" type="checkbox"><span id="dateLabel">Add today's date</span></label>
+<div class="ai-controls"><label><span id="datePageLabel">On original page</span><input id="datePage" type="number" min="1" value="1"></label><label><span id="datePositionLabel">Position</span><select id="datePosition"><option value="bottom-right">Bottom right</option><option value="bottom-left">Bottom left</option><option value="top-right">Top right</option></select></label></div>
+<label class="ai-check"><input id="sign" type="checkbox"><span id="signLabel">Add my handwritten signature</span></label>
+<div class="ai-controls"><label><span id="signPageLabel">On original page</span><input id="signPage" type="number" min="1" value="1"></label><label><span id="signPositionLabel">Position</span><select id="signPosition"><option value="bottom-right">Bottom right</option><option value="bottom-left">Bottom left</option><option value="top-right">Top right</option></select></label></div>
+<label class="ai-field"><span id="signatureLabel">Draw your signature here</span><canvas class="ai-sign" id="signature" width="600" height="220" aria-label="Signature drawing pad"></canvas></label>
+<button class="ai-btn secondary" id="clearSign" type="button">Clear signature</button>
+<div class="ai-warning" id="security">Nothing is applied to the original. A dated signature is not automatically a verified electronic signature.</div>
+<div class="ai-buttons"><button class="ai-btn" id="previewBtn" type="button">Preview changes</button><button class="ai-btn secondary" id="resetBtn" type="button">Reset</button></div>
+<div class="ai-status" id="status" role="status" aria-live="polite">Load a PDF to start.</div>
+</section>
+<section class="ai-card">
+<h2 id="section3">3. Preview & export</h2>
+<div class="ai-empty" id="emptyPreview">Your modified document will appear here after you click Preview changes.</div>
+<iframe class="ai-preview" id="preview" title="PDF preview" hidden></iframe>
+<p class="ai-note" id="priceNote">Free export includes a small clickable JustPDFit watermark. No payment is required.</p>
+<div class="ai-buttons"><button class="ai-btn" id="download" type="button" disabled>Download PDF with watermark</button><a class="ai-btn secondary" href="../edit-pdf/" id="advanced" style="text-decoration:none">Advanced PDF editor</a></div>
+<p class="ai-small" id="privacy">Privacy: all PDF processing on this page happens inside your browser. The source PDF and drawn signature are not sent to our servers or third-party AI services.</p>
+</section>
+</div>
+<footer class="ai-footer"><a href="../">JustPDFit</a> · <a href="../privacy/">Privacy</a> · KL-MEHANNA LLC</footer>
+</main>
+<script defer src="./workspace.js?v=20261113-beta"></script>
+</body></html>
