@@ -48,7 +48,7 @@ body{background:#f7f9fd;color:var(--ai-ink);font-family:system-ui,-apple-system,
 <h2 id="section1">1. Document & instructions</h2>
 <label class="ai-field"><span id="fileLabel">Choose a PDF</span><input id="file" type="file" accept=".pdf,application/pdf"></label>
 <label class="ai-field"><span id="promptLabel">Your instructions</span><textarea id="prompt" maxlength="600" placeholder="Sign the last page, add today's date and delete page 2."></textarea></label>
-<div class="ai-buttons"><button class="ai-btn secondary" id="interpret" type="button">Understand request</button></div>
+<div class="ai-buttons"><button class="ai-btn" id="goAI" type="button" onclick="document.getElementById('justpdfit-ai-planner')?.scrollIntoView({behavior:'smooth',block:'start'})">✦ Utiliser le moteur IA</button><button class="ai-btn secondary" id="interpret" type="button">Mode manuel</button></div>
 <div class="ai-warning" id="limitations">The assistant interprets supported commands locally, not with a generative AI model. Review and adjust the actions below. It cannot replace existing PDF text or identify a signature field automatically.</div>
 <h2 style="margin-top:25px" id="section2">2. Confirm PDF actions</h2>
 <label class="ai-check"><input id="remove" type="checkbox"><span id="removeLabel">Delete a page</span></label>
