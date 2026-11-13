@@ -69,6 +69,24 @@ if(req.method==="POST"&&url.pathname==="/auth/verify"){
  return response({user:current},200,origin,{"Set-Cookie":"jpibiz="+session+"; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=2592000"});
 }
 const current=await user(req,env);if(!current)return response({error:"unauthenticated"},401,origin);
+if(req.method==="POST"&&url.pathname==="/invitations/accept"){
+ const d=await body(req),token=d.token;
+ if(typeof token!=="string"||!/^[a-f0-9]{64}$/.test(token))return response({error:"invalid_invitation"},422,origin);
+ const h=await sha(token);
+ const invite=await env.BUSINESS_DB.prepare("SELECT organization_id,email,role FROM invitations WHERE token_hash=? AND expires_at>? AND accepted_at IS NULL").bind(h,now()).first();
+ if(!invite||invite.email!==current.email)return response({error:"invalid_invitation"},403,origin);
+ const org=await organization(env,invite.organization_id);
+ if(!org||!["active","trialing"].includes(org.state))return response({error:"subscription_required"},402,origin);
+ // The INSERT ... SELECT is evaluated transactionally by D1/SQLite. Concurrent
+ // redemptions cannot exceed the paid seat count in this statement.
+ const cap=(org.included_seats||0)+(org.extra_seats||0);
+ const sql="INSERT INTO memberships(organization_id,user_id,role,active) SELECT ?,?,?,1 WHERE (SELECT COUNT(*) FROM memberships WHERE organization_id=? AND active=1) < ? ON CONFLICT(organization_id,user_id) DO UPDATE SET active=1,role=excluded.role";
+ const update=await env.BUSINESS_DB.prepare(sql).bind(invite.organization_id,current.id,invite.role,invite.organization_id,cap).run();
+ if(update.meta.changes!==1)return response({error:"seat_limit"},409,origin);
+ await env.BUSINESS_DB.prepare("UPDATE invitations SET accepted_at=? WHERE token_hash=? AND accepted_at IS NULL").bind(now(),h).run();
+ await audit(env,invite.organization_id,current.id,"invitation_accepted");
+ return response({ok:true,organization_id:invite.organization_id},200,origin);
+}
 if(req.method==="POST"&&url.pathname==="/auth/logout"){const token=cookie(req);await env.BUSINESS_DB.prepare("UPDATE business_sessions SET revoked_at=? WHERE token_hash=?").bind(now(),await sha(token)).run();return response({ok:true},200,origin,{"Set-Cookie":"jpibiz=; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=0"})}
 if(req.method==="GET"&&url.pathname==="/me"){const orgs=await env.BUSINESS_DB.prepare("SELECT o.id,o.name,m.role,s.plan,s.state,s.included_seats,s.extra_seats FROM organizations o JOIN memberships m ON o.id=m.organization_id LEFT JOIN business_subscriptions s ON s.organization_id=o.id WHERE m.user_id=? AND m.active=1").bind(current.id).all();return response({user:current,organizations:orgs.results},200,origin)}
 if(req.method==="POST"&&url.pathname==="/organizations"){
