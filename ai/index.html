@@ -35,6 +35,7 @@ button.primary{background:linear-gradient(90deg,#ed465e,#fa6576);color:white}but
 #paper{position:relative;line-height:0;display:inline-block;max-width:100%;flex:0 0 auto}#pageCanvas{display:block;max-width:100%;height:auto;cursor:crosshair;box-shadow:0 2px 8px #35456625;background:white;touch-action:manipulation}
 #placementMark,#dateMark{position:absolute;display:none;border:2px dashed #ec435e;background:#ee49611a;pointer-events:none;border-radius:5px;line-height:1.3;color:#be2f49;font:750 11px system-ui;padding:4px;min-width:75px;box-sizing:border-box;max-width:100%;z-index:2;touch-action:none;cursor:move;user-select:none}
 #dateMark{border-color:#397bc9;background:#397bc91a;color:#2765aa;font-size:10px;min-width:48px}
+#signatureGhost{display:block;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none}#signatureGhost[hidden]{display:none!important}#signaturePlaceholder{font-size:11px;line-height:1.3;pointer-events:none}
 .resize-handle{position:absolute;right:-6px;bottom:-6px;width:16px;height:16px;background:#ef4c65;border:2px solid white;border-radius:4px;cursor:nwse-resize;touch-action:none}
 #placementMark,#dateMark{pointer-events:auto}
 #pdfPreview{display:none;width:100%;height:560px;border:0;background:#fff}.empty{display:grid;place-items:center;text-align:center;min-height:380px;color:#8290a6;padding:20px}
@@ -98,11 +99,11 @@ footer{text-align:center;font-size:12px;color:var(--sub);margin-top:20px}
 <div class="viewer-controls"><button type="button" class="secondary" id="moveSignature" hidden>Déplacer la signature</button><button type="button" class="secondary" id="moveDate" hidden>Déplacer la date</button><span id="editHint" class="note" hidden></span></div>
 <div class="viewer-controls"><button id="prevPage" class="secondary" disabled aria-label="Page précédente">‹</button><small id="currentPage">Page — / —</small><button id="nextPage" class="secondary" disabled aria-label="Page suivante">›</button><button id="backToSource" class="secondary" hidden>Modifier le placement</button></div>
 <div class="viewer" id="viewer"><div id="empty" class="empty">Chargez un PDF pour voir immédiatement ses pages.</div>
-<div id="paper" hidden><canvas id="pageCanvas"></canvas><div id="placementMark">Signature<span class="resize-handle" aria-label="Redimensionner la signature" title="Redimensionner"></span></div><div id="dateMark">Date</div></div>
+<div id="paper" hidden><canvas id="pageCanvas"></canvas><div id="placementMark"><span id="signaturePlaceholder">Signature</span><img id="signatureGhost" hidden alt="" draggable="false"><span class="resize-handle" aria-label="Redimensionner la signature" title="Redimensionner"></span></div><div id="dateMark">Date</div></div>
 <iframe title="Prévisualisation du PDF modifié" id="pdfPreview"></iframe></div>
 <p id="previewNote" class="note">Cliquez directement sur la page pour positionner la signature. Vérifiez ensuite le résultat généré.</p></section>
 </div><footer>JustPDFit · <a href="../privacy/">Privacy</a> · KL-MEHANNA</footer>
 </div>
 <script defer src="./local-ocr.js?v=20261113-smart-place1"></script>
-<script defer src="./guided-flow.js?v=20261113-smart-place1"></script>
+<script defer src="./guided-flow.js?v=20261113-smart-place2"></script>
 </body></html>
