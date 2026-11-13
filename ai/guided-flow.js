@@ -71,7 +71,7 @@ async function showModified(pageNum){
  $("currentPage").textContent=t.page+" "+selectedPage+" / "+all;
  $("prevPage").disabled=selectedPage<=1;$("nextPage").disabled=selectedPage>=all;
  $("empty").hidden=true;$("paper").hidden=false;$("pdfPreview").style.display="none";
- $("previewMode").textContent=t.modified;$("placementMark").style.display="none";
+ $("previewMode").textContent=t.modified;$("placementMark").style.display="none";$("previewNote").textContent=lang==="fr"?"PDF modifié : vérifiez la signature et chaque page avant de valider.":lang==="ar"?"راجع الملف المعدّل والتوقيع قبل الموافقة.":"Modified PDF: review the signature and all pages before approving.";
  const page=await previewDoc.getPage(selectedPage);
  const bounds=page.view,width=Math.max(240,Math.min(610,$("viewer").clientWidth-28));
  const v=page.getViewport({scale:Math.min(1.6,width/Math.max(1,bounds[2]-bounds[0]))});
@@ -83,7 +83,7 @@ async function showSource(pageNum){
  if(!pdfDoc)return;const id=++renderSerial;selectedPage=pageNum;
  $("pagePicker").value=String(pageNum);$("currentPage").textContent=t.page+" "+pageNum+" / "+pages;
  $("prevPage").disabled=pageNum<=1;$("nextPage").disabled=pageNum>=pages;
- $("empty").hidden=true;$("paper").hidden=false;$("pdfPreview").style.display="none";$("previewMode").textContent=t.original;
+ $("empty").hidden=true;$("paper").hidden=false;$("pdfPreview").style.display="none";$("previewMode").textContent=t.original;$("previewNote").textContent=lang==="fr"?"Cliquez sur la page pour ajuster l’emplacement, puis générez le nouvel aperçu.":lang==="ar"?"اضغط على الصفحة لتعديل الموضع ثم أنشئ معاينة جديدة.":"Click on the document to adjust the position, then generate a new preview.";
  const pdfPage=await pdfDoc.getPage(pageNum);
  const bounds=pdfPage.view,width=Math.max(240,Math.min(610,$("viewer").clientWidth-28));
  const scale=Math.min(1.6,width/Math.max(1,bounds[2]-bounds[0]));
