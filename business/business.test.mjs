@@ -15,7 +15,7 @@ test('pricing loads both translation catalogs',()=>{
 test('all additional locale catalogs include expected fields',()=>{
  const one=extra1.match(/\{.*\}/s)?.[0],two=extra2.match(/\{.*\}/s)?.[0];
  const first=JSON.parse(one);
- const second=JSON.parse(two.replace(/^Object\.assign\(window\.JustPDFitBusinessExtra \|\| \(window\.JustPDFitBusinessExtra = \{\}\),/,'').replace(/\);\s*$/,''));
+ const second=JSON.parse(two);
  for(const [code,row] of Object.entries({...first,...second}))assert.equal(row.length,35,code);
 });
 test('public page does not embed Stripe live secret',()=>assert.doesNotMatch(html,/(?:sk_live|rk_live)_[A-Za-z0-9]{15,}/));
