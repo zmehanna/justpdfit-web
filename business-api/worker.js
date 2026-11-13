@@ -105,7 +105,7 @@ if(req.method==="POST"&&url.pathname==="/organizations"){
  const id=uid();await env.BUSINESS_DB.batch([env.BUSINESS_DB.prepare("INSERT INTO organizations(id,name,owner_id) VALUES(?,?,?)").bind(id,name,current.id),env.BUSINESS_DB.prepare("INSERT INTO memberships(organization_id,user_id,role) VALUES(?,?,'owner')").bind(id,current.id)]);
  await audit(env,id,current.id,"organization_created");return response({id,name},201,origin);
 }
-const match=url.pathname.match(/^\/organizations\/([a-f0-9-]{36})(?:\/(members|invites|billing|entitlement|invoices|usage))?$/);if(!match)return response({error:"not_found"},404,origin);
+const match=url.pathname.match(/^\/organizations\/([a-f0-9-]{36})(?:\/(members|invites|billing|billing-change|billing-portal|entitlement|invoices|usage))?$/);if(!match)return response({error:"not_found"},404,origin);
 const id=match[1],resource=match[2]||"",membership=await member(env,id,current.id);
 if(!membership)return response({error:"not_found"},404,origin);
 const org=await organization(env,id);if(!org)return response({error:"not_found"},404,origin);
@@ -149,6 +149,40 @@ if(req.method==="GET"&&resource==="invoices"){
  await checkStripeAccount(env);
  const data=await stripe(env,"/invoices?"+new URLSearchParams({customer:customer.stripe_customer_id,limit:"30"}));
  return response({invoices:(data.data||[]).map(v=>({id:v.id,status:v.status,currency:v.currency,amount_paid:v.amount_paid,amount_due:v.amount_due,created:v.created,hosted_invoice_url:v.hosted_invoice_url,invoice_pdf:v.invoice_pdf}))},200,origin);
+}
+if(req.method==="POST"&&resource==="billing-portal"){
+ if(membership.role!=="owner")return response({error:"forbidden"},403,origin);
+ if(env.BUSINESS_BILLING_ENABLED!=="true")return response({error:"billing_not_enabled"},503,origin);
+ await checkStripeAccount(env);
+ const customer=await env.BUSINESS_DB.prepare("SELECT stripe_customer_id FROM organizations WHERE id=?").bind(id).first();
+ if(!/^cus_/.test(customer?.stripe_customer_id||""))return response({error:"customer_not_found"},404,origin);
+ const portal=await stripe(env,"/billing_portal/sessions",{customer:customer.stripe_customer_id,return_url:env.PUBLIC_SITE_URL+"/business/dashboard/"});
+ return response({url:portal.url},200,origin);
+}
+if(req.method==="POST"&&resource==="billing-change"){
+ if(membership.role!=="owner")return response({error:"forbidden"},403,origin);
+ if(env.BUSINESS_BILLING_ENABLED!=="true")return response({error:"billing_not_enabled"},503,origin);
+ await checkStripeAccount(env);
+ const d=await body(req),plan=d.plan,period=d.period,extra=Number(d.extra_seats);
+ if(!PLANS[plan]||!["monthly","annual"].includes(period)||!Number.isSafeInteger(extra)||extra<0||extra>10000)return response({error:"invalid_plan"},422,origin);
+ const active=await countMembers(env,id),included=PLANS[plan].included;
+ const pending=await env.BUSINESS_DB.prepare("SELECT COUNT(DISTINCT email) AS n FROM invitations WHERE organization_id=? AND accepted_at IS NULL AND expires_at>?").bind(id,now()).first();
+ if(included+extra<active+(pending?.n||0))return response({error:"not_enough_seats"},409,origin);
+ const product=await env.BUSINESS_DB.prepare("SELECT stripe_subscription_id,stripe_customer_id FROM business_subscriptions s JOIN organizations o ON o.id=s.organization_id WHERE s.organization_id=?").bind(id).first();
+ if(!/^sub_/.test(product?.stripe_subscription_id||"")||!/^cus_/.test(product?.stripe_customer_id||""))return response({error:"subscription_not_found"},404,origin);
+ const session=await stripe(env,"/subscriptions/"+encodeURIComponent(product.stripe_subscription_id));
+ if(session.customer!==product.stripe_customer_id||!["active","trialing"].includes(session.status))return response({error:"subscription_not_active"},409,origin);
+ const ids=session.items?.data||[];
+ if(!ids.length||ids.length>2)return response({error:"subscription_items_unexpected"},409,origin);
+ const mainPrice=env["PRICE_"+plan.toUpperCase()+"_"+period.toUpperCase()];
+ const extraPrice=env["PRICE_"+plan.toUpperCase()+"_EXTRA_"+period.toUpperCase()];
+ if(!/^price_/.test(mainPrice||"")||(extra>0&&!/^price_/.test(extraPrice||"")))return response({error:"prices_not_configured"},503,origin);
+ const form={"items[0][id]":ids[0].id,"items[0][price]":mainPrice,"items[0][quantity]":"1","proration_behavior":"create_prorations","metadata[business_org_id]":id,"metadata[business_plan]":plan,"metadata[extra_seats]":String(extra)};
+ if(extra>0){form["items[1][price]"]=extraPrice;form["items[1][quantity]"]=String(extra);if(ids[1])form["items[1][id]"]=ids[1].id}
+ else if(ids[1]){form["items[1][id]"]=ids[1].id;form["items[1][deleted]"]="true"}
+ const updated=await stripe(env,"/subscriptions/"+encodeURIComponent(session.id),form);
+ await audit(env,id,current.id,"subscription_change_requested",plan+" "+period);
+ return response({ok:true,subscription_id:updated.id,status:updated.status},200,origin);
 }
 if(req.method==="POST"&&resource==="billing"){
  if(membership.role!=="owner")return response({error:"forbidden"},403,origin);
