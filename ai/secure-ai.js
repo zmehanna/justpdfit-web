@@ -61,7 +61,7 @@
  }
  function signatureAnchor(page,request){
   const list=anchors.filter(a=>a.page===page);
-  return /assur[ée]|insured|assurance/i.test(request)?(list.find(a=>/assur[ée]|insured/i.test(a.label))||null):(list.find(a=>/signature|sign here|توقيع|إمضاء/i.test(a.label))||null);
+  return /assur[ée]|insured|assurance/i.test(request)?(list.find(a=>/signature.*assur[ée]|assur[ée].*signature|insured.*sign|sign.*insured/i.test(a.label))||list.find(a=>/assur[ée]|insured/i.test(a.label))||null):(list.find(a=>/signature|sign here|توقيع|إمضاء/i.test(a.label))||null);
  }
  function renderPlan(){
   $("aiActions").replaceChildren();$("aiPlan").hidden=!plan.length;$("aiApprove").checked=false;clearPreview();
