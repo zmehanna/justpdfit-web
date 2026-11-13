@@ -26,4 +26,4 @@ jobs:
           node --test business-api/*.test.mjs
       - name: Check browser script syntax and pricing localization
         run: |
-          node --test business/*.test.mjs
+          node --test business/*.test.mjs business/dashboard/*.test.mjs
