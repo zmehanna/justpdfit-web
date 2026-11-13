@@ -13,7 +13,7 @@ test('pricing loads both translation catalogs',()=>{
  assert.match(html,/i18n-extra-2\.js/);
 });
 test('all additional locale catalogs include expected fields',()=>{
- const one=extra1.match(/\{.*\}/s)?.[0],two=extra2.match(/\{.*\}/s)?.[0];
+ const one=extra1.match(/\{.*\}/s)?.[0],two=extra2.slice(extra2.indexOf('),{')+2,extra2.lastIndexOf(');'));
  const first=JSON.parse(one);
  const second=JSON.parse(two);
  for(const [code,row] of Object.entries({...first,...second}))assert.equal(row.length,35,code);
