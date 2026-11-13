@@ -104,6 +104,30 @@ function localActions(){
  const del=q.match(/(?:supprim|delete|remove|حذف)[^\d]{0,20}(?:page\s*)?(\d+)/i);if(del)items.push({type:"delete_page",page:Number(del[1]),enabled:true});
  return items.filter(a=>a.page>=1&&a.page<=pages);
 }
+async function detectRequestedSignature(){
+ const q=$("request").value.toLowerCase();
+ if(!pdfDoc||!/sign|signe|signature|paraph|توقيع|إمضاء/i.test(q))return;
+ const matches=anchors.some(a=>/assur[ée]|insured|signature|sign here|توقيع|إمضاء/i.test(a.label));
+ if(matches)return;
+ if(!window.JustPDFitLocalOCR){
+  status("planStatus",lang==="fr"?"OCR indisponible. Vous pourrez placer la signature manuellement.":"OCR unavailable; place the signature manually.",true);return;
+ }
+ const m=q.match(/(?:page|p\\.|صفحة)\\s*(\\d+)/i);
+ const forced=m?Number(m[1]):/premi[eè]re|first page|الأولى/.test(q)?1:/derni[eè]re|last page|الأخيرة/.test(q)?pages:0;
+ const candidate=forced?[forced]:Array.from({length:Math.min(pages,3)},(_,i)=>i+1);
+ status("planStatus",lang==="fr"?"Document scanné : recherche locale de l’emplacement de signature…":"Scanning locally for the signature location…");
+ try{
+  const result=await JustPDFitLocalOCR.search(pdfDoc,candidate,n=>status("planStatus",(lang==="fr"?"Reconnaissance visuelle de la page ":"Scanning page ")+n+"…"));
+  anchors.push(...result);
+  if(result.length){
+   $("fieldCandidates").textContent=(lang==="fr"?"Emplacement(s) reconnus dans le scan : ":"Detected on scan: ")+result.map(a=>(lang==="fr"?"page ":"page ")+a.page+" — "+a.label).join(" · ");
+  }else{
+   status("planStatus",lang==="fr"?"Aucun repère fiable reconnu sur le scan. Placement manuel disponible.":"No reliable label detected; manual placement available.");
+  }
+ }catch(e){
+  status("planStatus",lang==="fr"?"Analyse visuelle indisponible. Placement manuel toujours possible.":"Local visual analysis unavailable; manual placement remains available.");
+ }
+}
 function setPlan(items,sourceMode){
  plan=items.slice(0,8).filter(a=>a&&["add_signature","add_date","delete_page","add_text","fill_field"].includes(a.type)&&Number.isInteger(Number(a.page))&&a.page>=1&&a.page<=pages).map(a=>({...a,enabled:true,page:Number(a.page)}));
  point=null;invalidate();$("plans")?.remove();if(!plan.length){status("planStatus",t.unrecognized,true);return;}
@@ -122,20 +146,26 @@ function setPlan(items,sourceMode){
   selectedPage=sig.page;$("pagePicker").value=String(sig.page);
   if(hint){
    const page=source.getPage(sig.page-1);
-   point={page:sig.page,x:Math.max(24,Math.min(page.getWidth()-60,hint.x+35)),y:Math.max(24,Math.min(page.getHeight()-24,hint.y-27))};
+   point={page:sig.page,x:Math.max(24,Math.min(page.getWidth()-60,hint.x+(hint.source==="ocr"?0:35))),y:Math.max(24,Math.min(page.getHeight()-24,hint.y-(hint.source==="ocr"?32:27)))};
    $("positionLabel").textContent=t.position+sig.page;
   }
   showSource(sig.page);
-  status("positionStatus",hint?t.auto:t.positionNeeded);
+  status("positionStatus",hint?(hint.source==="ocr"?(lang==="fr"?"Emplacement proposé par reconnaissance visuelle (« "+hint.label+" »). Vérifiez et déplacez-le si nécessaire.":"Visual OCR proposal (“"+hint.label+"”). Check and reposition if needed."):t.auto):t.positionNeeded);
  } else status("positionStatus",t.local);
  $("previewButton").disabled=false;
  status("planStatus",sourceMode==="ai"?t.plan:t.local);step(sig?4:5);
 }
-$("localButton").addEventListener("click",()=>{if(!bytes)return;setPlan(localActions(),"local");});
+$("localButton").addEventListener("click",async()=>{
+ if(!bytes)return;
+ $("localButton").disabled=true;
+ try{await detectRequestedSignature();setPlan(localActions(),"local");}
+ finally{canPlan();}
+});
 $("planButton").addEventListener("click",async()=>{
  if(!bytes)return;if(!$("requestConsent").checked){status("planStatus",t.consent,true);return;}
  $("planButton").disabled=true;status("planStatus",t.working);
  try{
+  await detectRequestedSignature();
   let excerpt="";
   const share=$("docConsent").checked;
   if(share&&pdfDoc){
@@ -157,7 +187,7 @@ $("planButton").addEventListener("click",async()=>{
    if(target)actions=actions.map(a=>a.type==="add_signature"?{...a,page:target.page}:a);
   }
   setPlan(actions,"ai");
-  if(data.uncertainty)status("positionStatus",data.uncertainty);
+  if(data.uncertainty&&!point)status("positionStatus",data.uncertainty);
  }catch(e){status("planStatus",t.modelFailed,true);}finally{canPlan();}
 });
 function croppedSignature(){
