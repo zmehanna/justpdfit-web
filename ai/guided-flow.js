@@ -157,7 +157,7 @@ async function showSource(pageNum){
  await pdfPage.render({canvasContext:canvas.getContext("2d"),viewport:v}).promise;
  if(id!==renderSerial)return;viewport=v;drawMark();
 }
-$("pagePicker").addEventListener("change",()=>{if(previewDoc)return;const n=Number($("pagePicker").value);if(Number.isInteger(n)){if(plan.some(a=>a.type==="add_signature")){plan.find(a=>a.type==="add_signature").page=n;point=null;datePoint=null;invalidate();$("positionLabel").textContent=t.noPosition;step(4);}showSource(n);}});
+$("pagePicker").addEventListener("change",()=>{if(previewDoc)return;const n=Number($("pagePicker").value);if(Number.isInteger(n)&&n>=1&&n<=pages){showSource(n);}});
 $("prevPage").addEventListener("click",()=>{if(selectedPage>1){if(previewDoc)showModified(selectedPage-1);else $("pagePicker").value=String(selectedPage-1),$("pagePicker").dispatchEvent(new Event("change"));}});
 $("nextPage").addEventListener("click",()=>{if(selectedPage<(previewDoc?previewDoc.numPages:pages)){if(previewDoc)showModified(selectedPage+1);else $("pagePicker").value=String(selectedPage+1),$("pagePicker").dispatchEvent(new Event("change"));}});
 function inkPos(e){const r=signature.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*signature.width,y:(e.clientY-r.top)/r.height*signature.height};}
