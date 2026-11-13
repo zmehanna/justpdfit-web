@@ -1,0 +1,53 @@
+{
+  "currency": "eur",
+  "tax_behavior": "exclusive",
+  "payment_provider": "stripe",
+  "account_id": "acct_1UaLHoEQp3CN3XtA",
+  "status": "staged",
+  "plans": [
+    {
+      "id": "starter",
+      "included_seats": 3,
+      "prices": {
+        "monthly_cents": 990,
+        "annual_cents": 9900
+      },
+      "additional_seat": {
+        "monthly_cents": 390,
+        "annual_cents": 3978
+      }
+    },
+    {
+      "id": "team",
+      "included_seats": 10,
+      "prices": {
+        "monthly_cents": 2990,
+        "annual_cents": 29900
+      },
+      "additional_seat": {
+        "monthly_cents": 290,
+        "annual_cents": 2958
+      }
+    },
+    {
+      "id": "pro",
+      "included_seats": 30,
+      "prices": {
+        "monthly_cents": 7990,
+        "annual_cents": 79900
+      },
+      "additional_seat": {
+        "monthly_cents": 250,
+        "annual_cents": 2550
+      }
+    }
+  ],
+  "terms": {
+    "billing": "Recurring; seat add-ons billed at the same interval as the base plan",
+    "trial_days": 14,
+    "remote_signatures": "Separately metered; not included in unlimited base plan",
+    "ai_credits": "Must be assigned in database and documented before sale"
+  },
+  "stripe_prices_not_created": true,
+  "tax_registration_required_before_live": true
+}
