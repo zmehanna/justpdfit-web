@@ -74,6 +74,16 @@ button.primary{background:linear-gradient(90deg,#ed465e,#fa6576);color:white}but
 .stage-edit{font-size:11px;font-weight:700;color:#c93451;background:#fff;border:1px solid #f4d5dc;padding:5px 9px;min-height:27px;flex-shrink:0}
 .stage-edit:hover{background:#fff0f4}
 .stage.is-complete:not(.is-collapsed)>.stage-summary{display:none}
+.stage.is-upcoming{background:#fafbfe;border-color:#eef1f6;opacity:.73;padding:8px 12px;margin-bottom:6px}
+.stage.is-upcoming h3{font-weight:700;color:#718098;font-size:11px}
+.stage.is-upcoming h3 em{background:#eff1f6;color:#8e9bb0;width:18px;height:18px}
+.stage.is-upcoming .stage-summary{display:none}
+.stage.is-collapsed:not(.is-upcoming){padding:8px 12px;margin-bottom:6px}
+.stage.is-collapsed .stage-summary-text{font-size:10px}
+.stage.is-upcoming .stage-body[hidden],.stage.is-collapsed .stage-body[hidden]{display:none!important}
+.stage.is-active-panel{padding-top:13px;padding-bottom:15px;margin-top:8px}
+.stage.is-upcoming .stage-edit[hidden]{display:none!important}
+
 .stage:focus-within{scroll-margin-top:12px}
 .stage.is-current:not(.is-collapsed){border-left:3px solid #ed465c;padding-left:12px;background:linear-gradient(90deg,#fff7f9,transparent 55%);border-radius:8px}
 .stage.is-current h3 em{background:#ed465c;color:#fff}
@@ -152,5 +162,5 @@ footer.jpi-site-footer .container{padding-top:0;padding-bottom:0}
 </main>
 <footer class="jpi-site-footer" aria-label="Pied de page JustPDFit"></footer>
 <script defer src="./local-ocr.js?v=20261113-smart-place1"></script>
-<script defer src="./guided-flow.js?v=20261113-home-shell"></script>
+<script defer src="./guided-flow.js?v=20261113-focus-phases"></script>
 </body></html>
