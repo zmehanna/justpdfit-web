@@ -28,3 +28,21 @@ test('production account pinned and billing gated',()=>{
 });
 test('session cookies are HttpOnly',()=>assert.match(source,/HttpOnly; Secure/));
 test('no client API keys are committed',()=>assert.doesNotMatch(source,/(?:sk_live|re_live)_[A-Za-z0-9]{15,}/));
+
+test('authenticated-only routes reject requests without sessions',async()=>{
+ const env={PUBLIC_SITE_URL:'https://justpdfit.com',MAIL_FROM:'JustPDFit <no-reply@justpdfit.com>',RESEND_API_KEY:'test-placeholder',BUSINESS_DB:{prepare(){throw Error('should not query database for missing authorization')}}};
+ for(const path of ['/me','/organizations/00000000-0000-0000-0000-000000000000/entitlement']){
+  const response=await api.fetch(new Request('https://api.test'+path,{headers:{Origin:'https://justpdfit.com'}}),env);
+  assert.equal(response.status,401,path);
+ }
+});
+test('billing remains disabled even with a valid origin',async()=>{
+ const response=await api.fetch(new Request('https://api.test/health',{headers:{Origin:'https://justpdfit.com'}}),{BUSINESS_BILLING_ENABLED:'false'});
+ const body=await response.json();assert.equal(body.billing_enabled,false);
+});
+test('email translations cover all 27 supported languages',()=>{
+ const match=source.match(/const MAIL_LOCALES=(\{[^\n]+\});/);
+ assert.ok(match,'missing localized emails');const locales=JSON.parse(match[1]);
+ assert.equal(Object.keys(locales).length,27);
+ for(const [lang,row] of Object.entries(locales))assert.ok(row.length===5&&row.every(Boolean),lang);
+});
