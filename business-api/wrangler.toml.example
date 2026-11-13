@@ -1,0 +1,23 @@
+# JustPDFit Business staging template. Worker deliberately disabled until secrets, identity and D1 are verified.
+name = "justpdfit-business-staging"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+[vars]
+BUSINESS_MODE = "test"
+BUSINESS_BILLING_ENABLED = "false"
+PUBLIC_SITE_URL = "https://justpdfit.com"
+
+# Provision a dedicated D1 database and fill the ID before deploying.
+# [[d1_databases]]
+# binding = "BUSINESS_DB"
+# database_name = "justpdfit-business-staging"
+# database_id = "YOUR_BUSINESS_D1_ID"
+# migrations_dir = "migrations"
+
+# Required secrets: RESEND_API_KEY, MAIL_FROM, STRIPE_SECRET_KEY,
+# STRIPE_WEBHOOK_SECRET. These are entered only via wrangler secret put.
+# Additional Stripe price IDs: PRICE_STARTER_MONTHLY, PRICE_STARTER_ANNUAL,
+# PRICE_TEAM_MONTHLY, PRICE_TEAM_ANNUAL, PRICE_PRO_MONTHLY, PRICE_PRO_ANNUAL;
+# and matching *_EXTRA_* for extra seats.
