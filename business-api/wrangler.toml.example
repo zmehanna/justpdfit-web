@@ -8,6 +8,7 @@ workers_dev = true
 BUSINESS_MODE = "test"
 BUSINESS_BILLING_ENABLED = "false"
 PUBLIC_SITE_URL = "https://justpdfit.com"
+MAIL_FROM = "JustPDFit <no-reply@justpdfit.com>"
 
 # Provision a dedicated D1 database and fill the ID before deploying.
 [[d1_databases]]
