@@ -241,9 +241,12 @@ function localActions(){
 }
 async function detectRequestedSignature(){
  const q=$("request").value.toLowerCase();
- if(!pdfDoc||!/sign|signe|signature|paraph|توقيع|إمضاء/i.test(q))return;
- const matches=anchors.some(a=>/assur[ée]|insured/i.test(q)?/assur[ée]|insured/i.test(a.label):/signature|sign here|توقيع|إمضاء/i.test(a.label));
- if(matches)return;
+ if(!pdfDoc||!/sign|signe|signature|paraph|توقيع|إمضاء|date|aujourd|today|تاريخ/i.test(q))return;
+ const needSign=/sign|signe|signature|paraph|توقيع|إمضاء/i.test(q);
+ const needDate=/date|aujourd|today|تاريخ/i.test(q);
+ const signFound=anchors.some(a=>a.kind!=="date"&&(/assur[ée]|insured/i.test(q)?/assur[ée]|insured/i.test(a.label):/signature|sign here|توقيع|إمضاء/i.test(a.label)));
+ const dateFound=anchors.some(a=>a.kind==="date"||/date|fait en|exemplaire|تاريخ/i.test(a.label));
+ if((!needSign||signFound)&&(!needDate||dateFound))return;
  if(!window.JustPDFitLocalOCR){
   status("planStatus",lang==="fr"?"OCR indisponible. Vous pourrez placer la signature manuellement.":"OCR unavailable; place the signature manually.",true);return;
  }
@@ -253,7 +256,7 @@ async function detectRequestedSignature(){
  status("planStatus",lang==="fr"?"Document scanné : recherche locale de l’emplacement de signature…":"Scanning locally for the signature location…");
  try{
   const result=await JustPDFitLocalOCR.search(pdfDoc,candidate,n=>status("planStatus",(lang==="fr"?"Reconnaissance visuelle de la page ":"Scanning page ")+n+"…"));
-  anchors.push(...result);
+  anchors.push(...result.filter(a=>!anchors.some(b=>b.page===a.page&&b.label===a.label&&b.kind===a.kind)));
   if(result.length){
    $("fieldCandidates").textContent=(lang==="fr"?"Emplacement(s) reconnus dans le scan : ":"Detected on scan: ")+result.map(a=>(lang==="fr"?"page ":"page ")+a.page+" — "+a.label).join(" · ");
   }else{
@@ -265,7 +268,7 @@ async function detectRequestedSignature(){
 }
 function setPlan(items,sourceMode){
  plan=items.slice(0,8).filter(a=>a&&["add_signature","add_date","delete_page","add_text","fill_field"].includes(a.type)&&Number.isInteger(Number(a.page))&&a.page>=1&&a.page<=pages).map(a=>({...a,enabled:true,page:Number(a.page)}));
- point=null;invalidate();$("plans")?.remove();if(!plan.length){status("planStatus",t.unrecognized,true);return;}
+ point=null;datePoint=null;signatureWidth=155;invalidate();$("plans")?.remove();if(!plan.length){status("planStatus",t.unrecognized,true);return;}
  const holder=document.createElement("div");holder.id="plans";holder.className="status";
  const heading=document.createElement("strong");heading.textContent=t.select;holder.append(heading);
  for(const item of plan){
@@ -287,6 +290,25 @@ function setPlan(items,sourceMode){
   showSource(sig.page);
   status("positionStatus",hint?(hint.source==="ocr"?(lang==="fr"?"Emplacement proposé par reconnaissance visuelle (« "+hint.label+" »). Vérifiez et déplacez-le si nécessaire.":"Visual OCR proposal (“"+hint.label+"”). Check and reposition if needed."):t.auto):t.positionNeeded);
  } else status("positionStatus",t.local);
+ const dateAction=plan.find(a=>a.type==="add_date");
+ if(dateAction){
+  const dates=anchors.filter(a=>a.page===dateAction.page&&(a.kind==="date"||/date|fait en|exemplaire|تاريخ/i.test(a.label)));
+  const named=dates.find(a=>/date|fait en|exemplaire|تاريخ/i.test(a.label));
+  const dateAnchor=named||dates[0];
+  const pg=source.getPage(dateAction.page-1);
+  if(dateAnchor&&(!dateAnchor.source||dateAnchor.confidence>=.82)){
+   datePoint={page:dateAction.page,x:Math.max(25,Math.min(pg.getWidth()-55,dateAnchor.x+70)),y:Math.max(20,Math.min(pg.getHeight()-20,dateAnchor.y-2))};
+   status("positionStatus",lang==="fr"?"Date proposée près du repère « "+dateAnchor.label+" ». Vérifiez et ajustez les deux éléments dans l’aperçu.":"Date proposed near “"+dateAnchor.label+"”. Review both placements.");
+  }else if(point&&point.page===dateAction.page){
+   datePoint={page:dateAction.page,x:Math.max(28,Math.min(pg.getWidth()-55,point.x+95)),y:Math.max(18,Math.min(pg.getHeight()-18,point.y+35))};
+   status("positionStatus",lang==="fr"?"Aucun champ date fiable : position proposée près de la signature, à vérifier.":"No reliable date field: suggested near the signature; please review.");
+  }else{
+   datePoint=null;
+   status("positionStatus",lang==="fr"?"Champ date introuvable : cliquez sur « Déplacer la date », puis choisissez sa position sur le PDF.":"Date field not found: select Move date and click its location.");
+  }
+ }
+ switchPlacementMode(sig?"signature":"date");
+ drawMark();
  $("previewButton").disabled=false;
  status("planStatus",sourceMode==="ai"?t.plan:t.local);step(sig?4:5);
 }
@@ -322,7 +344,7 @@ $("planButton").addEventListener("click",async()=>{
    if(target)actions=actions.map(a=>a.type==="add_signature"?{...a,page:target.page}:a);
   }
   setPlan(actions,"ai");
-  if(data.uncertainty&&!point)status("positionStatus",data.uncertainty);
+  if(data.uncertainty&&!point&&!datePoint)status("positionStatus",data.uncertainty);
  }catch(e){status("planStatus",t.modelFailed,true);}finally{canPlan();}
 });
 function croppedSignature(){
