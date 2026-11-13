@@ -158,7 +158,7 @@ async function showSource(pageNum){
  await pdfPage.render({canvasContext:canvas.getContext("2d"),viewport:v}).promise;
  if(id!==renderSerial)return;viewport=v;drawMark();
 }
-$("pagePicker").addEventListener("change",()=>{if(previewDoc)return;const n=Number($("pagePicker").value);if(Number.isInteger(n)){if(plan.some(a=>a.type==="add_signature")){plan.find(a=>a.type==="add_signature").page=n;point=null;invalidate();$("positionLabel").textContent=t.noPosition;step(4);}showSource(n);}});
+$("pagePicker").addEventListener("change",()=>{if(previewDoc)return;const n=Number($("pagePicker").value);if(Number.isInteger(n)){if(plan.some(a=>a.type==="add_signature")){plan.find(a=>a.type==="add_signature").page=n;point=null;datePoint=null;invalidate();$("positionLabel").textContent=t.noPosition;step(4);}showSource(n);}});
 $("prevPage").addEventListener("click",()=>{if(selectedPage>1){if(previewDoc)showModified(selectedPage-1);else $("pagePicker").value=String(selectedPage-1),$("pagePicker").dispatchEvent(new Event("change"));}});
 $("nextPage").addEventListener("click",()=>{if(selectedPage<(previewDoc?previewDoc.numPages:pages)){if(previewDoc)showModified(selectedPage+1);else $("pagePicker").value=String(selectedPage+1),$("pagePicker").dispatchEvent(new Event("change"));}});
 function inkPos(e){const r=signature.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*signature.width,y:(e.clientY-r.top)/r.height*signature.height};}
@@ -166,13 +166,67 @@ signature.addEventListener("pointerdown",e=>{e.preventDefault();drawing=true;has
 signature.addEventListener("pointermove",e=>{if(!drawing)return;e.preventDefault();const p=inkPos(e);ink.lineTo(p.x,p.y);ink.stroke();});
 ["pointerup","pointercancel"].forEach(n=>signature.addEventListener(n,()=>{drawing=false;updateSignatureAspect();drawMark();}));
 $("clearSignature").addEventListener("click",()=>{ink.clearRect(0,0,signature.width,signature.height);hasInk=false;signatureInkAspect=.34;invalidate();});
+const centerFromPointer=e=>{
+ const canvas=$("pageCanvas"),rect=canvas.getBoundingClientRect();
+ const x=(e.clientX-rect.left)/rect.width*canvas.width;
+ const y=(e.clientY-rect.top)/rect.height*canvas.height;
+ const [px,py]=viewport.convertToPdfPoint(x,y);
+ const pg=source.getPage(selectedPage-1);
+ return {page:selectedPage,x:Math.max(8,Math.min(pg.getWidth()-8,px)),y:Math.max(8,Math.min(pg.getHeight()-8,py))};
+};
+function positionItem(mode,position){
+ if(!position||previewDoc)return;
+ if(mode==="date"){
+  const action=plan.find(a=>a.type==="add_date"&&a.enabled);
+  if(!action)return;
+  datePoint=position;action.page=selectedPage;
+  status("positionStatus",lang==="fr"?"Date placée sur la page "+selectedPage+" — déplacez-la si nécessaire.":"Date positioned on page "+selectedPage);
+ }else{
+  const action=plan.find(a=>a.type==="add_signature"&&a.enabled);
+  if(!action)return;
+  point=position;action.page=selectedPage;
+  $("positionLabel").textContent=t.position+selectedPage;
+  status("positionStatus",t.position+selectedPage);
+ }
+ invalidate();step(4);drawMark();$("previewButton").disabled=false;
+}
 $("pageCanvas").addEventListener("click",e=>{
- if(previewDoc||!plan.some(a=>a.type==="add_signature"&&a.enabled!==false)||!viewport)return;
- const rect=$("pageCanvas").getBoundingClientRect(),x=(e.clientX-rect.left)/rect.width*$("pageCanvas").width,y=(e.clientY-rect.top)/rect.height*$("pageCanvas").height;
- const [px,py]=viewport.convertToPdfPoint(x,y);point={page:selectedPage,x:px,y:py};
- plan.find(a=>a.type==="add_signature").page=selectedPage;invalidate();
- $("positionLabel").textContent=t.position+selectedPage;status("positionStatus",t.position+selectedPage);step(4);drawMark();$("previewButton").disabled=false;
+ if(previewDoc||!viewport||!plan.length)return;
+ positionItem(placementMode,centerFromPointer(e));
 });
+function switchPlacementMode(mode){
+ placementMode=mode;
+ $("moveSignature").style.outline=mode==="signature"?"2px solid #ef4c65":"none";
+ $("moveDate").style.outline=mode==="date"?"2px solid #397bc9":"none";
+ $("editHint").textContent=lang==="fr"?(mode==="date"?"Cliquez sur la page ou faites glisser la date.":"Glissez la signature pour la déplacer ; tirez le coin pour ajuster sa taille."):(mode==="date"?"Click or drag the date.":"Drag the signature; pull its corner to resize.");
+}
+$("moveSignature").addEventListener("click",()=>switchPlacementMode("signature"));
+$("moveDate").addEventListener("click",()=>switchPlacementMode("date"));
+switchPlacementMode("signature");
+for(const [id,mode] of [["placementMark","signature"],["dateMark","date"]]){
+ const mark=$(id);let drag=null;
+ mark.addEventListener("pointerdown",e=>{
+  if(previewDoc||!viewport)return;
+  e.preventDefault();e.stopPropagation();
+  const resize=mode==="signature"&&!!e.target.closest(".resize-handle");
+  drag={resize,startX:e.clientX,initialWidth:signatureWidth};
+  switchPlacementMode(mode);mark.setPointerCapture(e.pointerId);
+ });
+ mark.addEventListener("pointermove",e=>{
+  if(!drag)return;
+  e.preventDefault();
+  if(drag.resize){
+   const ratio=$("pageCanvas").getBoundingClientRect().width/$("pageCanvas").width;
+   signatureWidth=Math.max(45,Math.min(240,drag.initialWidth+(e.clientX-drag.startX)/(Math.max(.01,viewport.scale*ratio))));
+   invalidate();drawMark();
+  }else{
+   positionItem(mode,centerFromPointer(e));
+  }
+ });
+ const finish=()=>{drag=null;};
+ mark.addEventListener("pointerup",finish);mark.addEventListener("pointercancel",finish);
+ mark.addEventListener("click",e=>e.stopPropagation());
+}
 $("backToSource").addEventListener("click",()=>{const n=point?.page||plan.find(a=>a.type==="add_signature")?.page||1;invalidate();showSource(n);step(4);});
 function localActions(){
  const q=$("request").value.trim();if(!q)return [];
@@ -181,7 +235,7 @@ function localActions(){
  else if(/assur[ée]|insured/i.test(q)){const candidate=anchors.find(x=>/signature.*assur[ée]|assur[ée].*signature|insured.*sign/i.test(x.label));if(candidate)num=candidate.page;}
  const items=[];
  if(/sign|signe|signer|signature|paraph|tوقيع|توقيع|إمضاء/i.test(q))items.push({type:"add_signature",page:num,enabled:true});
- if(/date du jour|today.s date|add date|ajoute.*date|أضف.*تاريخ/i.test(q))items.push({type:"add_date",page:num,position:"bottom-right",enabled:true});
+ if(/date du jour|date d.aujourd|aujourd.hui|today.s date|add date|ajoute.*date|mets.*date|أضف.*تاريخ/i.test(q))items.push({type:"add_date",page:num,position:"bottom-right",enabled:true});
  const del=q.match(/(?:supprim|delete|remove|حذف)[^\d]{0,20}(?:page\s*)?(\d+)/i);if(del)items.push({type:"delete_page",page:Number(del[1]),enabled:true});
  return items.filter(a=>a.page>=1&&a.page<=pages);
 }
