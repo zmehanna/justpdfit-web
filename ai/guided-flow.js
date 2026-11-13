@@ -141,7 +141,10 @@ function updateSignatureAspect(){
 function canPlan(){const ok=!!bytes&&$("request").value.trim().length>2;$("planButton").disabled=!ok;$("localButton").disabled=!ok;}
 $("request").addEventListener("input",()=>{canPlan();if(plan.length){plan=[];point=null;$("plans")?.remove();invalidate();status("planStatus",t.changed);step(3);}});
 $("file").addEventListener("change",async()=>{
- const f=$("file").files?.[0];renderSerial++;bytes=null;source=null;pdfDoc=null;fields=[];anchors=[];plan=[];point=null;datePoint=null;dateFollowsSignature=false;signatureWidth=155;pages=0;
+ const f=$("file").files?.[0];
+ $("selectedFilename").textContent=f?.name||(lang==="en"?"No file selected":lang==="ar"?"لم يتم اختيار ملف":"Aucun fichier sélectionné");
+ $("fileChooseText").textContent=f?(lang==="en"?"Change PDF":lang==="ar"?"تغيير الملف":"Changer le PDF"):(lang==="en"?"Choose a PDF":lang==="ar"?"اختر ملف PDF":"Choisir un PDF");
+ renderSerial++;bytes=null;source=null;pdfDoc=null;fields=[];anchors=[];plan=[];point=null;datePoint=null;dateFollowsSignature=false;signatureWidth=155;pages=0;
  $("pagePicker").replaceChildren();$("pagePicker").disabled=true;$("prevPage").disabled=true;$("nextPage").disabled=true;$("plans")?.remove();$("fieldCandidates").textContent="";
  $("analysis").textContent=t.analyzing;step(2);invalidate();canPlan();
  if(!f){status("analysis",t.file);step(1);return;}
@@ -510,5 +513,7 @@ $("download").addEventListener("click",()=>{
 window.addEventListener("resize",drawMark);
 window.addEventListener("pagehide",()=>{if(previewUrl)URL.revokeObjectURL(previewUrl);});
 updateStageDisplay();updatePhaseInstruction();
+$("fileChooseText").textContent=lang==="en"?"Choose a PDF":lang==="ar"?"اختر ملف PDF":"Choisir un PDF";
+$("selectedFilename").textContent=lang==="en"?"No file selected":lang==="ar"?"لم يتم اختيار ملف":"Aucun fichier sélectionné";
 status("analysis",t.file);
 })();

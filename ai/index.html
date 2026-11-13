@@ -42,6 +42,16 @@ h1{font-size:clamp(24px,3.2vw,38px);letter-spacing:-.8px;margin:8px 0 5px}
 .card{background:#fff;border:1px solid var(--edge);border-radius:19px;padding:22px;box-shadow:0 10px 30px #3344660a;min-width:0}
 .card h2{font-size:17px;margin:0 0 13px}.stage{padding-bottom:15px;margin-bottom:16px;border-bottom:1px solid #edf0f5}.stage:last-child{padding-bottom:0;margin-bottom:0;border-bottom:0}.stage h3{font-size:14px;margin:0 0 9px}.stage h3 em{font-style:normal;display:inline-grid;place-items:center;margin-right:7px;width:23px;height:23px;background:#ffe9ee;color:#cc3653;border-radius:50%;font-size:11px}
 label.field{display:block;font-size:12px;font-weight:650;margin-bottom:12px}label.field>span{display:block;margin-bottom:6px}
+.pdf-upload-field{display:block;font-size:12px;font-weight:650;margin-bottom:12px}
+.pdf-upload-field>span{display:block;margin-bottom:7px}
+.pdf-file-row{display:flex;gap:11px;align-items:center;flex-wrap:wrap;min-width:0}
+.pdf-file-trigger{position:relative;display:inline-flex;cursor:pointer;flex-shrink:0;border-radius:11px}
+.pdf-file-trigger input[type=file]{position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;clip-path:inset(50%);pointer-events:none;padding:0;margin:0;border:0}
+.pdf-file-trigger:has(input:focus-visible) .pdf-choose-btn{outline:3px solid #415fd7;outline-offset:3px}
+.pdf-choose-btn{display:inline-flex;gap:8px;align-items:center;justify-content:center;min-height:44px;border-radius:11px;white-space:nowrap;font-size:13px;padding:11px 17px;color:#fff!important;background:linear-gradient(100deg,#ed465c,#fc6472);box-shadow:0 10px 20px #ee4a6124}
+.pdf-file-trigger:hover .pdf-choose-btn{box-shadow:0 12px 22px #ee4a6140;filter:brightness(1.02)}
+.pdf-selected-name{color:#63728b;font-size:12px;min-width:0;max-width:100%;overflow-wrap:anywhere;font-weight:500}
+@media(max-width:440px){.pdf-file-row{align-items:flex-start;flex-direction:column;gap:7px}.pdf-choose-btn{width:100%}}
 input[type=file],textarea,select{width:100%;border:1px solid #d8e0ed;background:white;border-radius:10px;padding:11px;color:var(--ink);font:inherit}
 textarea{min-height:84px;resize:vertical}input[type=checkbox]{accent-color:var(--pink)}button{font:700 13px system-ui;cursor:pointer;border:0;border-radius:10px;padding:11px 14px;min-height:40px}
 button.primary{background:linear-gradient(90deg,#ed465e,#fa6576);color:white}button.secondary{background:#eef2f9;color:#354969}button:disabled{opacity:.46;cursor:not-allowed}
@@ -124,7 +134,16 @@ footer.jpi-site-footer .container{padding-top:0;padding-bottom:0}
 <div class="layout">
 <section class="card" aria-label="Assistant PDF">
 <div class="stage"><h3><em>1</em><span id="s1">Choisir le PDF</span></h3>
-<label class="field"><span id="fileLabel">Document à modifier</span><input type="file" id="file" accept="application/pdf,.pdf"></label>
+<div class="field pdf-upload-field">
+  <span id="fileLabel">Document à modifier</span>
+  <div class="pdf-file-row">
+    <label class="pdf-file-trigger">
+      <input type="file" id="file" accept="application/pdf,.pdf" aria-labelledby="fileLabel fileButtonText">
+      <span class="btn btn-primary pdf-choose-btn" id="fileButtonText"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m0 0L7 8m5-5 5 5"/><path d="M4 16v4h16v-4"/></svg> <span id="fileChooseText">Choisir un PDF</span></span>
+    </label>
+    <span id="selectedFilename" class="pdf-selected-name" role="status" aria-live="polite">Aucun fichier sélectionné</span>
+  </div>
+</div>
 <p class="note" id="privacy">Votre PDF et votre signature restent sur votre appareil. L'IA ne reçoit votre demande ou des extraits qu'avec votre accord.</p></div>
 <div class="stage"><h3><em>2</em><span id="s2">Analyse automatique</span></h3>
 <div id="analysis" class="status" role="status" aria-live="polite">Choisissez un PDF pour commencer.</div>
@@ -162,5 +181,5 @@ footer.jpi-site-footer .container{padding-top:0;padding-bottom:0}
 </main>
 <footer class="jpi-site-footer" aria-label="Pied de page JustPDFit"></footer>
 <script defer src="./local-ocr.js?v=20261113-smart-place1"></script>
-<script defer src="./guided-flow.js?v=20261113-focus-phases"></script>
+<script defer src="./guided-flow.js?v=20261113-brand-picker"></script>
 </body></html>
