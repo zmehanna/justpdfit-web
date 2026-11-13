@@ -1,11 +1,19 @@
 /* JustPDFit AI guided workflow. PDF bytes always stay in this browser. */
 (()=>{"use strict";
-const $=id=>document.getElementById(id),lang=(new URLSearchParams(location.search).get("lang")||navigator.language||"fr").slice(0,2).toLowerCase();
+const $=id=>document.getElementById(id),lang=(new URLSearchParams(location.search).get("lang")||document.documentElement.lang||navigator.language||"fr").slice(0,2).toLowerCase();
 const words={
 fr:{file:"Chargez votre PDF pour commencer.",analyzing:"Analyse locale du document…",ready:(n,f,c)=>n+" page(s) analysée(s), "+f+" champ(s) de formulaire, "+c+" repère(s) de signature.",failed:"Impossible d'ouvrir ce document PDF.",instruction:"Décrivez la modification souhaitée.",consent:"Autorisez d'abord l'envoi de votre demande à l'IA.",working:"L'IA prépare la liste des actions…",plan:"Plan proposé. Vérifiez la page, puis cliquez dans l'aperçu pour placer votre signature.",local:"Plan préparé localement. Choisissez la position sur la page.",unrecognized:"Aucune action reconnue. Précisez la demande.",modelFailed:"L'IA est indisponible. Utilisez « Préparer sans IA ».",position:"Position sélectionnée sur la page ",positionNeeded:"Cliquez sur la page pour indiquer la position exacte de la signature.",draw:"Dessinez la signature avant de créer l'aperçu.",noPlan:"Préparez d'abord les modifications.",invalid:"Vérifiez le numéro de page et les actions proposées.",previewing:"Génération du PDF modifié…",previewReady:"Aperçu prêt. Examinez le PDF à droite, puis approuvez le téléchargement.",approval:"Validez le résultat après avoir vu l'aperçu.",export:"Impossible de générer le PDF. Vérifiez votre document et les emplacements.",modified:"Aperçu modifié",original:"PDF original",manual:"Placement manuel obligatoire si aucun repère fiable n'est détecté.",auto:"Repère textuel trouvé. Cliquez dessus dans la page pour confirmer l'emplacement.",select:"Modifications prévues",page:"Page",sign:"Signature manuscrite",date:"Date du jour",delete:"Suppression de page",text:"Ajout de texte",field:"Remplir champ",mark:"Signature ici",noPosition:"Aucun emplacement choisi",changed:"Les modifications ont changé. Générez un nouvel aperçu.",notSigned:"La signature manuscrite doit être dessinée.",unsupported:"Cette action n'est pas encore prise en charge ici."},
 en:{file:"Upload a PDF to start.",analyzing:"Analyzing your PDF locally…",ready:(n,f,c)=>n+" page(s) analyzed, "+f+" form field(s), "+c+" signature label(s).",failed:"Could not open this PDF.",instruction:"Describe the changes you want.",consent:"Please consent to sending your request to AI.",working:"AI is preparing actions…",plan:"Suggested plan. Verify the page and click the document to place your signature.",local:"Prepared locally. Choose the position on the document.",unrecognized:"No recognized action. Please be more specific.",modelFailed:"AI is unavailable. Try the local option.",position:"Position selected on page ",positionNeeded:"Click the page to place the signature exactly.",draw:"Draw your signature before creating the preview.",noPlan:"Prepare an edit plan first.",invalid:"Verify page numbers and proposed operations.",previewing:"Generating modified PDF…",previewReady:"Preview ready. Review the PDF on the right, then approve for download.",approval:"Approve the result after seeing the preview.",export:"Unable to prepare this PDF. Check the document and placement.",modified:"Modified preview",original:"Original PDF",manual:"For scanned PDFs, click the exact position manually.",auto:"Text label detected. Click the document to confirm signature position.",select:"Planned edits",page:"Page",sign:"Handwritten signature",date:"Today's date",delete:"Delete page",text:"Add text",field:"Fill field",mark:"Sign here",noPosition:"No position selected",changed:"Edits changed. Create a new preview.",notSigned:"Draw your signature before previewing.",unsupported:"This operation is not available yet."},
 ar:{file:"ارفع ملف PDF للبدء.",analyzing:"يجري تحليل الملف على جهازك…",ready:(n,f,c)=>n+" صفحة، "+f+" حقل، "+c+" موضع توقيع.",failed:"تعذر فتح ملف PDF.",instruction:"اكتب التعديلات المطلوبة.",consent:"وافق على إرسال طلبك إلى الذكاء الاصطناعي.",working:"الذكاء الاصطناعي يجهّز التعديلات…",plan:"راجع الصفحة ثم انقر على مكان التوقيع في المعاينة.",local:"تم إعداد التعديلات محلياً. اختر موقع التوقيع.",unrecognized:"لم أتعرف على تعديل. وضح طلبك.",modelFailed:"خدمة الذكاء الاصطناعي غير متاحة. جرب التحضير المحلي.",position:"تم تحديد موقع التوقيع في الصفحة ",positionNeeded:"انقر على الصفحة لتحديد موقع التوقيع.",draw:"ارسم توقيعك قبل المعاينة.",noPlan:"حضّر خطة التعديل أولاً.",invalid:"تحقق من أرقام الصفحات والتعديلات.",previewing:"يجري إعداد معاينة PDF…",previewReady:"المعاينة جاهزة. راجع الملف ثم وافق على التنزيل.",approval:"وافق على النتيجة بعد المعاينة.",export:"تعذر إنشاء PDF. تحقق من المستند والموضع.",modified:"معاينة التعديلات",original:"PDF الأصلي",manual:"انقر يدوياً لتحديد موقع التوقيع في الملفات الممسوحة.",auto:"تم العثور على وصف. انقر للتأكد من موقع التوقيع.",select:"التعديلات",page:"صفحة",sign:"توقيع بخط اليد",date:"تاريخ اليوم",delete:"حذف صفحة",text:"إضافة نص",field:"تعبئة حقل",mark:"التوقيع هنا",noPosition:"لم يُحدد موقع",changed:"تم تغيير التعديلات. أنشئ معاينة جديدة.",notSigned:"ارسم توقيعك قبل المعاينة.",unsupported:"هذه العملية غير متاحة حالياً."}};
 const t=words[lang]||words.fr;
+const languageSelect=document.getElementById("language");
+if(languageSelect){
+ languageSelect.value=words[lang]?lang:"fr";
+ languageSelect.addEventListener("change",()=>{
+  const u=new URL(location.href);u.searchParams.set("lang",languageSelect.value);
+  location.assign(u.href);
+ });
+}
 const labels={fr:["Fichier","Analyse","Instructions","Emplacement","Aperçu","Valider & télécharger"],en:["File","Analysis","Instructions","Placement","Preview","Approve & download"],ar:["الملف","التحليل","الطلب","الموقع","المعاينة","التحميل"]};
 document.documentElement.lang=lang;if(lang==="ar")document.documentElement.dir="rtl";
 [...document.querySelectorAll(".step")].forEach((e,i)=>e.lastElementChild.textContent=(labels[lang]||labels.fr)[i]);
@@ -57,13 +65,32 @@ function updateStageDisplay(){
   stage.querySelector(".stage-edit").setAttribute("aria-expanded",String(!collapsed));
  });
 }
+const phaseInstructions={
+ fr:["Choisissez le PDF à modifier.","Analyse automatique du document en cours.","Écrivez ce que vous voulez ajouter et où le placer.","Vérifiez la signature et la date directement sur le document.","Examinez le PDF modifié avant toute validation.","Approuvez le résultat, puis téléchargez votre PDF."],
+ en:["Choose a PDF to edit.","Analyzing your document locally.","Describe what to add and where it belongs.","Check the signature and date directly on the document.","Review the modified PDF before approving.","Approve the result and download your PDF."],
+ ar:["اختر ملف PDF للتعديل.","يتم تحليل المستند محليًا.","صف التعديل والمكان المطلوب.","تحقق من مكان التوقيع والتاريخ على المستند.","راجع الملف المعدّل قبل الموافقة.","وافق على النتيجة ثم نزّل ملف PDF."]
+};
+function updatePhaseInstruction(){
+ const n=Math.max(1,Math.min(6,activeStep));
+ const lines=phaseInstructions[lang]||phaseInstructions.fr;
+ const prefix=lang==="en"?"Step":lang==="ar"?"المرحلة":"Étape";
+ const el=$("nextAction");
+ if(el)el.textContent=prefix+" "+n+"/6 · "+lines[n-1];
+ const next=stages[n-1];
+ stages.forEach((stage,i)=>stage.classList.toggle("is-current",i===n-1));
+ document.querySelectorAll(".step").forEach(e=>{
+  const number=Number(e.dataset.step);
+  if(number===n)e.setAttribute("aria-current","step");
+  else e.removeAttribute("aria-current");
+ });
+}
 function step(n){
  activeStep=n;
  document.querySelectorAll(".step").forEach(e=>{
   const num=Number(e.dataset.step);e.classList.toggle("done",num<n);e.classList.toggle("active",num===n);
  });
  // A new step folds earlier ones; the user can always reopen any completed step.
- overrides.clear();updateStageDisplay();
+ overrides.clear();updateStageDisplay();updatePhaseInstruction();
 }
 function planChange(){point=null;datePoint=null;dateFollowsSignature=false;invalidate();$("positionLabel").textContent=t.noPosition;drawMark();}
 function invalidate(){previewDoc=null;if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}previewBytes=null;$("approve").checked=false;$("approve").disabled=true;$("download").disabled=true;$("pdfPreview").style.display="none";$("paper").hidden=!source;$("empty").hidden=!!source;$("previewMode").textContent=t.original;$("backToSource").hidden=true;drawMark();}
@@ -448,6 +475,6 @@ $("download").addEventListener("click",()=>{
 });
 window.addEventListener("resize",drawMark);
 window.addEventListener("pagehide",()=>{if(previewUrl)URL.revokeObjectURL(previewUrl);});
-updateStageDisplay();
+updateStageDisplay();updatePhaseInstruction();
 status("analysis",t.file);
 })();
