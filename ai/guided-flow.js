@@ -20,7 +20,9 @@ document.documentElement.lang=lang;if(lang==="ar")document.documentElement.dir="
 let bytes=null,source=null,pdfDoc=null,pages=0,fields=[],anchors=[],selectedPage=1,viewport=null,
  activeStep=1,plan=[],point=null,datePoint=null,dateFollowsSignature=false,signatureWidth=155,placementMode="signature",previewUrl=null,previewBytes=null,previewDoc=null,hasInk=false,renderSerial=0;
 const API="https://justpdfit-ai-planner.zmehanna.workers.dev/interpret";
-const signature=$("signature"),ink=signature.getContext("2d");ink.lineWidth=3.5;ink.lineCap="round";ink.lineJoin="round";ink.strokeStyle="#1c3055";let drawing=false;
+const signature=$("signature"),ink=signature.getContext("2d");
+ink.lineWidth=3.5;ink.lineCap="round";ink.lineJoin="round";ink.strokeStyle="#1c3055";
+let drawing=false,signatureMode="draw",signatureColor="#1c3055",uploadedSignatureImage=null,uploadSequence=0;
 function status(id,msg,error=false){$(id).textContent=msg;$(id).className="status"+(error?" error":"");}
 // Compact completed steps, retaining a one-line summary and an explicit Edit action.
 const stages=[...document.querySelectorAll(".layout > .card:first-child > .stage")];
@@ -205,8 +207,70 @@ $("pagePicker").addEventListener("change",()=>{if(previewDoc)return;const n=Numb
 $("prevPage").addEventListener("click",()=>{if(selectedPage>1){if(previewDoc)showModified(selectedPage-1);else $("pagePicker").value=String(selectedPage-1),$("pagePicker").dispatchEvent(new Event("change"));}});
 $("nextPage").addEventListener("click",()=>{if(selectedPage<(previewDoc?previewDoc.numPages:pages)){if(previewDoc)showModified(selectedPage+1);else $("pagePicker").value=String(selectedPage+1),$("pagePicker").dispatchEvent(new Event("change"));}});
 function inkPos(e){const r=signature.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*signature.width,y:(e.clientY-r.top)/r.height*signature.height};}
-signature.addEventListener("pointerdown",e=>{e.preventDefault();drawing=true;hasInk=true;signature.setPointerCapture(e.pointerId);const p=inkPos(e);ink.beginPath();ink.moveTo(p.x,p.y);ink.lineTo(p.x+.1,p.y+.1);ink.stroke();invalidate();});
+signature.addEventListener("pointerdown",e=>{if(signatureMode!=="draw")return;e.preventDefault();drawing=true;hasInk=true;signature.setPointerCapture(e.pointerId);const p=inkPos(e);ink.beginPath();ink.moveTo(p.x,p.y);ink.lineTo(p.x+.1,p.y+.1);ink.stroke();invalidate();});
 signature.addEventListener("pointermove",e=>{if(!drawing)return;e.preventDefault();const p=inkPos(e);ink.lineTo(p.x,p.y);ink.stroke();});
+function refreshSignatureArtwork(){
+ invalidate();
+ updateSignatureGhost();drawMark();updateContinueButton();
+}
+function chooseSignatureMode(mode){
+ if(!["draw","type","upload","initials"].includes(mode))return;
+ signatureMode=mode;
+ const names={draw:"signDrawPane",type:"signTypePane",upload:"signUploadPane",initials:"signInitialsPane"};
+ Object.entries(names).forEach(([m,id])=>{$(id).hidden=m!==mode;});
+ document.querySelectorAll(".signature-tab").forEach(b=>{
+  const selected=b.dataset.signMode===mode;b.classList.toggle("selected",selected);b.setAttribute("aria-pressed",String(selected));
+ });
+ $("signatureColorHint").textContent=mode==="upload"
+  ?(lang==="fr"?"Les couleurs d'une image importée sont conservées.":lang==="ar"?"تُحفظ ألوان الصورة المستوردة.":"Uploaded image colors are preserved.")
+  :(lang==="fr"?"Choisissez une couleur, y compris le blanc sur les documents sombres.":lang==="ar"?"اختر اللون بما فيه الأبيض للمستندات الداكنة.":"Choose a color, including white for dark documents.");
+ document.querySelector(".signature-colors").hidden=mode==="upload";
+ signatureInkAspect=.34;
+ refreshSignatureArtwork();
+}
+document.querySelectorAll(".signature-tab").forEach(button=>button.addEventListener("click",()=>chooseSignatureMode(button.dataset.signMode)));
+for(const inputId of ["signatureText","signatureFont","signatureInitials","initialsFont"]){
+ $(inputId).addEventListener(inputId.endsWith("Font")?"change":"input",refreshSignatureArtwork);
+}
+function recolorDrawnSignature(color){
+ const image=ink.getImageData(0,0,signature.width,signature.height),d=image.data;
+ const rgb=[1,3,5].map(n=>parseInt(color.slice(n,n+2),16));
+ for(let i=0;i<d.length;i+=4)if(d[i+3]>0){d[i]=rgb[0];d[i+1]=rgb[1];d[i+2]=rgb[2];}
+ ink.putImageData(image,0,0);
+}
+document.querySelectorAll(".signature-color").forEach(button=>button.addEventListener("click",()=>{
+ signatureColor=button.dataset.signColor;
+ document.querySelectorAll(".signature-color").forEach(b=>{
+  const active=b===button;b.classList.toggle("selected",active);b.setAttribute("aria-pressed",String(active));
+ });
+ ink.strokeStyle=signatureColor;
+ signature.style.background=signatureColor==="#ffffff"?"#344054":"#fff";
+ recolorDrawnSignature(signatureColor);
+ refreshSignatureArtwork();
+}));
+$("signatureImage").addEventListener("change",async()=>{
+ const file=$("signatureImage").files?.[0],id=++uploadSequence;
+ uploadedSignatureImage=null;
+ if(!file){refreshSignatureArtwork();return;}
+ if(!["image/png","image/jpeg"].includes(file.type)||file.size>5*1024*1024){
+  $("signatureImage").value="";status("positionStatus",lang==="fr"?"Choisissez une image PNG/JPG de moins de 5 Mo.":"Choose a PNG/JPG image under 5 MB.",true);
+  refreshSignatureArtwork();return;
+ }
+ try{
+  const url=URL.createObjectURL(file),img=new Image();
+  try{img.src=url;await img.decode();}finally{URL.revokeObjectURL(url);}
+  if(id!==uploadSequence)return;
+  if(!img.naturalWidth||!img.naturalHeight||img.naturalWidth*img.naturalHeight>24e6)throw Error("dimensions");
+  uploadedSignatureImage=img;
+  refreshSignatureArtwork();
+ }catch{
+  $("signatureImage").value="";status("positionStatus",lang==="fr"?"Impossible de lire l'image de signature.":"Unable to read signature image.",true);
+  refreshSignatureArtwork();
+ }
+});
+$("clearSignatureImage").addEventListener("click",()=>{
+ uploadSequence++;uploadedSignatureImage=null;$("signatureImage").value="";refreshSignatureArtwork();
+});
 function updateSignatureGhost(){
  const data=croppedSignature(),ghost=$("signatureGhost");
  $("signatureRequired").hidden=!!data;
@@ -441,13 +505,44 @@ $("planButton").addEventListener("click",async()=>{
   if(data.uncertainty&&!point&&!datePoint)status("positionStatus",data.uncertainty);
  }catch(e){status("planStatus",t.modelFailed,true);}finally{canPlan();}
 });
+function makeSignatureSource(){
+ if(signatureMode==="draw")return signature;
+ const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
+ canvas.width=1200;canvas.height=350;
+ if(signatureMode==="upload"){
+  if(!uploadedSignatureImage)return null;
+  const img=uploadedSignatureImage;
+  const scale=Math.min(1050/img.naturalWidth,290/img.naturalHeight,1);
+  const w=Math.max(1,img.naturalWidth*scale),h=Math.max(1,img.naturalHeight*scale);
+  ctx.drawImage(img,(canvas.width-w)/2,(canvas.height-h)/2,w,h);
+  return canvas;
+ }
+ const typed=signatureMode==="initials"?$("signatureInitials").value.trim().slice(0,8).toUpperCase():$("signatureText").value.trim().slice(0,65);
+ if(!typed)return null;
+ const style=(signatureMode==="initials"?$("initialsFont"):$("signatureFont")).value;
+ const font=style==="modern"?'italic 600':'italic 500';
+ const family=style==="script"?'"Segoe Script","Brush Script MT",cursive':style==="classic"?'Georgia,"Times New Roman",serif':'"Segoe UI",Arial,sans-serif';
+ let fontSize=style==="script"?112:130;
+ ctx.fillStyle=signatureColor;ctx.textAlign="center";ctx.textBaseline="middle";
+ do{ctx.font=font+" "+fontSize+"px "+family;fontSize-=3;}while(ctx.measureText(typed).width>1080&&fontSize>20);
+ ctx.fillText(typed,600,175,1100);
+ return canvas;
+}
 function croppedSignature(){
- const data=ink.getImageData(0,0,signature.width,signature.height),d=data.data;
- let left=signature.width,top=signature.height,right=-1,bottom=-1;
- for(let y=0;y<signature.height;y++)for(let x=0;x<signature.width;x++){const a=d[(y*signature.width+x)*4+3];if(a>25){left=Math.min(left,x);top=Math.min(top,y);right=Math.max(right,x);bottom=Math.max(bottom,y);}}
+ const src=makeSignatureSource();
+ if(!src)return null;
+ const width=src.width,height=src.height;
+ const work=document.createElement("canvas");work.width=width;work.height=height;
+ const context=work.getContext("2d",{willReadFrequently:true});context.drawImage(src,0,0);
+ const data=context.getImageData(0,0,width,height).data;
+ let left=width,top=height,right=-1,bottom=-1;
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+  if(data[(y*width+x)*4+3]>25){left=Math.min(left,x);top=Math.min(top,y);right=Math.max(right,x);bottom=Math.max(bottom,y);}
+ }
  if(right<left)return null;
- const pad=8,w=right-left+pad*2,h=bottom-top+pad*2,cn=document.createElement("canvas");cn.width=w;cn.height=h;
- cn.getContext("2d").drawImage(signature,left-pad,top-pad,w,h,0,0,w,h);
+ const pad=8,w=right-left+pad*2,h=bottom-top+pad*2,cn=document.createElement("canvas");
+ cn.width=w;cn.height=h;cn.getContext("2d").drawImage(work,left-pad,top-pad,w,h,0,0,w,h);
+ signatureInkAspect=Math.max(.1,Math.min(2,h/w));
  return cn.toDataURL("image/png");
 }
 function linkMark(pdf,font){for(const page of pdf.getPages()){const text="JustPDFit.com",size=7,w=font.widthOfTextAtSize(text,size),x=Math.max(8,page.getWidth()-w-12),y=9;page.drawText(text,{x,y,size,font,color:PDFLib.rgb(.89,.23,.38),opacity:.78});try{const a=pdf.context.obj({Type:"Annot",Subtype:"Link",Rect:[x,y,x+w,y+10],Border:[0,0,0],A:{S:"URI",URI:PDFLib.PDFString.of("https://justpdfit.com/")}});page.node.addAnnot(pdf.context.register(a));}catch{}}}
@@ -515,5 +610,5 @@ window.addEventListener("pagehide",()=>{if(previewUrl)URL.revokeObjectURL(previe
 updateStageDisplay();updatePhaseInstruction();
 $("fileChooseText").textContent=lang==="en"?"Choose a PDF":lang==="ar"?"اختر ملف PDF":"Choisir un PDF";
 $("selectedFilename").textContent=lang==="en"?"No file selected":lang==="ar"?"لم يتم اختيار ملف":"Aucun fichier sélectionné";
-status("analysis",t.file);
+chooseSignatureMode("draw");status("analysis",t.file);
 })();
