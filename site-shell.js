@@ -2,7 +2,8 @@
 (() => {
  "use strict";
  const root = location.pathname === "/" || /\/index\.html$/.test(location.pathname) && location.pathname.split("/").filter(Boolean).length === 1;
- const base = root ? "./" : "../";
+ const depth = location.pathname.split("/").filter(Boolean).filter((part,i,arr)=>!(i===arr.length-1 && /\.html$/i.test(part))).length;
+ const base = depth === 0 ? "./" : "../".repeat(depth);
  const tools = [
   ["home","⌂","home"],["sign","✍","sign"],["merge-pdf","▣","merge"],["split-pdf","✂","split"],
   ["edit-pdf","✎","edit"],["jpg-to-pdf","▧","jpg"],["pdf-to-word","W","pdfword"],
