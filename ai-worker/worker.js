@@ -9,7 +9,7 @@ const MAX_REQUEST = 14000;
 function json(body,status=200,extra={}) {
   return new Response(JSON.stringify(body), {status,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff","access-control-allow-origin":ORIGIN,"vary":"Origin",...extra}});
 }
-function tidy(value,max) {return typeof value==="string"?value.slice(0,max).replace(/[\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f]/g,""):"";}
+function tidy(value,max) {return typeof value==="string"?Array.from(value.slice(0,max)).filter(ch=>ch.charCodeAt(0)>=32 || ch==="\n" || ch==="\r").join(""):"";}
 const allowed = new Set(["delete_page","add_date","add_text","add_signature"]);
 function normalize(raw,pageCount) {
  const actions=[];
@@ -78,7 +78,7 @@ Do not infer signature location from document text unless user specifically asks
    const result=await env.AI.run(MODEL,{messages:[{role:"system",content:instructions},{role:"user",content:prompt}],temperature:0,max_tokens:650});
    let content=result?.response||result?.result?.response||"";
    if(typeof content!=="string")return json({error:"model_invalid_response"},502);
-   content=content.trim().replace(/^\`\`\`(?:json)?\\s*/i,"").replace(/\`\`\`$/,"").trim();
+   content=content.trim().replace(/^\`\`\`(?:json)?\s*/i,"").replace(/\`\`\`$/,"").trim();
    const start=content.indexOf("{"),end=content.lastIndexOf("}");
    if(start<0||end<start)return json({error:"model_invalid_response"},502);
    const plan=JSON.parse(content.slice(start,end+1));
