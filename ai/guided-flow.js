@@ -166,6 +166,7 @@ signature.addEventListener("pointerdown",e=>{e.preventDefault();drawing=true;has
 signature.addEventListener("pointermove",e=>{if(!drawing)return;e.preventDefault();const p=inkPos(e);ink.lineTo(p.x,p.y);ink.stroke();});
 function updateSignatureGhost(){
  const data=croppedSignature(),ghost=$("signatureGhost");
+ $("signatureRequired").hidden=!!data;
  ghost.hidden=!data;
  if(data)ghost.src=data;else ghost.removeAttribute("src");
  $("signaturePlaceholder").hidden=!!data;
@@ -302,6 +303,7 @@ function setPlan(items,sourceMode){
  $("planStatus").after(holder);
  const sig=plan.find(a=>a.type==="add_signature");
  $("signatureControls").hidden=!sig;
+ $("signatureRequired").hidden=!sig||!!croppedSignature();
  if(sig){const requested=$("request").value.toLowerCase(),hint=anchors.find(a=>a.page===sig.page&&(/assur[ée]|insured/i.test(requested)?/signature.*assur[ée]|assur[ée].*signature|assur[ée]|insured/i.test(a.label):/signature|sign/i.test(a.label)));
   selectedPage=sig.page;$("pagePicker").value=String(sig.page);
   if(hint&&(!hint.source||hint.confidence>=0.85)){
