@@ -11,7 +11,11 @@ async function sha(s){return Array.from(new Uint8Array(await crypto.subtle.diges
 function response(data,status=200,origin="",extra={}){let headers={"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store","X-Content-Type-Options":"nosniff","Vary":"Origin",...extra};if(ALLOWED_ORIGINS.has(origin)){headers["Access-Control-Allow-Origin"]=origin;headers["Access-Control-Allow-Credentials"]="true";headers["Access-Control-Allow-Methods"]="GET,POST,OPTIONS";headers["Access-Control-Allow-Headers"]="Content-Type"}return new Response(JSON.stringify(data),{status,headers})}
 async function body(req){if(Number(req.headers.get("content-length")||0)>12000)throw Error("too_large");const x=await req.json();if(!x||typeof x!=="object"||Array.isArray(x))throw Error("invalid_json");return x}
 function emailOk(email){return typeof email==="string"&&email.length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)}
-function cookie(req){return (req.headers.get("Cookie")||"").split(";").map(x=>x.trim()).find(x=>x.startsWith("jpibiz="))?.slice(7)||""}
+function cookie(req){
+ const bearer=req.headers.get("Authorization")||"";
+ if(/^Bearer [a-f0-9]{64}$/.test(bearer))return bearer.slice(7);
+ return (req.headers.get("Cookie")||"").split(";").map(x=>x.trim()).find(x=>x.startsWith("jpibiz="))?.slice(7)||"";
+}
 async function user(req,env){const token=cookie(req);if(!/^[a-f0-9]{64}$/.test(token))return null;return await env.BUSINESS_DB.prepare("SELECT u.id,u.email FROM business_sessions s JOIN business_users u ON s.user_id=u.id WHERE s.token_hash=? AND s.expires_at>? AND s.revoked_at IS NULL").bind(await sha(token),now()).first()}
 async function member(env,orgId,userId){return env.BUSINESS_DB.prepare("SELECT role FROM memberships WHERE organization_id=? AND user_id=? AND active=1").bind(orgId,userId).first()}
 async function organization(env,id){return env.BUSINESS_DB.prepare("SELECT o.id,o.name,o.owner_id,s.plan,s.state,s.included_seats,s.extra_seats,s.current_period_end FROM organizations o LEFT JOIN business_subscriptions s ON s.organization_id=o.id WHERE o.id=?").bind(id).first()}
@@ -72,8 +76,8 @@ if(req.method==="POST"&&url.pathname==="/auth/verify"){
  if(changed.meta.changes!==1)return response({error:"expired_token"},401,origin);
  let current=await env.BUSINESS_DB.prepare("SELECT id,email FROM business_users WHERE email=?").bind(record.email).first();
  if(!current){await env.BUSINESS_DB.prepare("INSERT INTO business_users(id,email) VALUES(?,?) ON CONFLICT(email) DO NOTHING").bind(uid(),record.email).run();current=await env.BUSINESS_DB.prepare("SELECT id,email FROM business_users WHERE email=?").bind(record.email).first()}
- const session=randomToken();await env.BUSINESS_DB.prepare("INSERT INTO business_sessions(token_hash,user_id,expires_at) VALUES(?,?,?)").bind(await sha(session),current.id,now()+30*86400).run();
- return response({user:current},200,origin,{"Set-Cookie":"jpibiz="+session+"; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=2592000"});
+ const session=randomToken();await env.BUSINESS_DB.prepare("INSERT INTO business_sessions(token_hash,user_id,expires_at) VALUES(?,?,?)").bind(await sha(session),current.id,now()+7*86400).run();
+ return response({user:current,session_token:session,expires_in:604800},200,origin,{"Set-Cookie":"jpibiz="+session+"; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=604800"});
 }
 const current=await user(req,env);if(!current)return response({error:"unauthenticated"},401,origin);
 if(req.method==="POST"&&url.pathname==="/invitations/accept"){
