@@ -20,6 +20,12 @@ async function permitted(env,id,userId,roles){const m=await member(env,id,userId
 async function audit(env,orgId,userId,action,detail=""){await env.BUSINESS_DB.prepare("INSERT INTO business_audit(id,organization_id,actor_id,action,detail) VALUES (?,?,?,?,?)").bind(uid(),orgId,userId,action,detail).run()}
 async function rate(env,key,limit,windowSec){const t=now();await env.BUSINESS_DB.prepare("DELETE FROM rate_limits WHERE expires_at < ?").bind(t).run();await env.BUSINESS_DB.prepare("INSERT INTO rate_limits(token,count,expires_at) VALUES(?,1,?) ON CONFLICT(token) DO UPDATE SET count=CASE WHEN expires_at<? THEN 1 ELSE count+1 END,expires_at=CASE WHEN expires_at<? THEN excluded.expires_at ELSE expires_at END").bind(key,t+windowSec,t,t).run();const r=await env.BUSINESS_DB.prepare("SELECT count FROM rate_limits WHERE token=?").bind(key).first();return Number(r.count)<=limit}
 async function send(env,to,subject,html){if(!env.RESEND_API_KEY||!env.MAIL_FROM)throw Error("mail_unconfigured");const res=await fetch("https://api.resend.com/emails",{method:"POST",headers:{"Authorization":"Bearer "+env.RESEND_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({from:env.MAIL_FROM,to:[to],subject,html})});if(!res.ok)throw Error("mail_failed")}
+async function checkStripeAccount(env){
+ const expected=env.STRIPE_EXPECTED_ACCOUNT_ID;
+ if(env.BUSINESS_MODE==="live"&&expected!=="acct_1UaLHoEQp3CN3XtA")throw Error("wrong_live_stripe_account");
+ const account=await stripe(env,"/account");
+ if(!account?.id||account.id!==expected)throw Error("stripe_account_mismatch");
+}
 async function stripe(env,path,form){if(!env.STRIPE_SECRET_KEY||!/^sk_(test|live)_/.test(env.STRIPE_SECRET_KEY))throw Error("stripe_unconfigured");const res=await fetch("https://api.stripe.com/v1"+path,{method:form?"POST":"GET",headers:{"Authorization":"Bearer "+env.STRIPE_SECRET_KEY,...(form?{"Content-Type":"application/x-www-form-urlencoded"}:{})},body:form?new URLSearchParams(form):undefined});if(!res.ok)throw Error("stripe_failure");return res.json()}
 async function webhookSignature(raw,header,secret){const parts=Object.fromEntries(header.split(",").map(p=>p.trim().split("=",2)));const t=Number(parts.t);if(!t||Math.abs(now()-t)>300||!parts.v1)return false;const key=await crypto.subtle.importKey("raw",enc.encode(secret),"HMAC",false,["sign"]);const signature=new Uint8Array(await crypto.subtle.sign("HMAC",key,enc.encode(t+"."+raw)));const hex=Array.from(signature,x=>x.toString(16).padStart(2,"0")).join("");if(hex.length!==parts.v1.length)return false;let same=0;for(let i=0;i<hex.length;i++)same|=hex.charCodeAt(i)^parts.v1.charCodeAt(i);return same===0}
 function configured(env){return !!(env.BUSINESS_DB&&env.RESEND_API_KEY&&env.MAIL_FROM&&env.PUBLIC_SITE_URL==="https://justpdfit.com")}
@@ -31,6 +37,7 @@ if(url.pathname==="/stripe-webhook"){
  if(req.method!=="POST"||!env.STRIPE_WEBHOOK_SECRET||!env.BUSINESS_DB)return response({error:"not_ready"},503);
  const raw=await req.text();if(!await webhookSignature(raw,req.headers.get("Stripe-Signature")||"",env.STRIPE_WEBHOOK_SECRET))return response({error:"invalid_signature"},400);
  const event=JSON.parse(raw);if(event.livemode!==(env.BUSINESS_MODE==="live"))return response({error:"mode_mismatch"},409);
+ if(env.BUSINESS_MODE==="live"&&env.STRIPE_EXPECTED_ACCOUNT_ID!=="acct_1UaLHoEQp3CN3XtA")return response({error:"stripe_account_mismatch"},503);
  if(!["customer.subscription.created","customer.subscription.updated","customer.subscription.deleted"].includes(event.type))return response({ok:true});
  const sub=event.data?.object;const id=sub?.metadata?.business_org_id;
  if(!id||typeof id!=="string")return response({ok:true});
@@ -128,6 +135,7 @@ if(req.method==="POST"&&resource==="members"){
 if(req.method==="POST"&&resource==="billing"){
  if(membership.role!=="owner")return response({error:"forbidden"},403,origin);
  if(env.BUSINESS_BILLING_ENABLED!=="true")return response({error:"billing_not_enabled"},503,origin);
+ await checkStripeAccount(env);
  const d=await body(req),plan=d.plan,period=d.period,extra=Number(d.extra_seats);
  if(!PLANS[plan]||!["monthly","annual"].includes(period)||!Number.isSafeInteger(extra)||extra<0||extra>10000)return response({error:"invalid_plan"},422,origin);
  const key=plan.toUpperCase()+"_"+period.toUpperCase(),seatKey=plan.toUpperCase()+"_EXTRA_"+period.toUpperCase();
