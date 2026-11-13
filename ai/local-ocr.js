@@ -12,7 +12,15 @@
     return {text:norm(w.textContent),raw:String(w.textContent||"").trim(),bbox:bbox?bbox.slice(1).map(Number):null};
    }).filter(w=>w.text&&w.bbox);
    const line=norm(el.textContent||"");
-   if(!/signature|sign here|signe|توقيع|امضاء/.test(line))continue;
+   const dateLabel=/(?:\bdate\b|fait en|exemplaire|dated|le\s*:\s*$|التاريخ)/i.test(line);
+   if(!/signature|sign here|signe|توقيع|امضاء/.test(line)&&!dateLabel)continue;
+   if(dateLabel&&!/signature|sign here|signe|توقيع|امضاء/.test(line)){
+    const dateWords=words.filter(w=>/date|fait|exemplaire|le|التاريخ/.test(w.text));
+    const target=dateWords.length?dateWords:words;
+    if(target.length){
+     result.push({label:el.textContent.trim().slice(0,110),score:/date|fait en deux|exemplaire/.test(line)?.89:.66,bbox:[Math.min(...target.map(w=>w.bbox[0])),Math.min(...target.map(w=>w.bbox[1])),Math.max(...target.map(w=>w.bbox[2])),Math.max(...target.map(w=>w.bbox[3]))],kind:"date"});
+    }
+   }
    // Detect the specific insured signature words, rather than centering a line
    // that may also contain a subcontractor's signature in a second column.
    for(let i=0;i<words.length;i++){
@@ -27,7 +35,7 @@
     }else if(/sous traitant|subcontractor|sous traitance/.test(phrase))continue;
     const subset=words.slice(i,end+1);
     const box=[Math.min(...subset.map(w=>w.bbox[0])),Math.min(...subset.map(w=>w.bbox[1])),Math.max(...subset.map(w=>w.bbox[2])),Math.max(...subset.map(w=>w.bbox[3]))];
-    result.push({label:subset.map(w=>w.raw).join(" ").slice(0,110),score:confidence,bbox:box});
+    result.push({label:subset.map(w=>w.raw).join(" ").slice(0,110),score:confidence,bbox:box,kind:"signature"});
    }
   }
   return result.sort((a,b)=>b.score-a.score);
@@ -57,7 +65,7 @@
      // Use PDF.js transformations, not the browser display dimensions.
      const [px,py]=viewport.convertToPdfPoint((x1+x2)/2,y2);
      if(!Number.isFinite(px)||!Number.isFinite(py))continue;
-     anchors.push({page:n,label:line.label,x:px,y:py,source:"ocr",confidence:line.score});
+     anchors.push({page:n,label:line.label,x:px,y:py,source:"ocr",kind:line.kind||"signature",confidence:line.score});
     }
    }
   }finally{await worker.terminate();}
