@@ -10,7 +10,7 @@ const labels={fr:["Fichier","Analyse","Instructions","Emplacement","Aperçu","Va
 document.documentElement.lang=lang;if(lang==="ar")document.documentElement.dir="rtl";
 [...document.querySelectorAll(".step")].forEach((e,i)=>e.lastElementChild.textContent=(labels[lang]||labels.fr)[i]);
 let bytes=null,source=null,pdfDoc=null,pages=0,fields=[],anchors=[],selectedPage=1,viewport=null,
- activeStep=1,plan=[],point=null,previewUrl=null,previewBytes=null,previewDoc=null,hasInk=false,renderSerial=0;
+ activeStep=1,plan=[],point=null,datePoint=null,signatureWidth=155,placementMode="signature",previewUrl=null,previewBytes=null,previewDoc=null,hasInk=false,renderSerial=0;
 const API="https://justpdfit-ai-planner.zmehanna.workers.dev/interpret";
 const signature=$("signature"),ink=signature.getContext("2d");ink.lineWidth=3.5;ink.lineCap="round";ink.lineJoin="round";ink.strokeStyle="#1c3055";let drawing=false;
 function status(id,msg,error=false){$(id).textContent=msg;$(id).className="status"+(error?" error":"");}
@@ -65,27 +65,43 @@ function step(n){
  // A new step folds earlier ones; the user can always reopen any completed step.
  overrides.clear();updateStageDisplay();
 }
-function planChange(){point=null;invalidate();$("positionLabel").textContent=t.noPosition;drawMark();}
+function planChange(){point=null;datePoint=null;invalidate();$("positionLabel").textContent=t.noPosition;drawMark();}
 function invalidate(){previewDoc=null;if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}previewBytes=null;$("approve").checked=false;$("approve").disabled=true;$("download").disabled=true;$("pdfPreview").style.display="none";$("paper").hidden=!source;$("empty").hidden=!!source;$("previewMode").textContent=t.original;$("backToSource").hidden=true;drawMark();}
 function drawMark(){
- const mark=$("placementMark");if(!point||!viewport||selectedPage!==point.page||previewDoc){mark.style.display="none";return;}
- const [x,y]=viewport.convertToViewportPoint(point.x,point.y);
- const rect=$("pageCanvas").getBoundingClientRect();
- if(!rect.width||!rect.height){mark.style.display="none";return;}
- const xDisplayed=x*rect.width/$("pageCanvas").width;
- const yDisplayed=y*rect.height/$("pageCanvas").height;
- const width=Math.min(110,Math.max(56,rect.width-8)),height=Math.min(48,Math.max(26,rect.height-8));
- const left=Math.max(4,Math.min(xDisplayed-width/2,rect.width-width-4));
- const top=Math.max(4,Math.min(yDisplayed-height/2,rect.height-height-4));
- mark.style.display="block";
- mark.style.left=left+"px";mark.style.top=top+"px";
- mark.style.width=width+"px";mark.style.height=height+"px";
- mark.textContent=t.mark;
+ const canvas=$("pageCanvas"),rect=canvas.getBoundingClientRect();
+ const sourceVisible=!previewDoc&&!!viewport&&rect.width>0&&rect.height>0;
+ const show=(id,p,widthPdf,heightPdf)=>{
+  const mark=$(id);
+  if(!sourceVisible||!p||p.page!==selectedPage){mark.style.display="none";return;}
+  const [x,y]=viewport.convertToViewportPoint(p.x,p.y);
+  const ratio=rect.width/canvas.width;
+  const width=Math.min(rect.width-8,Math.max(28,widthPdf*viewport.scale*ratio));
+  const height=Math.min(rect.height-8,Math.max(17,heightPdf*viewport.scale*ratio));
+  const left=Math.max(4,Math.min(x*ratio-width/2,rect.width-width-4));
+  const top=Math.max(4,Math.min(y*ratio-height/2,rect.height-height-4));
+  mark.style.display="block";mark.style.left=left+"px";mark.style.top=top+"px";
+  mark.style.width=width+"px";mark.style.height=height+"px";
+ };
+ show("placementMark",point,effectiveSignatureWidth(),signatureHeight());
+ show("dateMark",datePoint,86,20);
+ $("dateMark").textContent=new Date().toLocaleDateString(lang==="fr"?"fr-FR":"en-GB");
+ $("moveSignature").hidden=!plan.some(a=>a.type==="add_signature"&&a.enabled);
+ $("moveDate").hidden=!plan.some(a=>a.type==="add_date"&&a.enabled);
+ $("editHint").hidden=$("moveSignature").hidden&&$("moveDate").hidden;
+}
+function effectiveSignatureWidth(){return Math.min(signatureWidth,200/Math.max(.1,signatureInkAspect||.34));}
+function signatureHeight(){return Math.min(200,effectiveSignatureWidth()*(signatureInkAspect||.34));}
+let signatureInkAspect=.34;
+function updateSignatureAspect(){
+ const d=ink.getImageData(0,0,signature.width,signature.height).data;
+ let x0=signature.width,y0=signature.height,x1=-1,y1=-1;
+ for(let y=0;y<signature.height;y++)for(let x=0;x<signature.width;x++)if(d[(y*signature.width+x)*4+3]>25){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);}
+ if(x1>=x0)signatureInkAspect=Math.min(2,Math.max(.1,(y1-y0+16)/(x1-x0+16)));
 }
 function canPlan(){const ok=!!bytes&&$("request").value.trim().length>2;$("planButton").disabled=!ok;$("localButton").disabled=!ok;}
 $("request").addEventListener("input",()=>{canPlan();if(plan.length){plan=[];point=null;$("plans")?.remove();invalidate();status("planStatus",t.changed);step(3);}});
 $("file").addEventListener("change",async()=>{
- const f=$("file").files?.[0];renderSerial++;bytes=null;source=null;pdfDoc=null;fields=[];anchors=[];plan=[];point=null;pages=0;
+ const f=$("file").files?.[0];renderSerial++;bytes=null;source=null;pdfDoc=null;fields=[];anchors=[];plan=[];point=null;datePoint=null;signatureWidth=155;pages=0;
  $("pagePicker").replaceChildren();$("pagePicker").disabled=true;$("prevPage").disabled=true;$("nextPage").disabled=true;$("plans")?.remove();$("fieldCandidates").textContent="";
  $("analysis").textContent=t.analyzing;step(2);invalidate();canPlan();
  if(!f){status("analysis",t.file);step(1);return;}
@@ -102,8 +118,8 @@ $("file").addEventListener("change",async()=>{
    const pg=await pdfDoc.getPage(n),content=await pg.getTextContent();
    for(const item of content.items){
     const label=String(item.str||"").trim(),matrix=item.transform;
-    if(label&&matrix?.length>=6&&/assur[ée]|insured|signature|signataire|sign here|توقيع|إمضاء/i.test(label)){
-     anchors.push({page:n,label,x:Number(matrix[4]),y:Number(matrix[5])});
+    if(label&&matrix?.length>=6&&/assur[ée]|insured|signature|signataire|sign here|date|fait en|exemplaire|تاريخ|توقيع|إمضاء/i.test(label)){
+     anchors.push({page:n,label,x:Number(matrix[4]),y:Number(matrix[5]),kind:/date|fait en|exemplaire|تاريخ/i.test(label)?"date":"signature",source:"native",confidence:.85});
     }
    }
   }
@@ -142,22 +158,82 @@ async function showSource(pageNum){
  await pdfPage.render({canvasContext:canvas.getContext("2d"),viewport:v}).promise;
  if(id!==renderSerial)return;viewport=v;drawMark();
 }
-$("pagePicker").addEventListener("change",()=>{if(previewDoc)return;const n=Number($("pagePicker").value);if(Number.isInteger(n)){if(plan.some(a=>a.type==="add_signature")){plan.find(a=>a.type==="add_signature").page=n;point=null;invalidate();$("positionLabel").textContent=t.noPosition;step(4);}showSource(n);}});
+$("pagePicker").addEventListener("change",()=>{if(previewDoc)return;const n=Number($("pagePicker").value);if(Number.isInteger(n)&&n>=1&&n<=pages){showSource(n);}});
 $("prevPage").addEventListener("click",()=>{if(selectedPage>1){if(previewDoc)showModified(selectedPage-1);else $("pagePicker").value=String(selectedPage-1),$("pagePicker").dispatchEvent(new Event("change"));}});
 $("nextPage").addEventListener("click",()=>{if(selectedPage<(previewDoc?previewDoc.numPages:pages)){if(previewDoc)showModified(selectedPage+1);else $("pagePicker").value=String(selectedPage+1),$("pagePicker").dispatchEvent(new Event("change"));}});
 function inkPos(e){const r=signature.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*signature.width,y:(e.clientY-r.top)/r.height*signature.height};}
 signature.addEventListener("pointerdown",e=>{e.preventDefault();drawing=true;hasInk=true;signature.setPointerCapture(e.pointerId);const p=inkPos(e);ink.beginPath();ink.moveTo(p.x,p.y);ink.lineTo(p.x+.1,p.y+.1);ink.stroke();invalidate();});
 signature.addEventListener("pointermove",e=>{if(!drawing)return;e.preventDefault();const p=inkPos(e);ink.lineTo(p.x,p.y);ink.stroke();});
-["pointerup","pointercancel"].forEach(n=>signature.addEventListener(n,()=>drawing=false));
-$("clearSignature").addEventListener("click",()=>{ink.clearRect(0,0,signature.width,signature.height);hasInk=false;invalidate();});
+function updateSignatureGhost(){
+ const data=croppedSignature(),ghost=$("signatureGhost");
+ ghost.hidden=!data;
+ if(data)ghost.src=data;else ghost.removeAttribute("src");
+ $("signaturePlaceholder").hidden=!!data;
+}
+["pointerup","pointercancel"].forEach(n=>signature.addEventListener(n,()=>{drawing=false;updateSignatureAspect();updateSignatureGhost();drawMark();}));
+$("clearSignature").addEventListener("click",()=>{ink.clearRect(0,0,signature.width,signature.height);hasInk=false;signatureInkAspect=.34;updateSignatureGhost();invalidate();});
+const centerFromPointer=e=>{
+ const canvas=$("pageCanvas"),rect=canvas.getBoundingClientRect();
+ const x=(e.clientX-rect.left)/rect.width*canvas.width;
+ const y=(e.clientY-rect.top)/rect.height*canvas.height;
+ const [px,py]=viewport.convertToPdfPoint(x,y);
+ const pg=source.getPage(selectedPage-1);
+ return {page:selectedPage,x:Math.max(8,Math.min(pg.getWidth()-8,px)),y:Math.max(8,Math.min(pg.getHeight()-8,py))};
+};
+function positionItem(mode,position){
+ if(!position||previewDoc)return;
+ if(mode==="date"){
+  const action=plan.find(a=>a.type==="add_date"&&a.enabled);
+  if(!action)return;
+  datePoint=position;action.page=selectedPage;
+  status("positionStatus",lang==="fr"?"Date placée sur la page "+selectedPage+" — déplacez-la si nécessaire.":"Date positioned on page "+selectedPage);
+ }else{
+  const action=plan.find(a=>a.type==="add_signature"&&a.enabled);
+  if(!action)return;
+  point=position;action.page=selectedPage;
+  $("positionLabel").textContent=t.position+selectedPage;
+  status("positionStatus",t.position+selectedPage);
+ }
+ invalidate();step(4);drawMark();$("previewButton").disabled=false;
+}
 $("pageCanvas").addEventListener("click",e=>{
- if(previewDoc||!plan.some(a=>a.type==="add_signature"&&a.enabled!==false)||!viewport)return;
- const rect=$("pageCanvas").getBoundingClientRect(),x=(e.clientX-rect.left)/rect.width*$("pageCanvas").width,y=(e.clientY-rect.top)/rect.height*$("pageCanvas").height;
- const [px,py]=viewport.convertToPdfPoint(x,y);point={page:selectedPage,x:px,y:py};
- plan.find(a=>a.type==="add_signature").page=selectedPage;invalidate();
- $("positionLabel").textContent=t.position+selectedPage;status("positionStatus",t.position+selectedPage);step(4);drawMark();$("previewButton").disabled=false;
+ if(previewDoc||!viewport||!plan.length)return;
+ positionItem(placementMode,centerFromPointer(e));
 });
-$("backToSource").addEventListener("click",()=>{const n=point?.page||plan.find(a=>a.type==="add_signature")?.page||1;invalidate();showSource(n);step(4);});
+function switchPlacementMode(mode){
+ placementMode=mode;
+ $("moveSignature").style.outline=mode==="signature"?"2px solid #ef4c65":"none";
+ $("moveDate").style.outline=mode==="date"?"2px solid #397bc9":"none";
+ $("editHint").textContent=lang==="fr"?(mode==="date"?"Cliquez sur la page ou faites glisser la date.":"Glissez la signature pour la déplacer ; tirez le coin pour ajuster sa taille."):(mode==="date"?"Click or drag the date.":"Drag the signature; pull its corner to resize.");
+}
+$("moveSignature").addEventListener("click",()=>switchPlacementMode("signature"));
+$("moveDate").addEventListener("click",()=>switchPlacementMode("date"));
+switchPlacementMode("signature");
+for(const [id,mode] of [["placementMark","signature"],["dateMark","date"]]){
+ const mark=$(id);let drag=null;
+ mark.addEventListener("pointerdown",e=>{
+  if(previewDoc||!viewport)return;
+  e.preventDefault();e.stopPropagation();
+  const resize=mode==="signature"&&!!e.target.closest(".resize-handle");
+  drag={resize,startX:e.clientX,initialWidth:signatureWidth};
+  switchPlacementMode(mode);mark.setPointerCapture(e.pointerId);
+ });
+ mark.addEventListener("pointermove",e=>{
+  if(!drag)return;
+  e.preventDefault();
+  if(drag.resize){
+   const ratio=$("pageCanvas").getBoundingClientRect().width/$("pageCanvas").width;
+   signatureWidth=Math.max(45,Math.min(240,drag.initialWidth+(e.clientX-drag.startX)/(Math.max(.01,viewport.scale*ratio))));
+   invalidate();drawMark();
+  }else{
+   positionItem(mode,centerFromPointer(e));
+  }
+ });
+ const finish=()=>{drag=null;};
+ mark.addEventListener("pointerup",finish);mark.addEventListener("pointercancel",finish);
+ mark.addEventListener("click",e=>e.stopPropagation());
+}
+$("backToSource").addEventListener("click",()=>{const n=point?.page||datePoint?.page||plan.find(a=>a.type==="add_signature")?.page||1;invalidate();showSource(n);step(4);});
 function localActions(){
  const q=$("request").value.trim();if(!q)return [];
  let num=1;const match=q.match(/(?:page|p\.|صفحة)\s*(\d+)/i),last=/derni[eè]re|last page|آخر صفحة/i.test(q),first=/premi[eè]re|first page|الصفحة الأولى/i.test(q);
@@ -165,15 +241,18 @@ function localActions(){
  else if(/assur[ée]|insured/i.test(q)){const candidate=anchors.find(x=>/signature.*assur[ée]|assur[ée].*signature|insured.*sign/i.test(x.label));if(candidate)num=candidate.page;}
  const items=[];
  if(/sign|signe|signer|signature|paraph|tوقيع|توقيع|إمضاء/i.test(q))items.push({type:"add_signature",page:num,enabled:true});
- if(/date du jour|today.s date|add date|ajoute.*date|أضف.*تاريخ/i.test(q))items.push({type:"add_date",page:num,position:"bottom-right",enabled:true});
+ if(/date du jour|date d.aujourd|aujourd.hui|today.s date|add date|ajoute.*date|mets.*date|أضف.*تاريخ/i.test(q))items.push({type:"add_date",page:num,position:"bottom-right",enabled:true});
  const del=q.match(/(?:supprim|delete|remove|حذف)[^\d]{0,20}(?:page\s*)?(\d+)/i);if(del)items.push({type:"delete_page",page:Number(del[1]),enabled:true});
  return items.filter(a=>a.page>=1&&a.page<=pages);
 }
 async function detectRequestedSignature(){
  const q=$("request").value.toLowerCase();
- if(!pdfDoc||!/sign|signe|signature|paraph|توقيع|إمضاء/i.test(q))return;
- const matches=anchors.some(a=>/assur[ée]|insured/i.test(q)?/assur[ée]|insured/i.test(a.label):/signature|sign here|توقيع|إمضاء/i.test(a.label));
- if(matches)return;
+ if(!pdfDoc||!/sign|signe|signature|paraph|توقيع|إمضاء|date|aujourd|today|تاريخ/i.test(q))return;
+ const needSign=/sign|signe|signature|paraph|توقيع|إمضاء/i.test(q);
+ const needDate=/date|aujourd|today|تاريخ/i.test(q);
+ const signFound=anchors.some(a=>a.kind!=="date"&&(/assur[ée]|insured/i.test(q)?/assur[ée]|insured/i.test(a.label):/signature|sign here|توقيع|إمضاء/i.test(a.label)));
+ const dateFound=anchors.some(a=>a.kind==="date"||/date|fait en|exemplaire|تاريخ/i.test(a.label));
+ if((!needSign||signFound)&&(!needDate||dateFound))return;
  if(!window.JustPDFitLocalOCR){
   status("planStatus",lang==="fr"?"OCR indisponible. Vous pourrez placer la signature manuellement.":"OCR unavailable; place the signature manually.",true);return;
  }
@@ -183,7 +262,7 @@ async function detectRequestedSignature(){
  status("planStatus",lang==="fr"?"Document scanné : recherche locale de l’emplacement de signature…":"Scanning locally for the signature location…");
  try{
   const result=await JustPDFitLocalOCR.search(pdfDoc,candidate,n=>status("planStatus",(lang==="fr"?"Reconnaissance visuelle de la page ":"Scanning page ")+n+"…"));
-  anchors.push(...result);
+  anchors.push(...result.filter(a=>!anchors.some(b=>b.page===a.page&&b.label===a.label&&b.kind===a.kind)));
   if(result.length){
    $("fieldCandidates").textContent=(lang==="fr"?"Emplacement(s) reconnus dans le scan : ":"Detected on scan: ")+result.map(a=>(lang==="fr"?"page ":"page ")+a.page+" — "+a.label).join(" · ");
   }else{
@@ -195,7 +274,7 @@ async function detectRequestedSignature(){
 }
 function setPlan(items,sourceMode){
  plan=items.slice(0,8).filter(a=>a&&["add_signature","add_date","delete_page","add_text","fill_field"].includes(a.type)&&Number.isInteger(Number(a.page))&&a.page>=1&&a.page<=pages).map(a=>({...a,enabled:true,page:Number(a.page)}));
- point=null;invalidate();$("plans")?.remove();if(!plan.length){status("planStatus",t.unrecognized,true);return;}
+ point=null;datePoint=null;signatureWidth=155;invalidate();$("plans")?.remove();if(!plan.length){status("planStatus",t.unrecognized,true);return;}
  const holder=document.createElement("div");holder.id="plans";holder.className="status";
  const heading=document.createElement("strong");heading.textContent=t.select;holder.append(heading);
  for(const item of plan){
@@ -217,6 +296,25 @@ function setPlan(items,sourceMode){
   showSource(sig.page);
   status("positionStatus",hint?(hint.source==="ocr"?(lang==="fr"?"Emplacement proposé par reconnaissance visuelle (« "+hint.label+" »). Vérifiez et déplacez-le si nécessaire.":"Visual OCR proposal (“"+hint.label+"”). Check and reposition if needed."):t.auto):t.positionNeeded);
  } else status("positionStatus",t.local);
+ const dateAction=plan.find(a=>a.type==="add_date");
+ if(dateAction){
+  const dates=anchors.filter(a=>a.page===dateAction.page&&(a.kind==="date"||/date|fait en|exemplaire|تاريخ/i.test(a.label)));
+  const named=dates.find(a=>/date|fait en|exemplaire|تاريخ/i.test(a.label));
+  const dateAnchor=named||dates[0];
+  const pg=source.getPage(dateAction.page-1);
+  if(dateAnchor&&(!dateAnchor.source||dateAnchor.confidence>=.82)){
+   datePoint={page:dateAction.page,x:Math.max(25,Math.min(pg.getWidth()-55,dateAnchor.x+70)),y:Math.max(20,Math.min(pg.getHeight()-20,dateAnchor.y-2))};
+   status("positionStatus",lang==="fr"?"Date proposée près du repère « "+dateAnchor.label+" ». Vérifiez et ajustez les deux éléments dans l’aperçu.":"Date proposed near “"+dateAnchor.label+"”. Review both placements.");
+  }else if(point&&point.page===dateAction.page){
+   datePoint={page:dateAction.page,x:Math.max(28,Math.min(pg.getWidth()-55,point.x+95)),y:Math.max(18,Math.min(pg.getHeight()-18,point.y+35))};
+   status("positionStatus",lang==="fr"?"Aucun champ date fiable : position proposée près de la signature, à vérifier.":"No reliable date field: suggested near the signature; please review.");
+  }else{
+   datePoint=null;
+   status("positionStatus",lang==="fr"?"Champ date introuvable : cliquez sur « Déplacer la date », puis choisissez sa position sur le PDF.":"Date field not found: select Move date and click its location.");
+  }
+ }
+ switchPlacementMode(sig?"signature":"date");
+ drawMark();
  $("previewButton").disabled=false;
  status("planStatus",sourceMode==="ai"?t.plan:t.local);step(sig?4:5);
 }
@@ -252,7 +350,7 @@ $("planButton").addEventListener("click",async()=>{
    if(target)actions=actions.map(a=>a.type==="add_signature"?{...a,page:target.page}:a);
   }
   setPlan(actions,"ai");
-  if(data.uncertainty&&!point)status("positionStatus",data.uncertainty);
+  if(data.uncertainty&&!point&&!datePoint)status("positionStatus",data.uncertainty);
  }catch(e){status("planStatus",t.modelFailed,true);}finally{canPlan();}
 });
 function croppedSignature(){
@@ -270,6 +368,11 @@ $("previewButton").addEventListener("click",async()=>{
  const edits=plan.filter(a=>a.enabled);
  if(!edits.length){status("positionStatus",t.noPlan,true);return;}
  const sig=edits.find(a=>a.type==="add_signature");
+ const dateAction=edits.find(a=>a.type==="add_date");
+ if(dateAction&&(!datePoint||datePoint.page!==dateAction.page)){
+  status("positionStatus",lang==="fr"?"Choisissez la position de la date sur l’aperçu avant de continuer.":"Choose the date position on the preview first.",true);
+  return;
+ }
  if(sig&&(!point||point.page!==sig.page)){status("positionStatus",t.positionNeeded,true);return;}
  const signaturePng=sig?croppedSignature():null;
  if(sig&&!signaturePng){status("positionStatus",t.draw,true);return;}
@@ -287,21 +390,28 @@ $("previewButton").addEventListener("click",async()=>{
    }
    const p=pdf.getPage(a.page-1);
    if(a.type==="add_signature"){
-    const img=await pdf.embedPng(signaturePng),w=Math.min(180,p.getWidth()*.38),h=w*img.height/img.width;
-    const width=Math.min(w,160),height=Math.min(h,80),x=Math.max(10,Math.min(p.getWidth()-width-10,point.x-width/2)),y=Math.max(10,Math.min(p.getHeight()-height-10,point.y-height/2));
+    const img=await pdf.embedPng(signaturePng);
+    const aspect=img.height/img.width;
+    const width=Math.min(effectiveSignatureWidth(),p.getWidth()*.8,200/Math.max(.1,aspect));
+    const height=width*aspect;
+    const x=Math.max(10,Math.min(p.getWidth()-width-10,point.x-width/2));
+    const y=Math.max(10,Math.min(p.getHeight()-height-10,point.y-height/2));
     p.drawImage(img,{x,y,width,height});
    }else{
     const str=a.type==="add_date"?new Date().toLocaleDateString(lang==="fr"?"fr-FR":"en-GB"):String(a.text||"");
     if(!str||/[^\u0000-\u00ff]/.test(str))throw Error(t.unsupported);
     const size=12,w=font.widthOfTextAtSize(str,size);
-    p.drawText(str,{x:Math.max(10,p.getWidth()-w-30),y:28,size,font,color:PDFLib.rgb(.13,.20,.32)});
+    const dateCoord=a.type==="add_date"?datePoint:null;
+    const x=dateCoord?Math.max(10,Math.min(p.getWidth()-w-10,dateCoord.x-w/2)):Math.max(10,p.getWidth()-w-30);
+    const y=dateCoord?Math.max(12,Math.min(p.getHeight()-size-10,dateCoord.y-size/3)):28;
+    p.drawText(str,{x,y,size,font,color:PDFLib.rgb(.13,.20,.32)});
    }
   }
   [...deleted].sort((a,b)=>b-a).forEach(n=>pdf.removePage(n-1));
   linkMark(pdf,font);previewBytes=new Uint8Array(await pdf.save());
   previewUrl=URL.createObjectURL(new Blob([previewBytes],{type:"application/pdf"}));
   previewDoc=await pdfjsLib.getDocument({data:previewBytes.slice()}).promise;
-  await showModified(Math.min(point?.page||1,previewDoc.numPages));
+  await showModified(Math.min(point?.page||datePoint?.page||1,previewDoc.numPages));
   $("backToSource").hidden=false;$("approve").disabled=false;
   status("planStatus",t.previewReady);step(6);
  }catch(e){status("planStatus",e?.message||t.export,true);step(4);invalidate();}
