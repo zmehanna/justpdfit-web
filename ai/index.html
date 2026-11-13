@@ -59,6 +59,22 @@ button.primary{background:linear-gradient(90deg,#ed465e,#fa6576);color:white}but
 .note{font-size:12px;color:var(--sub);line-height:1.55}.hint{font-size:12px;background:#fff5f8;color:#9e3048;border:1px solid #fbd7df;padding:10px;border-radius:10px;margin:9px 0}
 .status{font-size:12px;background:#eef3fb;color:#52657f;border-radius:9px;padding:10px;margin:8px 0;min-height:34px}.status.error{background:#fff0f2;color:#a82342}.status.ok{background:#ecf8ef;color:#256a3e}
 .checkbox{display:flex;align-items:start;gap:8px;font-size:12px;margin:10px 0}.checkbox input{margin-top:3px}
+.signature-methods{border:0;margin:12px 0 8px;padding:0;min-width:0}
+.signature-methods legend{font-size:12px;font-weight:800;margin:0 0 9px;color:#243451}
+.signature-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.signature-tab{font-size:12px;background:#f1f4fa;color:#44546e;border:1px solid #dce5f1;border-radius:10px;padding:9px 8px}
+.signature-tab.selected{background:#fff0f3;border:2px solid #ed465c;color:#bb2948;padding:8px 7px}
+.signature-pane{margin:8px 0 10px}
+.signature-pane[hidden]{display:none!important}
+.signature-pane input[type=text],.signature-pane select{width:100%;border:1px solid #d8e0ed;border-radius:10px;min-height:42px;padding:10px;font:inherit;background:white;color:#213454}
+.signature-colors{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 0 3px}
+.signature-colors>span{font-size:12px;font-weight:700}
+.signature-color-options{display:flex;gap:8px}
+.signature-color{display:grid;place-items:center;width:30px;height:30px;border:2px solid #e2e7f0;background:#fff;border-radius:50%;padding:4px;min-height:30px}
+.signature-color span{display:block;width:18px;height:18px;border-radius:50%}
+.signature-color.selected{border-color:#ed465c;box-shadow:0 0 0 2px #ed465c24}
+.signature-color .swatch-white{background:#fff;border:1px solid #b7c2d2}
+#signatureColorHint{width:100%}
 #signature{width:100%;height:112px;border:2px dashed #d2ddea;border-radius:11px;background:#fff;touch-action:none}
 #pagePicker{max-width:135px}#fieldCandidates{font-size:12px;color:var(--sub)}.smallrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .preview{position:sticky;top:12px}.viewer{min-height:440px;background:#f0f2f8;border:1px solid #e0e6ed;border-radius:13px;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:10px}
@@ -159,8 +175,44 @@ footer.jpi-site-footer .container{padding-top:0;padding-bottom:0}
 <p id="placementHelp" class="note">L'aperçu du PDF s'affiche à droite. Cliquez sur la zone exacte où placer la signature. Ne choisissez pas un coin au hasard.</p>
 <div class="smallrow"><label for="pagePicker" id="pageLabel">Page :</label><select id="pagePicker" disabled></select><span id="positionLabel" class="note">Aucun emplacement choisi</span></div>
 <div id="signatureControls" hidden>
-<label class="field" style="margin-top:12px"><span id="drawLabel">Dessinez votre signature</span><canvas id="signature" width="600" height="220"></canvas></label>
-<p id="signatureRequired" class="hint" role="status">Dessinez d’abord votre signature dans le cadre ci-dessus. La date et la position peuvent être préparées sans elle, mais l’aperçu final nécessite une signature.</p><div class="btn-row"><button type="button" class="secondary" id="clearSignature">Effacer la signature</button></div></div>
+<fieldset class="signature-methods" aria-label="Méthode de signature">
+ <legend id="signatureMethodTitle">Choisissez votre type de signature</legend>
+ <div class="signature-tabs" role="group" aria-label="Type de signature">
+  <button type="button" class="signature-tab selected" data-sign-mode="draw" aria-pressed="true">✍️ Dessiner</button>
+  <button type="button" class="signature-tab" data-sign-mode="type" aria-pressed="false">Taper mon nom</button>
+  <button type="button" class="signature-tab" data-sign-mode="upload" aria-pressed="false">Importer</button>
+  <button type="button" class="signature-tab" data-sign-mode="initials" aria-pressed="false">Initiales</button>
+ </div>
+</fieldset>
+<div id="signDrawPane" class="signature-pane">
+ <label class="field" style="margin-top:12px"><span id="drawLabel">Dessinez votre signature</span><canvas id="signature" width="600" height="220"></canvas></label>
+ <button type="button" class="secondary" id="clearSignature">Effacer le dessin</button>
+</div>
+<div id="signTypePane" class="signature-pane" hidden>
+ <label class="field"><span>Nom à signer</span><input id="signatureText" type="text" maxlength="65" placeholder="Prénom Nom" autocomplete="name"></label>
+ <label class="field"><span>Style manuscrit</span><select id="signatureFont"><option value="script">Élégant</option><option value="classic">Classique</option><option value="modern">Moderne</option></select></label>
+</div>
+<div id="signUploadPane" class="signature-pane" hidden>
+ <label class="field"><span>Image de votre signature (PNG ou JPG, 5 Mo maximum)</span><input id="signatureImage" type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg"></label>
+ <p class="note">Une image PNG avec fond transparent donne généralement le meilleur résultat. L'image reste dans votre navigateur.</p>
+ <button type="button" class="secondary" id="clearSignatureImage">Retirer l'image</button>
+</div>
+<div id="signInitialsPane" class="signature-pane" hidden>
+ <label class="field"><span>Vos initiales</span><input id="signatureInitials" type="text" maxlength="8" placeholder="ZM" autocomplete="off"></label>
+ <label class="field"><span>Style</span><select id="initialsFont"><option value="script">Manuscrit</option><option value="classic">Classique</option><option value="modern">Moderne</option></select></label>
+</div>
+<div class="signature-colors">
+ <span>Couleur de la signature</span>
+ <div class="signature-color-options" role="group" aria-label="Couleur">
+  <button type="button" class="signature-color selected" data-sign-color="#1c3055" aria-label="Bleu marine" aria-pressed="true"><span style="background:#1c3055"></span></button>
+  <button type="button" class="signature-color" data-sign-color="#111111" aria-label="Noir" aria-pressed="false"><span style="background:#111111"></span></button>
+  <button type="button" class="signature-color" data-sign-color="#155bb5" aria-label="Bleu" aria-pressed="false"><span style="background:#155bb5"></span></button>
+  <button type="button" class="signature-color" data-sign-color="#ffffff" aria-label="Blanc" aria-pressed="false"><span class="swatch-white"></span></button>
+ </div>
+ <small id="signatureColorHint" class="note">La couleur s'applique au dessin, au nom tapé et aux initiales.</small>
+</div>
+<p id="signatureRequired" class="hint" role="status">Choisissez ou créez votre signature avant de générer l'aperçu final.</p>
+</div>
 <div id="positionStatus" class="status">La signature sera placée uniquement à l'emplacement que vous choisissez.</div><button type="button" id="continuePreview" class="primary" disabled>Continuer vers l’aperçu →</button></div>
 <div class="stage"><h3><em>5</em><span id="s5">Voir le PDF modifié</span></h3>
 <button id="previewButton" type="button" class="primary" disabled>Générer l'aperçu</button><p class="note" id="previewHelp">Aucune approbation n'est requise pour prévisualiser.</p></div>
@@ -181,5 +233,5 @@ footer.jpi-site-footer .container{padding-top:0;padding-bottom:0}
 </main>
 <footer class="jpi-site-footer" aria-label="Pied de page JustPDFit"></footer>
 <script defer src="./local-ocr.js?v=20261113-smart-place1"></script>
-<script defer src="./guided-flow.js?v=20261113-brand-picker"></script>
+<script defer src="./guided-flow.js?v=20261113-sign-modes1"></script>
 </body></html>
