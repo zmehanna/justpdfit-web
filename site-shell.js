@@ -90,6 +90,11 @@
    if(soon.has(tools[i][0])){a.title=t[21];a.classList.add("jpi-nav-soon");}
    wrap.appendChild(a);
   }
+  const businessName={"en":"Business","fr":"Entreprises","ar":"للشركات","es":"Empresas","de":"Business","it":"Aziende","pt":"Empresas","nl":"Zakelijk","ru":"Для бизнеса","pl":"Dla firm","tr":"İşletmeler","zh":"企业","ja":"法人向け","ko":"비즈니스","hi":"व्यवसाय","ur":"کاروبار","fa":"کسب‌وکار","id":"Bisnis","vi":"Doanh nghiệp","th":"ธุรกิจ","ms":"Perniagaan","fil":"Negosyo","sv":"Företag","el":"Επιχειρήσεις","ro":"Afaceri","bn":"ব্যবসা","sw":"Biashara"}[language]||"Business";
+  const businessLink=xlink(businessName,base+"business/");
+  businessLink.className="jpi-nav-link jpi-nav-business";
+  if(location.pathname.includes("/business/"))businessLink.setAttribute("aria-current","page");
+  wrap.appendChild(businessLink);
   nav.replaceChildren(wrap);nav.setAttribute("aria-label",t[9]);
   const oldFooters=Array.from(document.querySelectorAll("footer")).filter(f=>!f.closest("main"));
   let footer=oldFooters[oldFooters.length-1];
@@ -108,7 +113,7 @@
     const h=document.createElement("h2");h.textContent=title;el.appendChild(h);
     for(const [label,href,ext] of items)el.appendChild(xlink(label,href,ext));return el;
   }
-  const pdf=group(t[9],[[createLabel,base+"#workbench",false],...tools.map((tool,i)=>[t[i]+(soon.has(tool[0])?" · "+(language==="fr"?"bientôt":language==="ar"?"قريبًا":"soon"):""),pathFor(i),false])]);
+  const pdf=group(t[9],[[createLabel,base+"#workbench",false],[businessName,base+"business/",false],...tools.map((tool,i)=>[t[i]+(soon.has(tool[0])?" · "+(language==="fr"?"bientôt":language==="ar"?"قريبًا":"soon"):""),pathFor(i),false])]);
   const sites=group(t[11],[
    ["JustPDFit","https://justpdfit.com/",true],
    ["FairTaxy","https://fairtaxy.com/",true],
