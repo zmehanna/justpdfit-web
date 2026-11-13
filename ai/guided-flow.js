@@ -82,15 +82,14 @@ function drawMark(){
   mark.style.display="block";mark.style.left=left+"px";mark.style.top=top+"px";
   mark.style.width=width+"px";mark.style.height=height+"px";
  };
- show("placementMark",point,signatureWidth,signatureHeight());
+ show("placementMark",point,effectiveSignatureWidth(),signatureHeight());
  show("dateMark",datePoint,86,20);
  $("moveSignature").hidden=!plan.some(a=>a.type==="add_signature"&&a.enabled);
  $("moveDate").hidden=!plan.some(a=>a.type==="add_date"&&a.enabled);
  $("editHint").hidden=$("moveSignature").hidden&&$("moveDate").hidden;
 }
-function signatureHeight(){
- return Math.min(80,signatureWidth*(signatureInkAspect||.34));
-}
+function effectiveSignatureWidth(){return Math.min(signatureWidth,80/Math.max(.1,signatureInkAspect||.34));}
+function signatureHeight(){return Math.min(80,effectiveSignatureWidth()*(signatureInkAspect||.34));}
 let signatureInkAspect=.34;
 function updateSignatureAspect(){
  const d=ink.getImageData(0,0,signature.width,signature.height).data;
@@ -227,7 +226,7 @@ for(const [id,mode] of [["placementMark","signature"],["dateMark","date"]]){
  mark.addEventListener("pointerup",finish);mark.addEventListener("pointercancel",finish);
  mark.addEventListener("click",e=>e.stopPropagation());
 }
-$("backToSource").addEventListener("click",()=>{const n=point?.page||plan.find(a=>a.type==="add_signature")?.page||1;invalidate();showSource(n);step(4);});
+$("backToSource").addEventListener("click",()=>{const n=point?.page||datePoint?.page||plan.find(a=>a.type==="add_signature")?.page||1;invalidate();showSource(n);step(4);});
 function localActions(){
  const q=$("request").value.trim();if(!q)return [];
  let num=1;const match=q.match(/(?:page|p\.|صفحة)\s*(\d+)/i),last=/derni[eè]re|last page|آخر صفحة/i.test(q),first=/premi[eè]re|first page|الصفحة الأولى/i.test(q);
@@ -362,6 +361,11 @@ $("previewButton").addEventListener("click",async()=>{
  const edits=plan.filter(a=>a.enabled);
  if(!edits.length){status("positionStatus",t.noPlan,true);return;}
  const sig=edits.find(a=>a.type==="add_signature");
+ const dateAction=edits.find(a=>a.type==="add_date");
+ if(dateAction&&(!datePoint||datePoint.page!==dateAction.page)){
+  status("positionStatus",lang==="fr"?"Choisissez la position de la date sur l’aperçu avant de continuer.":"Choose the date position on the preview first.",true);
+  return;
+ }
  if(sig&&(!point||point.page!==sig.page)){status("positionStatus",t.positionNeeded,true);return;}
  const signaturePng=sig?croppedSignature():null;
  if(sig&&!signaturePng){status("positionStatus",t.draw,true);return;}
@@ -379,21 +383,28 @@ $("previewButton").addEventListener("click",async()=>{
    }
    const p=pdf.getPage(a.page-1);
    if(a.type==="add_signature"){
-    const img=await pdf.embedPng(signaturePng),w=Math.min(180,p.getWidth()*.38),h=w*img.height/img.width;
-    const width=Math.min(w,160),height=Math.min(h,80),x=Math.max(10,Math.min(p.getWidth()-width-10,point.x-width/2)),y=Math.max(10,Math.min(p.getHeight()-height-10,point.y-height/2));
+    const img=await pdf.embedPng(signaturePng);
+    const aspect=img.height/img.width;
+    const width=Math.min(effectiveSignatureWidth(),p.getWidth()*.8,80/Math.max(.1,aspect));
+    const height=width*aspect;
+    const x=Math.max(10,Math.min(p.getWidth()-width-10,point.x-width/2));
+    const y=Math.max(10,Math.min(p.getHeight()-height-10,point.y-height/2));
     p.drawImage(img,{x,y,width,height});
    }else{
     const str=a.type==="add_date"?new Date().toLocaleDateString(lang==="fr"?"fr-FR":"en-GB"):String(a.text||"");
     if(!str||/[^\u0000-\u00ff]/.test(str))throw Error(t.unsupported);
     const size=12,w=font.widthOfTextAtSize(str,size);
-    p.drawText(str,{x:Math.max(10,p.getWidth()-w-30),y:28,size,font,color:PDFLib.rgb(.13,.20,.32)});
+    const dateCoord=a.type==="add_date"?datePoint:null;
+    const x=dateCoord?Math.max(10,Math.min(p.getWidth()-w-10,dateCoord.x-w/2)):Math.max(10,p.getWidth()-w-30);
+    const y=dateCoord?Math.max(12,Math.min(p.getHeight()-size-10,dateCoord.y-size/3)):28;
+    p.drawText(str,{x,y,size,font,color:PDFLib.rgb(.13,.20,.32)});
    }
   }
   [...deleted].sort((a,b)=>b-a).forEach(n=>pdf.removePage(n-1));
   linkMark(pdf,font);previewBytes=new Uint8Array(await pdf.save());
   previewUrl=URL.createObjectURL(new Blob([previewBytes],{type:"application/pdf"}));
   previewDoc=await pdfjsLib.getDocument({data:previewBytes.slice()}).promise;
-  await showModified(Math.min(point?.page||1,previewDoc.numPages));
+  await showModified(Math.min(point?.page||datePoint?.page||1,previewDoc.numPages));
   $("backToSource").hidden=false;$("approve").disabled=false;
   status("planStatus",t.previewReady);step(6);
  }catch(e){status("planStatus",e?.message||t.export,true);step(4);invalidate();}
