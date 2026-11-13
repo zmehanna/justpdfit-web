@@ -10,11 +10,11 @@ BUSINESS_BILLING_ENABLED = "false"
 PUBLIC_SITE_URL = "https://justpdfit.com"
 
 # Provision a dedicated D1 database and fill the ID before deploying.
-# [[d1_databases]]
-# binding = "BUSINESS_DB"
-# database_name = "justpdfit-business-staging"
-# database_id = "YOUR_BUSINESS_D1_ID"
-# migrations_dir = "migrations"
+[[d1_databases]]
+binding = "BUSINESS_DB"
+database_name = "justpdfit-business-staging"
+database_id = "09b537dc-c042-4364-96b7-76f2e934ec6b"
+migrations_dir = "migrations"
 
 # Required secrets: RESEND_API_KEY, MAIL_FROM, STRIPE_SECRET_KEY,
 # STRIPE_WEBHOOK_SECRET. These are entered only via wrangler secret put.
