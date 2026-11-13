@@ -36,6 +36,7 @@ body{background:#f7f9fd;color:var(--ai-ink);font-family:system-ui,-apple-system,
 .ai-small{font-size:11px;color:#72809a;line-height:1.5}
 .ai-footer{margin-top:20px;text-align:center}.ai-footer a{color:#c53150}
 @media(max-width:800px){.ai-grid{grid-template-columns:1fr}.ai-preview{height:420px}.ai-card{padding:17px}}
+.ai-manual{display:none}.ai-manual[open]{display:block}.ai-manual summary{cursor:pointer;padding:12px 14px;border-radius:12px;background:#f2f5fa;font-size:13px;font-weight:750;color:#3c5071;margin:12px 0}.ai-manual[open]~.ai-manual{display:block}.ai-grid>.ai-card:first-child{align-self:start}.ai-v2{margin:16px 0 20px!important;padding:16px!important;box-shadow:none!important}.ai-v2 h2{font-size:17px!important}.ai-v2 .ai-buttons{margin-top:8px}.ai-v2 .ai-check{font-size:12px}.ai-v2 .ai-intro{margin-bottom:6px}.ai-ai-result-actions{margin-top:12px}.ai-v2 #aiReviewTitle{margin-top:14px}.ai-v2 #aiDetections{white-space:pre-wrap}
 </style>
 </head>
 <body>
@@ -48,7 +49,8 @@ body{background:#f7f9fd;color:var(--ai-ink);font-family:system-ui,-apple-system,
 <h2 id="section1">1. Document & instructions</h2>
 <label class="ai-field"><span id="fileLabel">Choose a PDF</span><input id="file" type="file" accept=".pdf,application/pdf"></label>
 <label class="ai-field"><span id="promptLabel">Your instructions</span><textarea id="prompt" maxlength="600" placeholder="Sign the last page, add today's date and delete page 2."></textarea></label>
-<div class="ai-buttons"><button class="ai-btn" id="goAI" type="button" onclick="document.getElementById('justpdfit-ai-planner')?.scrollIntoView({behavior:'smooth',block:'start'})">✦ Utiliser le moteur IA</button><button class="ai-btn secondary" id="interpret" type="button">Mode manuel</button></div>
+<details id="manualTools" class="ai-manual"><summary id="manualToggle">Outils manuels (optionnel)</summary>
+<div class="ai-buttons"><button class="ai-btn secondary" id="interpret" type="button">Comprendre la demande en mode manuel</button></div>
 <div class="ai-warning" id="limitations">The assistant interprets supported commands locally, not with a generative AI model. Review and adjust the actions below. It cannot replace existing PDF text or identify a signature field automatically.</div>
 <h2 style="margin-top:25px" id="section2">2. Confirm PDF actions</h2>
 <label class="ai-check"><input id="remove" type="checkbox"><span id="removeLabel">Delete a page</span></label>
@@ -57,18 +59,19 @@ body{background:#f7f9fd;color:var(--ai-ink);font-family:system-ui,-apple-system,
 <div class="ai-controls"><label><span id="datePageLabel">On original page</span><input id="datePage" type="number" min="1" value="1"></label><label><span id="datePositionLabel">Position</span><select id="datePosition"><option value="bottom-right">Bottom right</option><option value="bottom-left">Bottom left</option><option value="top-right">Top right</option></select></label></div>
 <label class="ai-check"><input id="sign" type="checkbox"><span id="signLabel">Add my handwritten signature</span></label>
 <div class="ai-controls"><label><span id="signPageLabel">On original page</span><input id="signPage" type="number" min="1" value="1"></label><label><span id="signPositionLabel">Position</span><select id="signPosition"><option value="bottom-right">Bottom right</option><option value="bottom-left">Bottom left</option><option value="top-right">Top right</option></select></label></div>
+</details>
 <label class="ai-field"><span id="signatureLabel">Draw your signature here</span><canvas class="ai-sign" id="signature" width="600" height="220" aria-label="Signature drawing pad"></canvas></label>
-<button class="ai-btn secondary" id="clearSign" type="button">Clear signature</button>
+<button class="ai-btn secondary" id="clearSign" type="button">Clear signature</button><div class="ai-manual">
 <div class="ai-warning" id="security">Nothing is applied to the original. A dated signature is not automatically a verified electronic signature.</div>
 <div class="ai-buttons"><button class="ai-btn" id="previewBtn" type="button">Preview changes</button><button class="ai-btn secondary" id="resetBtn" type="button">Reset</button></div>
-<div class="ai-status" id="status" role="status" aria-live="polite">Load a PDF to start.</div>
+<div class="ai-status" id="status" role="status" aria-live="polite">Load a PDF to start.</div></div>
 </section>
 <section class="ai-card">
 <h2 id="section3">3. Preview & export</h2>
 <div class="ai-empty" id="emptyPreview">Your modified document will appear here after you click Preview changes.</div>
 <iframe class="ai-preview" id="preview" title="PDF preview" hidden></iframe>
 <p class="ai-note" id="priceNote">Free export includes a small clickable JustPDFit watermark. No payment is required.</p>
-<div class="ai-buttons"><button class="ai-btn" id="download" type="button" disabled>Download PDF with watermark</button><a class="ai-btn secondary" href="../edit-pdf/" id="advanced" style="text-decoration:none">Advanced PDF editor</a></div>
+<div class="ai-buttons ai-manual"><button class="ai-btn" id="download" type="button" disabled>Download PDF with watermark</button><a class="ai-btn secondary" href="../edit-pdf/" id="advanced" style="text-decoration:none">Advanced PDF editor</a></div>
 <p class="ai-small" id="privacy">Privacy: all PDF processing on this page happens inside your browser. The source PDF and drawn signature are not sent to our servers or third-party AI services.</p>
 </section>
 </div>
