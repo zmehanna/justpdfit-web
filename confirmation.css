@@ -8,3 +8,13 @@
 .jpi-confirm-email:hover{border-color:#ec6a84;background:#fff7f9}
 .jpi-confirm-privacy{font-size:12px;line-height:1.5;color:#71819a;margin:11px 0 0}
 @media(max-width:540px){.jpi-confirm{padding:18px 15px;border-radius:20px}.jpi-confirm-preview-frame{height:190px}.jpi-confirm-symbol{width:55px;height:55px;font-size:30px}.jpi-confirm-subtitle{margin-bottom:12px}.jpi-confirm-actions{margin-top:12px}}
+
+/* Resolve an in-progress rename before a download, share, open or close action. */
+.jpi-confirm-rename-guard[hidden]{display:none!important}
+.jpi-confirm-rename-guard{position:sticky;top:0;z-index:4;margin:12px 0;padding:16px;border:1px solid #ffb1c0;border-radius:13px;background:#fff7f9;text-align:start;box-shadow:0 9px 23px #14244a15}
+.jpi-confirm-rename-guard p{margin:0 0 13px;color:#243451;font-size:14px;font-weight:750;line-height:1.5}
+.jpi-confirm-guard-actions{display:flex;flex-wrap:wrap;gap:8px}
+.jpi-confirm-guard-actions button{min-height:40px;padding:10px 12px;font:inherit;font-size:12px;font-weight:800;border:1px solid #dfe5f0;border-radius:9px;background:#fff;color:#25385d;cursor:pointer}
+.jpi-confirm-guard-actions [data-guard=save]{background:linear-gradient(110deg,#e64364,#f16c84);border-color:#e64364;color:#fff}
+.jpi-confirm-guard-actions button:focus-visible{outline:3px solid #6c9efb;outline-offset:2px}
+@media(max-width:540px){.jpi-confirm-guard-actions{flex-direction:column}.jpi-confirm-guard-actions button{width:100%}}
