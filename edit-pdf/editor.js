@@ -125,10 +125,10 @@ function renderObjects(){
   const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
   svg.setAttribute("viewBox","0 0 24 24");svg.setAttribute("width","100%");svg.setAttribute("height","100%");
   svg.setAttribute("aria-hidden","true");svg.style.pointerEvents="none";
-  const rect=document.createElementNS("http://www.w3.org/2000/svg","rect");
-  rect.setAttribute("x","2");rect.setAttribute("y","2");rect.setAttribute("width","20");rect.setAttribute("height","20");
-  rect.setAttribute("rx","2");rect.setAttribute("fill","none");rect.setAttribute("stroke",o.color||"#172746");rect.setAttribute("stroke-width","1.8");svg.append(rect);
-  if(o.text==="✓"){const tick=document.createElementNS("http://www.w3.org/2000/svg","path");tick.setAttribute("d","M6 12.5l4 4 8-9");tick.setAttribute("fill","none");tick.setAttribute("stroke",o.color||"#172746");tick.setAttribute("stroke-width","2.5");tick.setAttribute("stroke-linecap","round");tick.setAttribute("stroke-linejoin","round");svg.append(tick);}
+  // The underlying document already provides the checkbox square.
+  // Only render the checkmark; the draggable selection outline remains
+  // editor-only and is never embedded into the exported PDF.
+  if(o.text==="✓"){const tick=document.createElementNS("http://www.w3.org/2000/svg","path");tick.setAttribute("d","M4 12l5 5 11-12");tick.setAttribute("fill","none");tick.setAttribute("stroke",o.color||"#172746");tick.setAttribute("stroke-width","2.6");tick.setAttribute("stroke-linecap","round");tick.setAttribute("stroke-linejoin","round");svg.append(tick);}
   el.append(svg);
  }else if(o.image){const img=document.createElement("img");img.src=o.image;el.append(img);}else el.textContent=o.text;
  el.tabIndex=0;el.setAttribute("aria-label",tr(o.kind));el.onpointerdown=e=>{e.preventDefault();selected=o.id;renderProperties();wrap.querySelectorAll(".editor-object").forEach(node=>node.classList.remove("selected"));el.classList.add("selected");let startX=e.clientX,startY=e.clientY,ox=o.x,oy=o.y,committed=false;
@@ -231,7 +231,7 @@ async function exportPdf(clean){
  for(const o of objects){
  const page=doc.getPage(o.page-1);if(!page)continue;const width=page.getWidth(),height=page.getHeight(),x=o.x*width,y=(1-o.y-o.h)*height,w=o.w*width,h=o.h*height;
  if(o.kind==="highlight"){page.drawRectangle({x,y,width:w,height:h,color:PDFLib.rgb(1,.9,.2),opacity:.4});continue;}
- if(o.kind==="check"){page.drawRectangle({x,y,width:w,height:h,borderWidth:Math.max(1,w*.08),borderColor:PDFLib.rgb(.13,.2,.33)});if(o.text==="✓") {page.drawLine({start:{x:x+w*.15,y:y+h*.48},end:{x:x+w*.43,y:y+h*.18},thickness:Math.max(1,w*.09),color:PDFLib.rgb(.13,.2,.33)});page.drawLine({start:{x:x+w*.43,y:y+h*.18},end:{x:x+w*.88,y:y+h*.85},thickness:Math.max(1,w*.09),color:PDFLib.rgb(.13,.2,.33)});}continue;}
+ if(o.kind==="check"){if(o.text==="✓"){const ink=PDFLib.rgb(.09,.13,.25),thickness=Math.max(.9,Math.min(w,h)*.105);page.drawLine({start:{x:x+w*(4/24),y:y+h*(1-12/24)},end:{x:x+w*(9/24),y:y+h*(1-17/24)},thickness,color:ink});page.drawLine({start:{x:x+w*(9/24),y:y+h*(1-17/24)},end:{x:x+w*(20/24),y:y+h*(1-5/24)},thickness,color:ink});}continue;}
  const image=o.image||rasterizeText(o,width,height);
  if(!imageCache.has(image)){const bytes=Uint8Array.from(atob(image.split(",")[1]),c=>c.charCodeAt(0));imageCache.set(image,image.startsWith("data:image/jpeg")?await doc.embedJpg(bytes):await doc.embedPng(bytes));}
  const embedded=imageCache.get(image);
