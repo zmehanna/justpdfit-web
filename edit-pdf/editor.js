@@ -117,7 +117,20 @@ function renderObjects(){
  objects.filter(o=>o.page===current).forEach(o=>{
  const el=document.createElement("div");el.className="editor-object "+(o.kind==="check"?"checkbox ":"")+(o.kind==="highlight"?"highlight ":"")+(o.id===selected?"selected":"");
  el.style.cssText="left:"+(o.x*100)+"%;top:"+(o.y*100)+"%;width:"+(o.w*100)+"%;height:"+(o.h*100)+"%;color:"+o.color+";font-size:"+Math.max(7,o.size*scale)+"px;";
- if(o.kind==="highlight"){el.style.background=o.color;}else if(o.kind==="check"){el.style.boxSizing="border-box";el.style.border="1px solid #213354";el.style.lineHeight="1";}else if(o.image){const img=document.createElement("img");img.src=o.image;el.append(img);}else el.textContent=o.text;
+ if(o.kind==="highlight"){el.style.background=o.color;}
+ else if(o.kind==="check"){
+  // Draw a real visible checkbox rather than a font glyph (some global
+  // styles and PDF font fallbacks hide the Unicode tick).
+  el.style.boxSizing="border-box";el.style.border="0";el.style.display="grid";el.style.placeItems="center";
+  const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svg.setAttribute("viewBox","0 0 24 24");svg.setAttribute("width","100%");svg.setAttribute("height","100%");
+  svg.setAttribute("aria-hidden","true");svg.style.pointerEvents="none";
+  const rect=document.createElementNS("http://www.w3.org/2000/svg","rect");
+  rect.setAttribute("x","2");rect.setAttribute("y","2");rect.setAttribute("width","20");rect.setAttribute("height","20");
+  rect.setAttribute("rx","2");rect.setAttribute("fill","none");rect.setAttribute("stroke",o.color||"#172746");rect.setAttribute("stroke-width","1.8");svg.append(rect);
+  if(o.text==="✓"){const tick=document.createElementNS("http://www.w3.org/2000/svg","path");tick.setAttribute("d","M6 12.5l4 4 8-9");tick.setAttribute("fill","none");tick.setAttribute("stroke",o.color||"#172746");tick.setAttribute("stroke-width","2.5");tick.setAttribute("stroke-linecap","round");tick.setAttribute("stroke-linejoin","round");svg.append(tick);}
+  el.append(svg);
+ }else if(o.image){const img=document.createElement("img");img.src=o.image;el.append(img);}else el.textContent=o.text;
  el.tabIndex=0;el.setAttribute("aria-label",tr(o.kind));el.onpointerdown=e=>{e.preventDefault();selected=o.id;renderProperties();wrap.querySelectorAll(".editor-object").forEach(node=>node.classList.remove("selected"));el.classList.add("selected");let startX=e.clientX,startY=e.clientY,ox=o.x,oy=o.y,committed=false;const move=ev=>{if(!committed){snapshot();committed=true;}const rect=$("editor-stage").getBoundingClientRect();o.x=clamp(ox+(ev.clientX-startX)/rect.width,0,1-o.w);o.y=clamp(oy+(ev.clientY-startY)/rect.height,0,1-o.h);el.style.left=(o.x*100)+"%";el.style.top=(o.y*100)+"%";};const end=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",end);updateButtons();};window.addEventListener("pointermove",move);window.addEventListener("pointerup",end);};
  el.onkeydown=e=>{if(e.key==="Delete"||e.key==="Backspace"){e.preventDefault();removeSelected();}};wrap.append(el);
  });
@@ -128,7 +141,13 @@ function renderProperties(){
  panel.innerHTML='<h3>'+tr("properties")+'</h3>';
  if(!o){const p=document.createElement("p");p.textContent=tr("selected");p.style.color="#8190a7";p.style.fontSize="13px";panel.append(p);return;}
  if(o.kind!=="image"&&o.kind!=="signature"&&o.kind!=="initials"&&o.kind!=="highlight"){const label=document.createElement("label");label.textContent=tr("name");panel.append(label);const area=document.createElement("textarea");area.value=o.text;area.onchange=()=>{snapshot();o.text=area.value;renderObjects();};panel.append(area);}
- if(!o.image)panel.insertAdjacentHTML("beforeend",propInput(tr("font"),"property-size",o.size,"number")+propInput(tr("color"),"property-color",o.color,"color"));
+ if(o.kind==="check"){
+  const row=document.createElement("label");row.style.display="flex";row.style.alignItems="center";row.style.gap="9px";
+  const toggle=document.createElement("input");toggle.type="checkbox";toggle.checked=o.text==="✓";toggle.style.width="auto";
+  toggle.onchange=()=>{snapshot();o.text=toggle.checked?"✓":"";renderObjects();updateButtons();};
+  row.append(toggle,document.createTextNode(language()==="fr"?"Case cochée":language()==="ar"?"مربع محدد":"Checked"));panel.append(row);
+ }
+ if(!o.image&&o.kind!=="check")panel.insertAdjacentHTML("beforeend",propInput(tr("font"),"property-size",o.size,"number")+propInput(tr("color"),"property-color",o.color,"color"));
  panel.insertAdjacentHTML("beforeend",propInput(tr("width"),"property-width",Math.round(o.w*100),"number")+propInput(tr("height"),"property-height",Math.round(o.h*100),"number"));
  const select=document.createElement("select");select.id="property-page";for(let i=1;i<=total;i++){const option=document.createElement("option");option.value=i;option.textContent=tr("pages")+" "+i;if(i===current)option.disabled=true;select.append(option);}
  panel.append(Object.assign(document.createElement("label"),{textContent:tr("multi")}));panel.append(select);
