@@ -98,7 +98,7 @@ function add(kind){
  if(kind==="image"){const input=document.createElement("input");input.type="file";input.accept="image/png,image/jpeg";input.onchange=()=>{const f=input.files?.[0];if(!f||f.size>8*1024*1024){status(tr("error"),true);return;}const reader=new FileReader();reader.onload=()=>make(kind,"",String(reader.result));reader.readAsDataURL(f);};input.click();return;}
  make(kind,kind==="date"?new Date().toLocaleDateString(language()==="en"?"en-US":language()==="ar"?"ar":"fr-FR"):kind==="text"?tr("text"):kind==="check"?"✓":"");
 }
-function make(kind,text,image){snapshot();const obj={id:Date.now()+"-"+Math.random(),page:current,kind,text,image:image||null,x:.15,y:.2,w:kind==="highlight"?.26:kind==="check"?.045:kind==="signature"?.34:kind==="initials"?.13:.25,h:kind==="check"?.045:kind==="highlight"?.035:kind==="signature"?.095:kind==="initials"?.06:.052,size:16,color:"#172746"};objects.push(obj);selected=obj.id;renderObjects();renderProperties();updateButtons();syncWizard();}
+function make(kind,text,image){snapshot();const obj={id:Date.now()+"-"+Math.random(),page:current,kind,text,image:image||null,x:.15,y:.2,w:kind==="highlight"?.26:kind==="check"?.045:kind==="signature"?.34:kind==="initials"?.13:kind==="date"?.16:.25,h:kind==="check"?.045:kind==="highlight"?.035:kind==="signature"?.095:kind==="initials"?.06:.052,size:16,color:"#172746"};objects.push(obj);selected=obj.id;renderObjects();renderProperties();updateButtons();syncWizard();}
 function updateNavigation(){
  $("editor-pagecount").textContent=source?current+" / "+total:"0 / 0";$("editor-prev").disabled=!source||current<=1;$("editor-next").disabled=!source||current>=total;
  $("editor-thumbs").innerHTML=source?Array.from({length:Math.min(total,150)},(_,i)=>'<button type="button" data-page="'+(i+1)+'" '+(i+1===current?'aria-current="page"':'')+'>'+(i+1)+'</button>').join(""):"";
@@ -131,7 +131,27 @@ function renderObjects(){
   if(o.text==="✓"){const tick=document.createElementNS("http://www.w3.org/2000/svg","path");tick.setAttribute("d","M6 12.5l4 4 8-9");tick.setAttribute("fill","none");tick.setAttribute("stroke",o.color||"#172746");tick.setAttribute("stroke-width","2.5");tick.setAttribute("stroke-linecap","round");tick.setAttribute("stroke-linejoin","round");svg.append(tick);}
   el.append(svg);
  }else if(o.image){const img=document.createElement("img");img.src=o.image;el.append(img);}else el.textContent=o.text;
- el.tabIndex=0;el.setAttribute("aria-label",tr(o.kind));el.onpointerdown=e=>{e.preventDefault();selected=o.id;renderProperties();wrap.querySelectorAll(".editor-object").forEach(node=>node.classList.remove("selected"));el.classList.add("selected");let startX=e.clientX,startY=e.clientY,ox=o.x,oy=o.y,committed=false;const move=ev=>{if(!committed){snapshot();committed=true;}const rect=$("editor-stage").getBoundingClientRect();o.x=clamp(ox+(ev.clientX-startX)/rect.width,0,1-o.w);o.y=clamp(oy+(ev.clientY-startY)/rect.height,0,1-o.h);el.style.left=(o.x*100)+"%";el.style.top=(o.y*100)+"%";};const end=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",end);updateButtons();};window.addEventListener("pointermove",move);window.addEventListener("pointerup",end);};
+ el.tabIndex=0;el.setAttribute("aria-label",tr(o.kind));el.onpointerdown=e=>{e.preventDefault();selected=o.id;renderProperties();wrap.querySelectorAll(".editor-object").forEach(node=>node.classList.remove("selected"));el.classList.add("selected");let startX=e.clientX,startY=e.clientY,ox=o.x,oy=o.y,committed=false;
+ const move=ev=>{
+  const rect=$("editor-stage").getBoundingClientRect();
+  if(!committed){
+   snapshot();committed=true;
+   // Date fields used to occupy 25% of a page even when the visible value
+   // was much shorter, so they hit the right boundary prematurely.
+   // Fit their drag bounds to the visible glyphs, not the unused text box.
+   if(o.kind==="date"&&o.text){
+    const measure=document.createElement("canvas").getContext("2d");
+    measure.font=Math.max(7,o.size*scale)+"px Arial";
+    const widest=Math.max(...String(o.text).split("\n").map(line=>measure.measureText(line).width),1);
+    const fitted=clamp((widest+8)/rect.width,.045,o.w);
+    if(fitted<o.w){o.w=fitted;el.style.width=(o.w*100)+"%";}
+   }
+  }
+  o.x=clamp(ox+(ev.clientX-startX)/rect.width,0,Math.max(0,1-o.w));
+  o.y=clamp(oy+(ev.clientY-startY)/rect.height,0,1-o.h);
+  el.style.left=(o.x*100)+"%";el.style.top=(o.y*100)+"%";
+ };
+ const end=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",end);if(committed){renderProperties();syncWizard();}updateButtons();};window.addEventListener("pointermove",move);window.addEventListener("pointerup",end);};
  el.onkeydown=e=>{if(e.key==="Delete"||e.key==="Backspace"){e.preventDefault();removeSelected();}};wrap.append(el);
  });
 }
