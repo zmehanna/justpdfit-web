@@ -117,7 +117,7 @@ function renderObjects(){
  objects.filter(o=>o.page===current).forEach(o=>{
  const el=document.createElement("div");el.className="editor-object "+(o.kind==="check"?"checkbox ":"")+(o.kind==="highlight"?"highlight ":"")+(o.id===selected?"selected":"");
  el.style.cssText="left:"+(o.x*100)+"%;top:"+(o.y*100)+"%;width:"+(o.w*100)+"%;height:"+(o.h*100)+"%;color:"+o.color+";font-size:"+Math.max(7,o.size*scale)+"px;";
- if(o.kind==="highlight"){el.style.background=o.color;}else if(o.image){const img=document.createElement("img");img.src=o.image;el.append(img);}else el.textContent=o.text;
+ if(o.kind==="highlight"){el.style.background=o.color;}else if(o.kind==="check"){el.style.boxSizing="border-box";el.style.border="1px solid #213354";el.style.lineHeight="1";}else if(o.image){const img=document.createElement("img");img.src=o.image;el.append(img);}else el.textContent=o.text;
  el.tabIndex=0;el.setAttribute("aria-label",tr(o.kind));el.onpointerdown=e=>{e.preventDefault();selected=o.id;renderProperties();wrap.querySelectorAll(".editor-object").forEach(node=>node.classList.remove("selected"));el.classList.add("selected");let startX=e.clientX,startY=e.clientY,ox=o.x,oy=o.y,committed=false;const move=ev=>{if(!committed){snapshot();committed=true;}const rect=$("editor-stage").getBoundingClientRect();o.x=clamp(ox+(ev.clientX-startX)/rect.width,0,1-o.w);o.y=clamp(oy+(ev.clientY-startY)/rect.height,0,1-o.h);el.style.left=(o.x*100)+"%";el.style.top=(o.y*100)+"%";};const end=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",end);updateButtons();};window.addEventListener("pointermove",move);window.addEventListener("pointerup",end);};
  el.onkeydown=e=>{if(e.key==="Delete"||e.key==="Backspace"){e.preventDefault();removeSelected();}};wrap.append(el);
  });
@@ -154,7 +154,28 @@ function updatePaymentButtons(){
  $("editor-export").hidden=paid&&!unlocked;
  if(paid&&!window.JustPDFitWatermark?.backendReady)status(tr("noBackend"),true);
 }
-function rasterizeText(o){const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");const px=o.size*3;const lines=String(o.text||" ").split("\n");ctx.font=px+"px Arial";const maxWidth=Math.max(...lines.map(l=>ctx.measureText(l).width),10);canvas.width=Math.ceil(maxWidth+12);canvas.height=Math.ceil(lines.length*px*1.35+12);ctx.fillStyle=o.color;ctx.font=px+"px Arial";lines.forEach((line,i)=>ctx.fillText(line,6,px*(i+1)*1.25));return canvas.toDataURL("image/png");}
+function rasterizeText(o,pageWidth,pageHeight){
+ // Rasterize to the actual PDF element rectangle. The previous implementation
+ // rasterized to the natural width of the text and then stretched that bitmap
+ // to the element box, distorting dates, names and signatures on export.
+ const ratio=3,boxWidth=Math.max(1,o.w*pageWidth),boxHeight=Math.max(1,o.h*pageHeight);
+ const canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.ceil(boxWidth*ratio));canvas.height=Math.max(1,Math.ceil(boxHeight*ratio));
+ const ctx=canvas.getContext("2d");ctx.scale(ratio,ratio);ctx.fillStyle=o.color||"#172746";
+ const fontSize=Math.max(7,Number(o.size)||16);ctx.font=fontSize+"px Arial";ctx.textBaseline="top";
+ const lineHeight=fontSize*1.15;let y=0;
+ for(const paragraph of String(o.text||" ").split("\n")){
+  let line="";
+  for(const word of paragraph.split(/(\s+)/)){
+   const candidate=line+word;
+   if(line&&ctx.measureText(candidate).width>boxWidth){ctx.fillText(line,0,y);y+=lineHeight;line=word.trimStart();}
+   else line=candidate;
+   if(y>=boxHeight)break;
+  }
+  if(y>=boxHeight)break;
+  ctx.fillText(line,0,y);y+=lineHeight;
+ }
+ return canvas.toDataURL("image/png");
+}
 async function addWatermarks(doc){
  const regular=await doc.embedFont(PDFLib.StandardFonts.Helvetica),bold=await doc.embedFont(PDFLib.StandardFonts.HelveticaBold);
  for(const page of doc.getPages()){
@@ -172,9 +193,15 @@ async function exportPdf(clean){
  const page=doc.getPage(o.page-1);if(!page)continue;const width=page.getWidth(),height=page.getHeight(),x=o.x*width,y=(1-o.y-o.h)*height,w=o.w*width,h=o.h*height;
  if(o.kind==="highlight"){page.drawRectangle({x,y,width:w,height:h,color:PDFLib.rgb(1,.9,.2),opacity:.4});continue;}
  if(o.kind==="check"){page.drawRectangle({x,y,width:w,height:h,borderWidth:Math.max(1,w*.08),borderColor:PDFLib.rgb(.13,.2,.33)});if(o.text==="✓") {page.drawLine({start:{x:x+w*.15,y:y+h*.48},end:{x:x+w*.43,y:y+h*.18},thickness:Math.max(1,w*.09),color:PDFLib.rgb(.13,.2,.33)});page.drawLine({start:{x:x+w*.43,y:y+h*.18},end:{x:x+w*.88,y:y+h*.85},thickness:Math.max(1,w*.09),color:PDFLib.rgb(.13,.2,.33)});}continue;}
- const image=o.image||rasterizeText(o);
+ const image=o.image||rasterizeText(o,width,height);
  if(!imageCache.has(image)){const bytes=Uint8Array.from(atob(image.split(",")[1]),c=>c.charCodeAt(0));imageCache.set(image,image.startsWith("data:image/jpeg")?await doc.embedJpg(bytes):await doc.embedPng(bytes));}
- page.drawImage(imageCache.get(image),{x,y,width:w,height:h});
+ const embedded=imageCache.get(image);
+ if(o.image){
+  // The editor uses object-fit:contain; preserve aspect ratio in the PDF too.
+  const fit=Math.min(w/embedded.width,h/embedded.height);
+  const iw=embedded.width*fit,ih=embedded.height*fit;
+  page.drawImage(embedded,{x:x+(w-iw)/2,y:y+(h-ih)/2,width:iw,height:ih});
+ }else page.drawImage(embedded,{x,y,width:w,height:h});
  }
  if(!clean)await addWatermarks(doc);
  const bytes=await doc.save(),blob=new Blob([bytes],{type:"application/pdf"});
