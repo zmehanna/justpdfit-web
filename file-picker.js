@@ -86,7 +86,9 @@
     pickers.push(render);
     render();
   }
-  function init() { document.querySelectorAll('input[type="file"][data-jpi-picker]').forEach(enhance); }
+  function init(root=document) { root.querySelectorAll('input[type="file"][data-jpi-picker]').forEach(enhance); }
+  // Allow tool dialogs mounted after DOMContentLoaded to use the same picker.
+  window.JustPDFitFilePicker = { enhance, init };
   document.addEventListener("justpdfit-language", () => pickers.forEach(render => render()));
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
